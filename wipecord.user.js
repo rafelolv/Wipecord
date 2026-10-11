@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Wipecord
 // @description Bulk-delete your own messages in a Discord channel, DM or server
-// @version     1.2.1
+// @version     1.3.0
 // @author      Rafael (rafelolv)
 // @homepageURL https://github.com/rafelolv/Wipecord
 // @supportURL  https://github.com/rafelolv/Wipecord/issues
@@ -10,7 +10,7 @@
 // @match       https://*.discord.com/login
 // @license     MIT
 // @namespace   https://github.com/rafelolv/Wipecord
-// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.2.1
+// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.0
 // @downloadURL https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
 // @grant       none
 // @updateURL   https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
@@ -43,7 +43,7 @@ SOFTWARE.
 	'use strict';
 
 	/* rollup-plugin-baked-env */
-	const VERSION = "1.2.1";
+	const VERSION = "1.3.0";
 
 	var themeCss = (`
 /* Self-contained colors keep the panel readable when Discord changes its tokens. */
@@ -175,6 +175,9 @@ SOFTWARE.
 }
 #wipecord .header .brand-mark { width: 30px; height: 30px; }
 #wipecord .idle-dot { display: inline-block; width: 6px; height: 6px; margin-right: 8px; vertical-align: middle; border-radius: 50%; background: var(--wipe-muted); }
+#wipecord #runSummary { margin: 0 16px 8px; padding: 8px 0; border-bottom: 1px solid var(--wipe-line); font-size: 12px; }
+#wipecord #runSummary[hidden] { display: none; }
+#wipecord #summaryText { margin: 0 0 4px; }
 #wipecord .empty-state strong { font-weight: 500; color: var(--wipe-text); }
 #wipecord .settings-section .settings-section { margin-top: 8px; border-bottom: 0; border-top: 1px solid var(--wipe-line); }
 
@@ -248,6 +251,7 @@ SOFTWARE.
       </div>
       <p class="safety-note"><span aria-hidden="true">!</span>Deleted messages cannot be restored.</p>
       <progress id="progressBar" aria-label="Cleanup progress" style="display:none;"></progress>
+      <div id="runSummary" hidden><p id="summaryText" role="status"></p><button id="exportReport" type="button" class="quiet-button">Export summary</button></div>
       <div id="logArea" class="logarea scroll" role="log" aria-label="Cleanup activity" aria-live="off">
         <div class="empty-state"><span class="idle-dot" aria-hidden="true"></span><h4>No activity yet</h4><p>Select your author and channel, then click <strong>Delete messages</strong>.<br>You will review the target before anything is deleted.</p></div>
       </div>
@@ -318,6 +322,89 @@ SOFTWARE.
 	  if (user.discriminator && user.discriminator !== '0') return `${user.username}#${user.discriminator}`;
 	  return user.username || 'unknown';
 	};
+
+	function bound(value, label) {
+	  if (value == null || String(value).trim() === '') return undefined;
+	  const text = String(value).trim();
+	  if (isSnowflake(text)) return text;
+	  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})?)?$/);
+	  if (!match || !Number.isFinite(Date.parse(text))) throw Error(`${label} must be a valid date or message ID.`);
+	  const [, year, month, day] = match.map(Number);
+	  const days = new Date(Date.UTC(year, month, 0)).getUTCDate();
+	  if (month < 1 || month > 12 || day < 1 || day > days) throw Error(`${label} must be a valid calendar date.`);
+	  const time = text.match(/T(\d{2}):(\d{2})(?::(\d{2}))?/);
+	  if (time && (Number(time[1]) > 23 || Number(time[2]) > 59 || Number(time[3] || 0) > 59)) throw Error(`${label} must be a valid time.`);
+	  return toSnowflake(text);
+	}
+
+	/** Reject invalid filters before any request; never silently drop a constraint. */
+	function validateFilters({ pattern, minId, maxId }) {
+	  let regex;
+	  try { if (pattern) regex = new RegExp(pattern, 'i'); }
+	  catch { throw Error('Pattern is not a valid regular expression. Correct it before starting.'); }
+	  const minimum = bound(minId, 'After bound');
+	  const maximum = bound(maxId, 'Before bound');
+	  if (minimum !== undefined && maximum !== undefined && BigInt(minimum) >= BigInt(maximum)) {
+	    throw Error('After bound must be earlier than Before bound.');
+	  }
+	  return { regex, minId: minimum, maxId: maximum };
+	}
+
+	function resolveFilters({ pattern, minId, maxId, minDate, maxDate }) {
+	  for (const value of [minId, maxId]) if (value && !isSnowflake(value)) throw Error('Message bounds must be valid Discord message IDs.');
+	  validateFilters({ minId: minDate, maxId: maxDate });
+	  validateFilters({ pattern, minId: minId || minDate, maxId: maxId || maxDate });
+	  return { minId: minId || minDate || undefined, maxId: maxId || maxDate || undefined };
+	}
+
+	/** Archive labels are ignored; only validated string keys become targets. */
+	function parseArchive(text) {
+	  let data;
+	  try { data = JSON.parse(text); } catch { throw Error('The archive is not valid JSON.'); }
+	  if (data === null || Array.isArray(data) || typeof data !== 'object') throw Error('Choose messages/index.json: an object keyed by channel IDs.');
+	  const ids = Object.keys(data);
+	  if (!ids.length || ids.some(id => id !== id.trim() || !isSnowflake(id))) throw Error('The archive must contain only valid channel ID keys and cannot be empty.');
+	  if (Object.values(data).some(value => value !== null && typeof value !== 'string')) throw Error('Archive channel labels must be strings or null. Choose messages/index.json.');
+	  return ids;
+	}
+
+	/** Keep IDs only for in-memory deduplication; export a fixed anonymous schema. */
+	class RunReport {
+	  #outcomes = new Map();
+	  #started = Date.now();
+	  #reason = 'completed';
+	  #errors = 0;
+	  #finished;
+	  #result;
+
+	  record(id, outcome) {
+	    if (this.#outcomes.get(id) !== 'deleted') this.#outcomes.set(id, outcome);
+	  }
+	  end(reason) {
+	    if (reason === 'error') this.#errors++;
+	    if (reason === 'stopped' || reason === 'cancelled' || this.#reason === 'completed') this.#reason = reason;
+	  }
+	  finish() {
+	    this.#finished = Date.now();
+	    this.#result = this.snapshot();
+	    this.#outcomes.clear();
+	  }
+	  snapshot() {
+	    if (this.#result) return { ...this.#result, counts: { ...this.#result.counts } };
+	    const counts = { deleted: 0, ignored: 0, failed: 0, alreadyGone: 0 };
+	    for (const outcome of this.#outcomes.values()) counts[outcome]++;
+	    return {
+	      schemaVersion: 1,
+	      application: 'Wipecord',
+	      reason: this.#reason,
+	      startedAt: new Date(this.#started).toISOString(),
+	      finishedAt: new Date(this.#finished ?? Date.now()).toISOString(),
+	      durationMs: Math.max(0, (this.#finished ?? Date.now()) - this.#started),
+	      counts,
+	      runErrors: this.#errors,
+	    };
+	  }
+	}
 
 	const PREFIX$1 = '[WIPECORD]';
 
@@ -517,6 +604,7 @@ SOFTWARE.
 
 	  /** Whether a run or batch is currently in flight. */
 	  get busy() { return this.#busy; }
+	  get report() { return this.#report?.snapshot(); }
 	  resetState() {
 	    this.state = {
 	      running: false,
@@ -552,6 +640,8 @@ SOFTWARE.
 	  /** Automate the deletion process across multiple channels or servers. */
 	  async runBatch(queue) {
 	    if (this.#busy) return log.error('Already running!');
+	    validateFilters(this.options);
+	    this.#report = new RunReport();
 	    this.#busy = true;
 	    this.#batchTotal = queue.length;
 
@@ -607,6 +697,7 @@ SOFTWARE.
 	      this.#batchIndex = 0;
 	      this.#batchTotal = 0;
 	      log.info('Batch finished.');
+	      this.#report.finish();
 	      if (this.onStop) this.onStop(this.state, this.stats);
 	    }
 	  }
@@ -617,6 +708,8 @@ SOFTWARE.
 	    if (!this.options.guildId) return log.error('You must fill the "Server ID" field!');
 	    if (this.options.guildId === '@me' && !this.options.channelId) return log.error('You must fill the "Channel ID" field to delete direct messages!');
 	    if (this.options.guildId === '@me' && !this.options.authorId) return log.error('You must fill the "Author ID" field to delete direct messages safely!');
+	    validateFilters(this.options);
+	    if (!isJob) this.#report = new RunReport();
 	    if (!isJob) this.#busy = true;
 
 	    this.state.running = true;
@@ -744,6 +837,9 @@ SOFTWARE.
 	        this.advanceCursor();
 
 	      } while (this.state.running);
+	    } catch (error) {
+	      this.#report?.end('error');
+	      throw error;
 	    } finally {
 	      this.stats.endTime = new Date();
 	      log.success(`Ended at ${this.stats.endTime.toLocaleString()}! Total time: ${msToHMS(this.stats.endTime.getTime() - this.stats.startTime.getTime())}`);
@@ -756,12 +852,14 @@ SOFTWARE.
 	        // owns the flag and must clear it however it exited.
 	        this.state.running = false;
 	        this.#busy = false;
+	        this.#report.finish();
 	        if (this.onStop) this.onStop(this.state, this.stats);
 	      }
 	    }
 	  }
 
 	  stop() {
+	    if (this.#busy) this.#report?.end('stopped');
 	    this.state.running = false;
 	    // The loop's finally block unlocks the UI once it actually unwinds; doing it
 	    // here as well would re-enable Start while a request is still in flight.
@@ -817,6 +915,7 @@ SOFTWARE.
 	    const answer = await ask(summary + batchNotice + '\n\n---- Preview ----\n' + preview);
 
 	    if (!answer) {
+	      this.#report?.end('cancelled');
 	      log.error('Aborted by you!');
 	      return false;
 	    }
@@ -866,6 +965,7 @@ SOFTWARE.
 	        }
 	        if (resp.status === 403 || resp.status === 404 || code === 50001 || code === 50024) {
 	          log.warn(`Skipping this channel, the API responded with status ${resp.status}:`, escapeHTML(text));
+	          this.#report?.end('error');
 	          return false;
 	        }
 	        throw new WipecordError(`Error checking the channel, API responded with status ${resp.status}! ${text}`, { status: resp.status, code });
@@ -876,6 +976,7 @@ SOFTWARE.
 
 	      if (!json || (json.type !== 1 && json.type !== 3)) {
 	        log.warn('Skipping this archive entry because it is not a DM or group DM.');
+	        this.#report?.end('error');
 	        return false;
 	      }
 
@@ -934,6 +1035,7 @@ SOFTWARE.
 	        }
 	        if (resp.status === 403 || resp.status === 404 || code === 50001 || code === 50024) {
 	          log.warn(`Skipping this channel, the API responded with status ${resp.status}:`, escapeHTML(text));
+	          this.#report?.end('error');
 	          return null;
 	        }
 	        throw new WipecordError(`Error fetching channel history, API responded with status ${resp.status}! ${text}`, { status: resp.status, code });
@@ -1035,6 +1137,7 @@ SOFTWARE.
 	        // so a batch over an old archive is not killed by one dead server.
 	        if (resp.status === 403 || resp.status === 404 || code === 50001 || code === 50024) {
 	          log.warn(`Skipping this channel, the API responded with status ${resp.status}:`, escapeHTML(text));
+	          this.#report?.end('error');
 	          return null;
 	        }
 	        throw new WipecordError(`Error searching messages, API responded with status ${resp.status}! ${text}`, { status: resp.status, code });
@@ -1083,13 +1186,11 @@ SOFTWARE.
 	    messagesToDelete = messagesToDelete.filter(msg => !UNDELETABLE_MESSAGE_TYPES.has(msg.type));
 	    messagesToDelete = messagesToDelete.filter(msg => msg.pinned ? this.options.includePinned : true);
 
-	    if (this.options.pattern) {
-	      try {
-	        const regex = new RegExp(this.options.pattern, 'i');
-	        messagesToDelete = messagesToDelete.filter(msg => regex.test(messageText(msg)));
-	      } catch (e) {
-	        log.warn('Ignoring RegExp because pattern is malformed!', e);
-	      }
+	    const { regex } = validateFilters(this.options);
+	    if (regex) messagesToDelete = messagesToDelete.filter(msg => regex.test(messageText(msg)));
+	    const selected = new Set(messagesToDelete.map(message => message.id));
+	    for (const message of discoveredMessages) {
+	      if (!selected.has(message.id)) this.#report?.record(message.id, 'ignored');
 	    }
 
 	    const skippedMessages = candidates.filter(msg => !messagesToDelete.includes(msg));
@@ -1134,6 +1235,7 @@ SOFTWARE.
 	        else break;
 	      }
 
+	      this.#report?.record(message.id, result === DELETED ? 'deleted' : result === ALREADY_GONE ? 'alreadyGone' : result === SKIPPED ? 'ignored' : 'failed');
 	      if (result === DELETED || result === ALREADY_GONE) {
 	        this.state.delCount++;
 	        // Only a message we actually removed proves the run is progressing.
@@ -1370,6 +1472,7 @@ SOFTWARE.
 	   * not cleared by resetState() or by the Stop button, so it is what re-entry
 	   * is guarded on. */
 	  #busy = false;
+	  #report;
 	  #batchIndex = 0;
 	  #batchTotal = 0;
 
@@ -2063,6 +2166,26 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	  };
 	  $('button#start').onclick = startAction;
 	  $('button#stop').onclick = stopAction;
+	  let finalReport;
+	  $('#exportReport').onclick = () => {
+	    if (!finalReport) return;
+	    const url = URL.createObjectURL(new Blob([JSON.stringify(finalReport, null, 2) + '\n'], { type: 'application/json' }));
+	    const link = document.createElement('a');
+	    link.href = url;
+	    link.download = 'wipecord-report.json';
+	    document.body.appendChild(link);
+	    link.click();
+	    link.remove();
+	    setTimeout(() => URL.revokeObjectURL(url), 1000);
+	  };
+	  ui.showReport = report => {
+	    finalReport = report ? { ...report, version: VERSION } : undefined;
+	    $('#runSummary').hidden = !finalReport;
+	    if (!finalReport) return;
+	    const labels = { completed: 'Completed', cancelled: 'Confirmation cancelled', stopped: 'Stopped by you', error: 'Ended with errors' };
+	    const { counts, reason, durationMs } = finalReport;
+	    $('#summaryText').textContent = `${labels[reason]} · ${counts.deleted} deleted · ${counts.ignored} ignored · ${counts.failed} failed · ${counts.alreadyGone} already gone · ${msToHMS(durationMs)}`;
+	  };
 	  const emptyState = ui.logArea.innerHTML;
 	  $('button#clear').onclick = () => {
 	    ui.logArea.innerHTML = wipecordCore.busy ? '<div class="log log-verb">Log cleared. Cleanup is still running.</div>' : emptyState;
@@ -2152,20 +2275,21 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	    // No files added
 	    if (files.length === 0) return log.warn('No file selected.');
 
+	    if (wipecordCore.busy || startPending) return log.error('Stop the current run before importing targets.');
 	    // Get channel id field to set it later
 	    const channelIdField = $('input#channelId');
 
-	    // Force the guild id to be ourself (@me)
 	    const guildIdField = $('input#guildId');
-	    guildIdField.value = '@me';
-
-	    // Set author id in case its not set already
-	    fillField('input#authorId', getAuthorId());
 	    try {
 	      const file = files[0];
 	      const text = await file.text();
-	      const json = JSON.parse(text);
-	      const channelIds = Object.keys(json);
+	      const channelIds = parseArchive(text);
+	      // File reads are asynchronous; recheck before committing target changes.
+	      if (wipecordCore.busy || startPending || fileSelection.files[0] !== file) return log.warn('Import discarded because the selection or run changed.');
+	      const authorId = $('input#authorId').value.trim() || getAuthorId();
+	      if (!isSnowflake(authorId)) throw Error('Fill a valid Author ID before importing conversations.');
+	      guildIdField.value = '@me';
+	      $('input#authorId').value = authorId;
 	      channelIdField.value = channelIds.join(',');
 	      log.info(`Loaded ${channelIds.length} channels.`);
 	    } catch(err) {
@@ -2205,6 +2329,7 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	function setupWipecordCore() {
 
 	  wipecordCore.onStart = (state, stats) => {
+	    ui.showReport();
 	    setRuntimeState('running');
 	    $('#start').disabled = true;
 	    $('#stop').disabled = false;
@@ -2251,6 +2376,7 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	  };
 
 	  wipecordCore.onStop = (state, stats) => {
+	    ui.showReport(wipecordCore.report);
 	    setRuntimeState('idle');
 	    $('#start').disabled = false;
 	    $('#stop').disabled = true;
@@ -2311,6 +2437,14 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	  const searchDelay = parseInt($('input#searchDelay').value.trim()) || 2000;
 	  const deleteDelay = parseInt($('input#deleteDelay').value.trim()) || 1000;
 
+	  let filters;
+	  try {
+	    if ($('#minDate').validity.badInput || $('#maxDate').validity.badInput) throw Error('Complete or clear the date fields before starting.');
+	    filters = resolveFilters({ pattern, minId, maxId, minDate, maxDate });
+	  } catch (error) {
+	    return log.error(escapeHTML(error.message));
+	  }
+
 
 	  if (authorId && !isSnowflake(authorId)) return log.error('"Author ID" must be a Discord id.');
 	  if (guildIds.length > 1 && !authorId) {
@@ -2336,8 +2470,8 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	    authorId,
 	    guildId,
 	    channelId,
-	    minId: minId || minDate,
-	    maxId: maxId || maxDate,
+	    minId: filters.minId,
+	    maxId: filters.maxId,
 	    content,
 	    hasLink,
 	    hasFile,

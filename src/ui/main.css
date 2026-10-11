@@ -119,5 +119,8 @@
 
 #wipecord .header .brand-mark { width: 30px; height: 30px; }
 #wipecord .idle-dot { display: inline-block; width: 6px; height: 6px; margin-right: 8px; vertical-align: middle; border-radius: 50%; background: var(--wipe-muted); }
+#wipecord #runSummary { margin: 0 16px 8px; padding: 8px 0; border-bottom: 1px solid var(--wipe-line); font-size: 12px; }
+#wipecord #runSummary[hidden] { display: none; }
+#wipecord #summaryText { margin: 0 0 4px; }
 #wipecord .empty-state strong { font-weight: 500; color: var(--wipe-text); }
 #wipecord .settings-section .settings-section { margin-top: 8px; border-bottom: 0; border-top: 1px solid var(--wipe-line); }

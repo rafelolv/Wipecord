@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0 — 2026-10-11
+
+- Reject malformed regular expressions, invalid calendar dates/times and equal or reversed effective message/date bounds before API access, including direct core and batch entry points.
+- Preserve message-ID precedence and validate mixed ID/date bounds without silently dropping a filter.
+- Validate archive JSON structure, channel keys and labels before updating targets; refuse active-run imports and discard stale asynchronous reads.
+- Add final run summaries and an anonymous JSON export with outcome, duration, aggregate counts and run errors. Count confirmed deletion, ignored messages, failed messages and already-gone messages separately; accumulate all batch jobs and deduplicate repeated encounters.
+- Keep account tokens, target IDs, message contents, archive labels and exception payloads out of exported reports. Release temporary report ID tracking after completion.
+- Rebuild the shared userscript and both browser packages at the same version.
+
+Validation: `npm run check` passed lint, 23 mocked unit tests, metadata/license/syntax checks, matching runtime hashes and deterministic packages. Native extension fixtures passed all nine scenario groups in Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly 154.1.98.28, including filter blocking, atomic/stale imports, export privacy, cancellation and stopping. The userscript Chrome fixture passed 21 interaction checks, keyboard controls, dragging/resizing and four viewport/theme checks. All API responses were simulated; Edge, live Discord and store/signed updates were not validated.
+
 ## 1.2.1 — 2026-10-11
 
 - Publish Wipecord's first GitHub release with the userscript and Chromium/Firefox packages.

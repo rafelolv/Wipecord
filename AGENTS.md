@@ -7,6 +7,7 @@ Maintained by rafelolv. Read docs/MAINTENANCE.md for the workflow.
 - Edit runtime code only in src/, templates in src/ui/, and build logic in build/ or rollup.config.mjs. Never hand-edit wipecord.user.js: regenerate it and commit the artifact with source changes.
 - Keep the runtime readable and free of external dependencies, remote code, telemetry and remote configuration. Build/test dependencies are permitted. Never store, print or commit authorization tokens or private message data.
 - Preserve target validation, confirmation, stopping, privacy defaults, pagination and rate-limit backoff. Do not broaden deletion targets or remove guards as part of a branding change.
+- Reject invalid patterns, dates and reversed/equal effective bounds before API access. Validate archive structure and IDs before changing any target fields, including after asynchronous reads. Export only the fixed anonymous run-summary schema; never serialize core options, messages or exceptions.
 - Run npm run check after changes. Tests use mocked Discord/browser objects and cannot prove compatibility with the live Discord client. Record browser checks separately; never claim successful live deletion based only on automated checks.
 - Public versions start at 1.0.0. Use three-part semantic versions; package.json and generated @version must agree. Any published userscript change, including metadata, requires a new version. Documentation-only changes do not.
 - Keep development metadata separate from production. Disable other deletion scripts when validating in a browser.

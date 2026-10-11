@@ -10,6 +10,7 @@ import wipecordTemplate from './ui/wipecord.html';
 
 import WipecordCore from './wipecord-core';
 import { setRuntimeState } from './runtime-guard.js';
+import { parseArchive, resolveFilters } from './validation.js';
 import { buildPurgePlan } from './wipecord-plan.js';
 import Drag from './utils/drag';
 import createElm from './utils/createElm';
@@ -118,6 +119,26 @@ function initUI() {
   };
   $('button#start').onclick = startAction;
   $('button#stop').onclick = stopAction;
+  let finalReport;
+  $('#exportReport').onclick = () => {
+    if (!finalReport) return;
+    const url = URL.createObjectURL(new Blob([JSON.stringify(finalReport, null, 2) + '\n'], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'wipecord-report.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  ui.showReport = report => {
+    finalReport = report ? { ...report, version: VERSION } : undefined;
+    $('#runSummary').hidden = !finalReport;
+    if (!finalReport) return;
+    const labels = { completed: 'Completed', cancelled: 'Confirmation cancelled', stopped: 'Stopped by you', error: 'Ended with errors' };
+    const { counts, reason, durationMs } = finalReport;
+    $('#summaryText').textContent = `${labels[reason]} · ${counts.deleted} deleted · ${counts.ignored} ignored · ${counts.failed} failed · ${counts.alreadyGone} already gone · ${msToHMS(durationMs)}`;
+  };
   const emptyState = ui.logArea.innerHTML;
   $('button#clear').onclick = () => {
     ui.logArea.innerHTML = wipecordCore.busy ? '<div class="log log-verb">Log cleared. Cleanup is still running.</div>' : emptyState;
@@ -207,20 +228,21 @@ function initUI() {
     // No files added
     if (files.length === 0) return log.warn('No file selected.');
 
+    if (wipecordCore.busy || startPending) return log.error('Stop the current run before importing targets.');
     // Get channel id field to set it later
     const channelIdField = $('input#channelId');
 
-    // Force the guild id to be ourself (@me)
     const guildIdField = $('input#guildId');
-    guildIdField.value = '@me';
-
-    // Set author id in case its not set already
-    fillField('input#authorId', getAuthorId());
     try {
       const file = files[0];
       const text = await file.text();
-      const json = JSON.parse(text);
-      const channelIds = Object.keys(json);
+      const channelIds = parseArchive(text);
+      // File reads are asynchronous; recheck before committing target changes.
+      if (wipecordCore.busy || startPending || fileSelection.files[0] !== file) return log.warn('Import discarded because the selection or run changed.');
+      const authorId = $('input#authorId').value.trim() || getAuthorId();
+      if (!isSnowflake(authorId)) throw Error('Fill a valid Author ID before importing conversations.');
+      guildIdField.value = '@me';
+      $('input#authorId').value = authorId;
       channelIdField.value = channelIds.join(',');
       log.info(`Loaded ${channelIds.length} channels.`);
     } catch(err) {
@@ -260,6 +282,7 @@ function printLog(type = '', args) {
 function setupWipecordCore() {
 
   wipecordCore.onStart = (state, stats) => {
+    ui.showReport();
     setRuntimeState('running');
     $('#start').disabled = true;
     $('#stop').disabled = false;
@@ -306,6 +329,7 @@ function setupWipecordCore() {
   };
 
   wipecordCore.onStop = (state, stats) => {
+    ui.showReport(wipecordCore.report);
     setRuntimeState('idle');
     $('#start').disabled = false;
     $('#stop').disabled = true;
@@ -366,6 +390,14 @@ async function performStartAction() {
   const searchDelay = parseInt($('input#searchDelay').value.trim()) || 2000;
   const deleteDelay = parseInt($('input#deleteDelay').value.trim()) || 1000;
 
+  let filters;
+  try {
+    if ($('#minDate').validity.badInput || $('#maxDate').validity.badInput) throw Error('Complete or clear the date fields before starting.');
+    filters = resolveFilters({ pattern, minId, maxId, minDate, maxDate });
+  } catch (error) {
+    return log.error(escapeHTML(error.message));
+  }
+
 
   if (authorId && !isSnowflake(authorId)) return log.error('"Author ID" must be a Discord id.');
   if (guildIds.length > 1 && !authorId) {
@@ -391,8 +423,8 @@ async function performStartAction() {
     authorId,
     guildId,
     channelId,
-    minId: minId || minDate,
-    maxId: maxId || maxDate,
+    minId: filters.minId,
+    maxId: filters.maxId,
     content,
     hasLink,
     hasFile,

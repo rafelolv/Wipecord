@@ -16,6 +16,8 @@ All messages, session values and responses are synthetic. Fetch is mocked in the
 - Confirmed simulated DM deletion preserves author, text, link, file, valid regular-expression, lower message-ID bound, pinned exclusion and system-message exclusion. History pagination still runs.
 - Stop during an already in-flight simulated DELETE permits that request to finish and prevents the next deletion.
 - No injection on an unmatched route; no page errors during the tested flows.
+- Invalid patterns and reversed dates make no API requests. Invalid archive shapes/keys/labels preserve targets, stale reads cannot overwrite a newer import, and active runs reject imports.
+- Final summaries identify cancellation/stopping/completion and count confirmed deletion separately from already-gone messages. Exported JSON contains only version, timing, reasons and aggregate counts. Unit fixtures also check multi-job totals, deduplication and error privacy.
 - `npm run check` verifies core regressions, runtime claims, metadata, syntax, engine hashes, matching package versions, minimal manifests, ZIP contents and deterministic rebuilding.
 
 ## Maintainer validation
@@ -26,4 +28,4 @@ Before the 1.2.1 release, the maintainer reported that the extension worked succ
 
 Browser versions and actual results for this change are recorded in CHANGELOG.md. Chrome, Firefox and the installed Brave Origin Nightly passed; Edge, Brave stable and minimum supported versions have not been exercised directly. Browser tests use temporary loopback match patterns, not Discord's live DOM, CSP, authentication or API. Userscript coexistence is tested by loading its complete artifact as a page script, not through every userscript manager's injection behavior.
 
-Live rate limiting, store installation/signing, browser restarts with a signed Firefox package, cross-host coordination and live message deletion are not validated. The origin lock does not extend across Discord subdomains, profiles or browsers. Older userscripts loaded after Wipecord cannot be forced to obey its runtime claim. Existing engine limitations remain shared by both distributions; in particular, malformed regular expressions are currently ignored by the core. Use valid patterns and review the confirmation carefully.
+Live rate limiting, store installation/signing, browser restarts with a signed Firefox package, cross-host coordination and live message deletion are not validated. The origin lock does not extend across Discord subdomains, profiles or browsers. Older userscripts loaded after Wipecord cannot be forced to obey its runtime claim. From version 1.3.0, invalid patterns and ranges block API access. Rejected archive imports preserve all targets, and final reports export only anonymous aggregate data. Review the confirmation carefully.

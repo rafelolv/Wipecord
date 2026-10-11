@@ -1,6 +1,8 @@
 const PREFIX = '[WIPECORD]';
 
 import { log } from './utils/log.js';
+import { validateFilters } from './validation.js';
+import RunReport from './run-report.js';
 import {
   wait,
   clamp,
@@ -209,6 +211,7 @@ class WipecordCore {
 
   /** Whether a run or batch is currently in flight. */
   get busy() { return this.#busy; }
+  get report() { return this.#report?.snapshot(); }
   resetState() {
     this.state = {
       running: false,
@@ -244,6 +247,8 @@ class WipecordCore {
   /** Automate the deletion process across multiple channels or servers. */
   async runBatch(queue) {
     if (this.#busy) return log.error('Already running!');
+    validateFilters(this.options);
+    this.#report = new RunReport();
     this.#busy = true;
     this.#batchTotal = queue.length;
 
@@ -299,6 +304,7 @@ class WipecordCore {
       this.#batchIndex = 0;
       this.#batchTotal = 0;
       log.info('Batch finished.');
+      this.#report.finish();
       if (this.onStop) this.onStop(this.state, this.stats);
     }
   }
@@ -309,6 +315,8 @@ class WipecordCore {
     if (!this.options.guildId) return log.error('You must fill the "Server ID" field!');
     if (this.options.guildId === '@me' && !this.options.channelId) return log.error('You must fill the "Channel ID" field to delete direct messages!');
     if (this.options.guildId === '@me' && !this.options.authorId) return log.error('You must fill the "Author ID" field to delete direct messages safely!');
+    validateFilters(this.options);
+    if (!isJob) this.#report = new RunReport();
     if (!isJob) this.#busy = true;
 
     this.state.running = true;
@@ -436,6 +444,9 @@ class WipecordCore {
         this.advanceCursor();
 
       } while (this.state.running);
+    } catch (error) {
+      this.#report?.end('error');
+      throw error;
     } finally {
       this.stats.endTime = new Date();
       log.success(`Ended at ${this.stats.endTime.toLocaleString()}! Total time: ${msToHMS(this.stats.endTime.getTime() - this.stats.startTime.getTime())}`);
@@ -448,12 +459,14 @@ class WipecordCore {
         // owns the flag and must clear it however it exited.
         this.state.running = false;
         this.#busy = false;
+        this.#report.finish();
         if (this.onStop) this.onStop(this.state, this.stats);
       }
     }
   }
 
   stop() {
+    if (this.#busy) this.#report?.end('stopped');
     this.state.running = false;
     // The loop's finally block unlocks the UI once it actually unwinds; doing it
     // here as well would re-enable Start while a request is still in flight.
@@ -509,6 +522,7 @@ class WipecordCore {
     const answer = await ask(summary + batchNotice + '\n\n---- Preview ----\n' + preview);
 
     if (!answer) {
+      this.#report?.end('cancelled');
       log.error('Aborted by you!');
       return false;
     }
@@ -558,6 +572,7 @@ class WipecordCore {
         }
         if (resp.status === 403 || resp.status === 404 || code === 50001 || code === 50024) {
           log.warn(`Skipping this channel, the API responded with status ${resp.status}:`, escapeHTML(text));
+          this.#report?.end('error');
           return false;
         }
         throw new WipecordError(`Error checking the channel, API responded with status ${resp.status}! ${text}`, { status: resp.status, code });
@@ -568,6 +583,7 @@ class WipecordCore {
 
       if (!json || (json.type !== 1 && json.type !== 3)) {
         log.warn('Skipping this archive entry because it is not a DM or group DM.');
+        this.#report?.end('error');
         return false;
       }
 
@@ -626,6 +642,7 @@ class WipecordCore {
         }
         if (resp.status === 403 || resp.status === 404 || code === 50001 || code === 50024) {
           log.warn(`Skipping this channel, the API responded with status ${resp.status}:`, escapeHTML(text));
+          this.#report?.end('error');
           return null;
         }
         throw new WipecordError(`Error fetching channel history, API responded with status ${resp.status}! ${text}`, { status: resp.status, code });
@@ -727,6 +744,7 @@ class WipecordCore {
         // so a batch over an old archive is not killed by one dead server.
         if (resp.status === 403 || resp.status === 404 || code === 50001 || code === 50024) {
           log.warn(`Skipping this channel, the API responded with status ${resp.status}:`, escapeHTML(text));
+          this.#report?.end('error');
           return null;
         }
         throw new WipecordError(`Error searching messages, API responded with status ${resp.status}! ${text}`, { status: resp.status, code });
@@ -775,13 +793,11 @@ class WipecordCore {
     messagesToDelete = messagesToDelete.filter(msg => !UNDELETABLE_MESSAGE_TYPES.has(msg.type));
     messagesToDelete = messagesToDelete.filter(msg => msg.pinned ? this.options.includePinned : true);
 
-    if (this.options.pattern) {
-      try {
-        const regex = new RegExp(this.options.pattern, 'i');
-        messagesToDelete = messagesToDelete.filter(msg => regex.test(messageText(msg)));
-      } catch (e) {
-        log.warn('Ignoring RegExp because pattern is malformed!', e);
-      }
+    const { regex } = validateFilters(this.options);
+    if (regex) messagesToDelete = messagesToDelete.filter(msg => regex.test(messageText(msg)));
+    const selected = new Set(messagesToDelete.map(message => message.id));
+    for (const message of discoveredMessages) {
+      if (!selected.has(message.id)) this.#report?.record(message.id, 'ignored');
     }
 
     const skippedMessages = candidates.filter(msg => !messagesToDelete.includes(msg));
@@ -826,6 +842,7 @@ class WipecordCore {
         else break;
       }
 
+      this.#report?.record(message.id, result === DELETED ? 'deleted' : result === ALREADY_GONE ? 'alreadyGone' : result === SKIPPED ? 'ignored' : 'failed');
       if (result === DELETED || result === ALREADY_GONE) {
         this.state.delCount++;
         // Only a message we actually removed proves the run is progressing.
@@ -1062,6 +1079,7 @@ class WipecordCore {
    * not cleared by resetState() or by the Stop button, so it is what re-entry
    * is guarded on. */
   #busy = false;
+  #report;
   #batchIndex = 0;
   #batchTotal = 0;
 

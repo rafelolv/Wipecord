@@ -65,6 +65,29 @@ try {
       await page.evaluate(prepare);
       assert.equal(await page.evaluate('document.getElementById("redact").checked && !document.getElementById("includePinned").checked && document.getElementById("searchDelay").value === "2000" && document.getElementById("deleteDelay").value === "1000"'), true);
 
+      await page.evaluate(`(async()=>{
+        const $=id=>document.getElementById(id);
+        const wait=async()=>{for(let i=0;i<100;i++){if($('logArea').textContent.includes('before starting')||$('logArea').textContent.includes('earlier'))return;await new Promise(r=>setTimeout(r,20));}throw Error('Validation timeout');};
+        $('pattern').value='[';$('start').click();await wait();
+        if(requests.length||prompts.length)throw Error('Malformed pattern reached API');
+        $('pattern').value='';$('minDate').value='2026-10-12T12:00';$('maxDate').value='2026-10-11T12:00';$('logArea').textContent='';$('start').click();await wait();
+        if(requests.length||prompts.length)throw Error('Reversed dates reached API');
+        $('minDate').value='';$('maxDate').value='';
+        const snapshot=()=>[$('guildId').value,$('channelId').value,$('authorId').value].join('|');
+        const initial=snapshot();
+        const upload=async text=>{const transfer=new DataTransfer();transfer.items.add(new File([text],'index.json',{type:'application/json'}));$('importJsonInput').files=transfer.files;await $('importJsonInput').onchange();};
+        for(const text of ['{','[]','{}','{"bad":"label"}','{"44444444444444444":{}}']){await upload(text);if(snapshot()!==initial)throw Error('Rejected archive changed targets');}
+        await upload('{"44444444444444444":"Synthetic label","55555555555555555":null}');
+        if($('guildId').value!=='@me'||$('channelId').value!=='44444444444444444,55555555555555555')throw Error('Valid archive did not load');
+        const transfer=new DataTransfer();transfer.items.add(new File(['{}'],'old.json',{type:'application/json'}));$('importJsonInput').files=transfer.files;
+        let release;transfer.files[0].text=()=>new Promise(resolve=>release=resolve);
+        const oldImport=$('importJsonInput').onchange();
+        await upload('{"66666666666666666":null}');release('{"77777777777777777":null}');await oldImport;
+        if($('channelId').value!=='66666666666666666')throw Error('Stale import overwrote a newer selection');
+        $('channelId').value='${channel}';
+      })()`);
+      checks.push(`${browser}: malformed filters and reversed dates make no requests; rejected archives preserve targets and valid archives load atomically`);
+
       const popup = await session.createPage(session.popupURL);
       await page.activate();
       await waitFor(() => popup.evaluate('document.getElementById("status").textContent === "Ready in this tab"'), `${browser}: popup cannot read status`);
@@ -85,6 +108,7 @@ try {
       await start(page);
       await waitFor(() => page.evaluate('prompts.length===1 && !document.getElementById("start").disabled'), 'Cancel did not finish').catch(async error => { console.log(browser, await page.evaluate('JSON.stringify({requests,promptCount:prompts.length,errors,log:document.getElementById("logArea").textContent})')); throw error; });
       assert.equal(await page.evaluate('deleted.length'), 0, 'Cancelled confirmation must not delete');
+      assert.ok(await page.evaluate('document.getElementById("summaryText").textContent.includes("Confirmation cancelled")'));
 
       const second = await session.createPage();
       await second.navigate(url + '?userscript-first');
@@ -96,6 +120,12 @@ try {
       await page.evaluate('window.hold="GET";window.release=null;');
       await start(page);
       await waitFor(() => page.evaluate('!!window.release'), 'Search not held');
+      await page.evaluate(`(async()=>{
+        const field=document.getElementById('channelId'), before=field.value;
+        const transfer=new DataTransfer();transfer.items.add(new File(['{"66666666666666666":null}'],'index.json',{type:'application/json'}));
+        const input=document.getElementById('importJsonInput');input.files=transfer.files;await input.onchange();
+        if(field.value!==before)throw Error('Import changed a running target');
+      })()`);
       await page.activate();
       await waitFor(() => popup.evaluate('document.getElementById("status").textContent === "Deletion in progress"'), 'Popup running status missing');
       await start(second);
@@ -104,6 +134,7 @@ try {
       await page.evaluate('document.getElementById("stop").click();window.hold=null;window.release();window.release=null;');
       await idle(page);
       assert.equal(await page.evaluate('prompts.length'), 1);
+      assert.ok(await page.evaluate('document.getElementById("summaryText").textContent.includes("Stopped by you")'));
       assert.equal(await page.evaluate('deleted.length'), 0);
       await delay(300);
       assert.equal(await second.evaluate('requests.length'), 0, 'Refused run must never start later');
@@ -117,6 +148,18 @@ try {
       await waitFor(() => page.evaluate('deleted.length===1 && !document.getElementById("start").disabled'), 'Filtered deletion did not finish');
       assert.equal(await page.evaluate('JSON.stringify(deleted)'), '["44444444444444444"]', 'Only the exact matching message may be deleted');
       assert.equal(await page.evaluate('prompts.length'), 1);
+      assert.ok(await page.evaluate('document.getElementById("summaryText").textContent.includes("1 deleted") && document.getElementById("summaryText").textContent.includes("7 ignored")'));
+      const exported = await page.evaluate(`(async()=>{
+        let payload;const create=URL.createObjectURL;const click=HTMLAnchorElement.prototype.click;
+        URL.createObjectURL=blob=>{payload=blob;return create(blob);};HTMLAnchorElement.prototype.click=()=>{};
+        try{document.getElementById('exportReport').click();return await payload.text();}
+        finally{URL.createObjectURL=create;HTMLAnchorElement.prototype.click=click;}
+      })()`);
+      const report = JSON.parse(exported);
+      assert.deepEqual(report.counts, { deleted: 1, ignored: 7, failed: 0, alreadyGone: 0 });
+      assert.equal(report.reason, 'completed');
+      for (const privateValue of ['synthetic-test-token', author, channel, 'example.test', 'fixture']) assert.equal(exported.includes(privateValue), false, 'Export must contain no session, target or message data');
+      checks.push(`${browser}: completed summary and anonymous JSON export preserve exact counts`);
       assert.equal(await page.evaluate('requests.some(r=>r.url.includes("before="))'), false, 'Crossing the lower boundary must end the history walk');
       checks.push(`${browser}: simulated confirmed deletion preserves author, text, link, file, pattern, ID bound, pinned and system-message filters`);
 

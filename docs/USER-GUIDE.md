@@ -29,6 +29,14 @@ The settings sidebar contains **Where to clean**, **Filter messages**, **Date & 
 
 The **Activity** area shows the log and progress. Use **☰** to hide or restore settings, **Delete messages** to begin with a confirmation, and **Stop** to end a run. Disabled actions stay visible. **Clear log** clears the display; it does not stop an active cleanup. Streamer mode starts enabled. The panel supports light/dark themes, narrow screens, dragging and resizing.
 
+## Run summary
+
+When a run finishes, **Activity** shows its outcome, duration and counts: deleted, ignored, failed and already gone. Ignored messages include those excluded by filters or refused permanently; already gone means the API reported that a message no longer existed. Counts cover messages encountered, not the entire account history. Messages outside the lower history boundary may never be processed or counted. Batch totals span all jobs and avoid double-counting messages encountered again during sweeps.
+
+**Export summary** downloads a JSON report containing only application/version, timestamps, duration, outcome, aggregate counts and the number of job/run errors. It contains no tokens, target IDs, usernames, message contents, archive labels or raw API/error payloads. The summary remains available when clearing the activity log, until another run starts or the page reloads.
+
+Invalid patterns, dates and equal or reversed effective message/date bounds block the run before API access. Message IDs still take precedence over dates on each side; mixed ID/date bounds are compared as snowflakes.
+
 ## The panel, field by field
 
 ### Author ID
@@ -76,7 +84,9 @@ the archive's channel index straight in:
 2. **Wipe Archive** → choose `messages/index.json`.
 3. Wipecord fills *Server ID* with `@me`, *Author ID* with your own, and *Channel ID* with every channel in the
    archive.
-4. Press **Delete messages** and leave it running.
+4. Review the loaded targets, press **Delete messages**, and review the confirmation.
+
+Imports must be non-empty JSON objects keyed by valid channel IDs, with string or null labels. Invalid files leave all target fields unchanged. Fill a valid Author ID first if account detection is unavailable. Imports are blocked during an active run; stale asynchronous file reads cannot overwrite a newer selection.
 
 Wipecord checks each archive entry and scans live DMs and group DMs. Server channels, deleted conversations, and
 channels you can no longer access are skipped with a warning while the queue continues. Old private messages are
@@ -106,7 +116,7 @@ Examples:
 | `^.{1,3}$` | very short messages |
 
 Wipecord matches against the message text *and* the text of forwarded messages and poll questions, so those aren't
-silently missed. A malformed pattern is ignored with a warning rather than deleting everything.
+silently missed. A malformed pattern blocks the run before any API request. Correct or clear it before starting.
 
 ### Messages interval
 

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="images/icon.svg?v=1.2.1" width="80" height="80" alt="Wipecord logo">
+  <img src="images/icon.svg?v=1.3.0" width="80" height="80" alt="Wipecord logo">
   <h1>Wipecord</h1>
   <p>Clean up your Discord messages.</p>
   <p>

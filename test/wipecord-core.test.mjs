@@ -19,6 +19,8 @@ async function importBundled(relativePath) {
 
 const { default: WipecordCore } = await importBundled('../src/wipecord-core.js');
 const { buildPurgePlan } = await importBundled('../src/wipecord-plan.js');
+const { validateFilters, resolveFilters, parseArchive } = await importBundled('../src/validation.js');
+const { default: RunReport } = await importBundled('../src/run-report.js');
 const { getGuildIds, fetchGuildIds } = await importBundled('../src/utils/getIds.js');
 
 function jsonResponse(status, body = {}) {
@@ -27,6 +29,90 @@ function jsonResponse(status, body = {}) {
     headers: { 'content-type': 'application/json' },
   });
 }
+
+test('rejects malformed patterns, invalid calendar dates and reversed effective bounds', () => {
+  for (const options of [
+    { pattern: '[' }, { minId: '2026-02-30T12:00' }, { minId: '2026-10-11T24:00' }, { minId: 'nonsense' },
+    { minId: '90000000000000000', maxId: '90000000000000000' },
+    { minId: '95000000000000000', maxId: '90000000000000000' },
+    { minId: '2026-10-12T12:00', maxId: '2026-10-11T12:00' },
+  ]) assert.throws(() => validateFilters(options));
+  assert.doesNotThrow(() => validateFilters({ pattern: 'hello.*', minId: '2024-02-29T12:00', maxId: '2026-10-11T12:00' }));
+  assert.throws(() => resolveFilters({ minId: '95000000000000000', maxDate: '2015-01-01T00:00:00Z' }));
+  assert.deepEqual(resolveFilters({ minDate: '2015-01-01T00:00:00Z' }), { minId: '2015-01-01T00:00:00Z', maxId: undefined });
+});
+
+test('invalid core filters and batches fail before any request or confirmation', async () => {
+  const originalFetch = globalThis.fetch, originalConfirm = window.confirm;
+  let requests = 0, prompts = 0;
+  globalThis.fetch = async () => { requests++; throw Error('Unexpected request'); };
+  window.confirm = () => { prompts++; return true; };
+  try {
+    for (const method of ['run', 'runBatch']) {
+      const core = new WipecordCore();
+      core.options = { ...core.options, guildId: '22222222222222222', pattern: '[' };
+      await assert.rejects(core[method]([{ guildId: '22222222222222222' }]), /regular expression/);
+      assert.equal(core.busy, false);
+      core.state._messagesToDelete = [];
+      assert.throws(() => core.filterResponse({ messages: [historyMessage('90000000000000000', '33333333333333333', 'private')], total_results: 1 }), /regular expression/);
+    }
+  } finally { globalThis.fetch = originalFetch; window.confirm = originalConfirm; }
+  assert.equal(requests + prompts, 0);
+});
+
+test('archive validation rejects unsafe shapes and keys without exposing labels', () => {
+  for (const text of ['{', 'null', '[]', '42', '{}', '{"bad":"label"}', '{"44444444444444444":{}}', '{"44444444444444444":1}']) assert.throws(() => parseArchive(text));
+  assert.deepEqual(parseArchive('{"44444444444444444":"private label","55555555555555555":null}'), ['44444444444444444', '55555555555555555']);
+});
+
+test('anonymous reports deduplicate outcomes and retain only aggregate data after finishing', () => {
+  const report = new RunReport();
+  report.record('private-message-id', 'ignored'); report.record('private-message-id', 'ignored');
+  report.record('retry-id', 'failed'); report.record('retry-id', 'deleted'); report.record('retry-id', 'alreadyGone');
+  report.record('gone-id', 'alreadyGone'); report.record('failure-id', 'failed');
+  report.end('error'); report.end('stopped'); report.finish();
+  const result = report.snapshot();
+  assert.deepEqual(result.counts, { deleted: 1, ignored: 1, failed: 1, alreadyGone: 1 });
+  assert.equal(result.reason, 'stopped'); assert.equal(result.runErrors, 1);
+  assert.equal(JSON.stringify(result).includes('private-message-id'), false);
+  result.counts.deleted = 99;
+  assert.equal(report.snapshot().counts.deleted, 1);
+});
+
+test('batch summaries accumulate all jobs and separate skipped, missing and failed messages', async () => {
+  const restoreConsole = muteConsole(), originalConfirm = window.confirm;
+  window.confirm = () => true;
+  try {
+    const core = new WipecordCore();
+    core.options = { ...core.options, searchDelay: 0, deleteDelay: 0, jobDelay: 0 };
+    const seen = new Set();
+    core.search = async () => {
+      const id = core.options.guildId;
+      if (seen.has(id)) return { total_results: 0, messages: [] };
+      seen.add(id);
+      return { total_results: 5, messages: [0, 1, 2, 3, 4].map(index => [historyMessage(String(BigInt(id) + BigInt(index)), '33333333333333333', 'private', { hit: true, pinned: index === 4 })]) };
+    };
+    core.deleteMessage = async message => ['DELETED', 'ALREADY_GONE', 'SKIPPED', 'FAILED'][Number(BigInt(message.id) - BigInt(core.options.guildId))];
+    await core.runBatch([{ guildId: '80000000000000000' }, { guildId: '90000000000000000' }]);
+    assert.deepEqual(core.report.counts, { deleted: 2, ignored: 4, failed: 2, alreadyGone: 2 });
+    assert.equal(core.report.reason, 'completed');
+    assert.equal(core.busy, false);
+  } finally { window.confirm = originalConfirm; restoreConsole(); }
+});
+
+test('failed runs report a safe reason without exporting exception or account details', async () => {
+  const restoreConsole = muteConsole();
+  try {
+    const core = new WipecordCore();
+    core.options = { ...core.options, guildId: '22222222222222222', authToken: 'synthetic-secret' };
+    core.search = async () => { throw Error('private-response'); };
+    await assert.rejects(core.run(), /private-response/);
+    assert.equal(core.report.reason, 'error');
+    assert.equal(core.report.runErrors, 1);
+    assert.equal(core.busy, false);
+    assert.equal(/synthetic-secret|private-response|22222222222222222/.test(JSON.stringify(core.report)), false);
+  } finally { restoreConsole(); }
+});
 
 function historyMessage(id, authorId, content, overrides = {}) {
   return {
