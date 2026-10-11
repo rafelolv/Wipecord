@@ -44,23 +44,30 @@ const $ = s => ui.wipecordWindow.querySelector(s);
 
 /** Find the channel-header toolbar using semantics first, then CSS-module fallbacks. */
 function findToolbar() {
-  return document.querySelector('#app-mount section[aria-label="Channel header"] [role="toolbar"]')
-    || document.querySelector('#app-mount section[aria-label="Channel header"] [class*="toolbar_"]')
-    || document.querySelector('#app-mount [class*="upperContainer_"] [class*="toolbar_"]')
-    || document.querySelector('#app-mount section[class*="container_"] [class*="toolbar_"]')
-    || document.querySelector('#app-mount [class*="toolbar_"]')
-    || document.querySelector('#app-mount [class*="-toolbar"]'); // pre-2022 clients
+  const selectors = [
+    '#app-mount section[aria-label="Channel header"] [role="toolbar"]',
+    '#app-mount section[aria-label="Channel header"] [class*="toolbar_"]',
+    '#app-mount [class*="upperContainer_"] [class*="toolbar_"]',
+    '#app-mount section[class*="container_"]:has([class*="children_"]) > [class*="toolbar_"]',
+  ];
+  for (const selector of selectors) {
+    const toolbar = [...document.querySelectorAll(selector)].find(element => element.getClientRects().length);
+    if (toolbar) return toolbar;
+  }
 }
 
-let warnedAboutToolbar = false;
-function mountBtn() {
+let previousToolbar;
+function stableToolbar() {
   const toolbar = findToolbar();
+  const stable = toolbar && toolbar === previousToolbar;
+  previousToolbar = toolbar;
+  return stable ? toolbar : null;
+}
+
+function mountBtn() {
+  const toolbar = stableToolbar();
   if (toolbar) {
     if (!toolbar.contains(ui.wipecordBtn)) toolbar.appendChild(ui.wipecordBtn);
-  }
-  else if (!warnedAboutToolbar) {
-    warnedAboutToolbar = true;
-    console.warn(PREFIX, 'Could not find the Discord toolbar to mount the button on. Open the window with: document.querySelector("#wipecord").style.display = ""');
   }
 }
 
@@ -83,7 +90,7 @@ function initUI() {
   // enable drag and resize on wipecord window
   new Drag({ elm: ui.wipecordWindow, moveHandle: $('.header') });
 
-  // create wipecord Trash icon
+  // Create the Wipecord logo button.
   ui.wipecordBtn = createElm(buttonHtml);
   ui.wipecordBtn.onclick = toggleWindow;
   mountBtn();
@@ -452,6 +459,13 @@ function stopAction() {
   wipecordCore.stop();
 }
 
-export default initUI;
+/** Let Discord finish mounting its header before adding any interface DOM. */
+export default function waitForUI() {
+  const timer = setInterval(() => {
+    if (!document.body || !stableToolbar()) return;
+    clearInterval(timer);
+    initUI();
+  }, 500);
+}
 
 // ---- END Wipecord ----

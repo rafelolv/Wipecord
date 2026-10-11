@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Wipecord
 // @description Bulk-delete your own messages in a Discord channel, DM or server
-// @version     1.3.0
+// @version     1.3.1
 // @author      Rafael (rafelolv)
 // @homepageURL https://github.com/rafelolv/Wipecord
 // @supportURL  https://github.com/rafelolv/Wipecord/issues
@@ -10,7 +10,7 @@
 // @match       https://*.discord.com/login
 // @license     MIT
 // @namespace   https://github.com/rafelolv/Wipecord
-// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.0
+// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.1
 // @downloadURL https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
 // @grant       none
 // @updateURL   https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
@@ -43,7 +43,7 @@ SOFTWARE.
 	'use strict';
 
 	/* rollup-plugin-baked-env */
-	const VERSION = "1.3.0";
+	const VERSION = "1.3.1";
 
 	var themeCss = (`
 /* Self-contained colors keep the panel readable when Discord changes its tokens. */
@@ -2091,23 +2091,30 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 
 	/** Find the channel-header toolbar using semantics first, then CSS-module fallbacks. */
 	function findToolbar() {
-	  return document.querySelector('#app-mount section[aria-label="Channel header"] [role="toolbar"]')
-	    || document.querySelector('#app-mount section[aria-label="Channel header"] [class*="toolbar_"]')
-	    || document.querySelector('#app-mount [class*="upperContainer_"] [class*="toolbar_"]')
-	    || document.querySelector('#app-mount section[class*="container_"] [class*="toolbar_"]')
-	    || document.querySelector('#app-mount [class*="toolbar_"]')
-	    || document.querySelector('#app-mount [class*="-toolbar"]'); // pre-2022 clients
+	  const selectors = [
+	    '#app-mount section[aria-label="Channel header"] [role="toolbar"]',
+	    '#app-mount section[aria-label="Channel header"] [class*="toolbar_"]',
+	    '#app-mount [class*="upperContainer_"] [class*="toolbar_"]',
+	    '#app-mount section[class*="container_"]:has([class*="children_"]) > [class*="toolbar_"]',
+	  ];
+	  for (const selector of selectors) {
+	    const toolbar = [...document.querySelectorAll(selector)].find(element => element.getClientRects().length);
+	    if (toolbar) return toolbar;
+	  }
 	}
 
-	let warnedAboutToolbar = false;
-	function mountBtn() {
+	let previousToolbar;
+	function stableToolbar() {
 	  const toolbar = findToolbar();
+	  const stable = toolbar && toolbar === previousToolbar;
+	  previousToolbar = toolbar;
+	  return stable ? toolbar : null;
+	}
+
+	function mountBtn() {
+	  const toolbar = stableToolbar();
 	  if (toolbar) {
 	    if (!toolbar.contains(ui.wipecordBtn)) toolbar.appendChild(ui.wipecordBtn);
-	  }
-	  else if (!warnedAboutToolbar) {
-	    warnedAboutToolbar = true;
-	    console.warn(PREFIX, 'Could not find the Discord toolbar to mount the button on. Open the window with: document.querySelector("#wipecord").style.display = ""');
 	  }
 	}
 
@@ -2130,7 +2137,7 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	  // enable drag and resize on wipecord window
 	  new DragResize({ elm: ui.wipecordWindow, moveHandle: $('.header') });
 
-	  // create wipecord Trash icon
+	  // Create the Wipecord logo button.
 	  ui.wipecordBtn = createElm(buttonHtml);
 	  ui.wipecordBtn.onclick = toggleWindow;
 	  mountBtn();
@@ -2499,9 +2506,18 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	  wipecordCore.stop();
 	}
 
+	/** Let Discord finish mounting its header before adding any interface DOM. */
+	function waitForUI() {
+	  const timer = setInterval(() => {
+	    if (!document.body || !stableToolbar()) return;
+	    clearInterval(timer);
+	    initUI();
+	  }, 500);
+	}
+
 	// ---- END Wipecord ----
 
-	if (claimRuntime(document, VERSION)) initUI();
+	if (claimRuntime(document, VERSION)) waitForUI();
 	else console.warn('[WIPECORD] Another installation already owns this page. Disable the duplicate and reload.');
 
 })();

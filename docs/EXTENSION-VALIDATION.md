@@ -6,6 +6,7 @@ All messages, session values and responses are synthetic. Fetch is mocked in the
 
 ## Scenarios
 
+- Delayed header mounting leaves the loading screen and unrelated message toolbars untouched. Hidden headers are ignored, and the single logo button follows a visible replacement header without requests or errors.
 - Native MAIN-world execution and unchanged panel mounting, privacy defaults and default request delays.
 - Installation/page load and popup display produce no API requests, confirmation or deletion.
 - Read-only popup readiness, active-run status, duplicate notice, links and unsupported-tab status.

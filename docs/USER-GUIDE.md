@@ -200,14 +200,11 @@ Look for the Wipecord logo in Discord's top-right toolbar, next to the search bo
 If it shows `0`, the `@match` rules didn't fire — make sure you are on `discord.com/channels/...` and not the
 desktop app.
 
-If the script is running but the button isn't there, Discord has probably renamed its toolbar CSS classes again.
-The panel itself still exists — open it directly from the browser console (<kbd>F12</kbd>):
+Wipecord waits for a visible channel header to remain mounted across two checks before creating its interface. It does not initialize on login or loading screens, or attach to message toolbars. Open a conversation or channel and allow a few seconds for the header to finish loading.
 
-```js
-document.querySelector('#wipecord').style.display = ''
-```
+If the button still does not appear, Discord may have changed its header structure. Please [open an issue](https://github.com/rafelolv/Wipecord/issues) with your browser and Wipecord versions and the console error, excluding tokens and private data.
 
-Then please [open an issue](https://github.com/rafelolv/Wipecord/issues) so the selector can be fixed.
+For a locally installed extension, reload Wipecord in your browser's extension manager after rebuilding or replacing its folder, then reload Discord. Refreshing Discord alone does not reload the extension manifest or its cached code.
 
 </details>
 

@@ -10,8 +10,8 @@ import { browserSession, delay, waitFor } from './browser-session.mjs';
 const directory = mkdtempSync(join(tmpdir(), 'wipecord-extensions-'));
 const artifact = readFileSync('wipecord.user.js', 'utf8');
 const author = '11111111111111111', channel = '33333333333333333';
-const fixture = first => `<!doctype html><html><head><meta charset="utf-8"></head><body>
-<div id="app-mount"><section aria-label="Channel header"><div role="toolbar"></div></section></div>
+const fixture = (first, late) => `<!doctype html><html><head><meta charset="utf-8"></head><body>
+<div id="app-mount">${late ? '<div id="message-tools" class="toolbar_message"></div>' : '<section aria-label="Channel header"><div role="toolbar"></div></section>'}</div>
 <script>
 window.requests=[];window.prompts=[];window.errors=[];window.accept=false;window.deleted=[];
 window.addEventListener('error',e=>window.errors.push(e.message));
@@ -35,7 +35,7 @@ window.fetch=async(url,init={})=>{
 </script>${first ? '<script src="/wipecord.user.js"></script>' : ''}</body></html>`;
 const server = createServer((request, response) => {
   response.setHeader('Content-Type', request.url === '/wipecord.user.js' ? 'application/javascript' : 'text/html');
-  response.end(request.url === '/wipecord.user.js' ? artifact : fixture(request.url.includes('userscript-first')));
+  response.end(request.url === '/wipecord.user.js' ? artifact : fixture(request.url.includes('userscript-first'), request.url.includes('late-header')));
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
@@ -57,6 +57,27 @@ try {
     const session = await browserSession(browser, directory, resolve(extension));
     versions.push({ browser, version: session.version });
     try {
+      const loading = await session.createPage();
+      await loading.navigate(url + '?late-header');
+      await waitFor(() => loading.evaluate('!!document.getElementById("wipecord-runtime")'), 'Startup claim missing');
+      await delay(1600);
+      assert.equal(await loading.evaluate('!!document.getElementById("wipecord") || !!document.getElementById("wipecord-btn")'), false, 'Loading screens must not initialize the UI');
+      assert.equal(await loading.evaluate('document.getElementById("message-tools").childElementCount'), 0, 'Message toolbars must remain untouched');
+      await loading.evaluate('document.getElementById("app-mount").insertAdjacentHTML("beforeend", \'<section aria-label="Channel header" style="display:none"><div role="toolbar" id="hidden-toolbar"></div></section><section aria-label="Channel header"><div role="toolbar" id="active-toolbar"></div></section>\')');
+      await waitFor(() => loading.evaluate('!!document.querySelector("#active-toolbar #wipecord-btn")'), 'Late header did not mount');
+      await loading.evaluate('document.getElementById("active-toolbar").parentElement.style.display="none";document.getElementById("app-mount").insertAdjacentHTML("beforeend", \'<section aria-label="Channel header"><div role="toolbar" id="next-toolbar"></div></section>\')');
+      await waitFor(() => loading.evaluate('!!document.querySelector("#next-toolbar #wipecord-btn")'), 'Button did not follow the visible replacement header');
+      assert.equal(await loading.evaluate('document.querySelectorAll("#wipecord").length'), 1);
+      assert.equal(await loading.evaluate('requests.length + prompts.length + errors.length'), 0, 'Startup and header replacement must stay idle without page errors');
+      await loading.navigate(url + '?late-header-reload');
+      await waitFor(() => loading.evaluate('location.search === "?late-header-reload" && !!document.getElementById("message-tools") && !!document.getElementById("wipecord-runtime") && !document.getElementById("next-toolbar")'), 'Reload did not reach its new loading document');
+      await delay(1600);
+      assert.equal(await loading.evaluate('!!document.getElementById("wipecord") || !!document.getElementById("wipecord-btn")'), false, 'Reload must also wait for the real header');
+      await loading.evaluate('document.getElementById("app-mount").insertAdjacentHTML("beforeend", \'<section aria-label="Channel header"><div role="toolbar" id="reloaded-toolbar"></div></section>\')');
+      await waitFor(() => loading.evaluate('!!document.querySelector("#reloaded-toolbar #wipecord-btn")'), 'Reloaded header did not mount');
+      assert.equal(await loading.evaluate('requests.length + prompts.length + errors.length'), 0);
+      checks.push(`${browser}: delayed initialization after load/reload, untouched message toolbars, hidden-header exclusion and visible header replacement`);
+
       const page = await session.createPage();
       await page.navigate(url);
       await waitFor(() => page.evaluate('!!document.getElementById("wipecord-btn")'), `${browser}: extension did not mount`).catch(async error => { console.log(browser, session.events, await page.evaluate('JSON.stringify({errors,marker:!!document.getElementById("wipecord-runtime")})')); throw error; });
@@ -113,6 +134,7 @@ try {
       const second = await session.createPage();
       await second.navigate(url + '?userscript-first');
       await waitFor(() => second.evaluate('document.getElementById("wipecord-runtime")?.dataset.duplicates === "1"'), 'Userscript-first duplicate not detected');
+      await waitFor(() => second.evaluate('!!document.getElementById("wipecord-btn")'), 'Claim owner did not finish delayed initialization');
       assert.equal(await second.evaluate('document.querySelectorAll("#wipecord").length'), 1);
       await second.evaluate(prepare);
       checks.push(`${browser}: both duplicate load orders, one panel and cancelled confirmation`);

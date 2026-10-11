@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.1 — 2026-10-11
+
+- Wait for a visible channel-header toolbar to remain stable across two checks before initializing the interface.
+- Remove unrestricted toolbar fallbacks that could select message controls during Discord startup. Ignore hidden headers and wait for replacement headers to stabilize before moving the logo button.
+- Avoid interface insertion and premature missing-toolbar warnings on login/loading screens. Keep the deletion engine, confirmations, filters and stopping unchanged.
+- Add native extension regressions for delayed headers, unrelated toolbars, hidden headers and channel-header replacement. Rebuild both browser packages from the shared userscript.
+
+The maintainer reported a gray screen after refreshing Discord in Brave Origin Nightly 1.98.28 (Chromium 154.0.8037.58). The supplied log shows early toolbar lookup but does not establish the cause of the gray screen. This startup mitigation still requires a retest in the affected signed-in session; no real messages were deleted during investigation.
+
+Validation: `npm run check` passed 23 mocked unit tests, lint, artifact verification and deterministic, byte-identical browser packages. The userscript fixture passed 21 interaction checks, keyboard controls, dragging/resizing and four viewport/theme checks. All ten native extension scenario groups passed in Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly 1.98.28; the Brave run used a visible temporary Wayland profile with GPU enabled. The authenticated gray-screen report, Edge, minimum browser versions and store installs remain unvalidated.
+
 ## 1.3.0 — 2026-10-11
 
 - Reject malformed regular expressions, invalid calendar dates/times and equal or reversed effective message/date bounds before API access, including direct core and batch entry points.
