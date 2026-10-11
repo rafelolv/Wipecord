@@ -1,0 +1,68 @@
+{
+  "name": "wipecord",
+  "nameFull": "Wipecord",
+  "version": "1.0.0",
+  "description": "Bulk-delete your own messages in a Discord channel, DM or server",
+  "userScript": {
+    "namespace": "https://github.com/rafelolv/Wipecord",
+    "match": [
+      "https://*.discord.com/app",
+      "https://*.discord.com/channels/*",
+      "https://*.discord.com/login"
+    ],
+    "icon": "https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg",
+    "downloadURL": "https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js",
+    "grant": "none",
+    "updateURL": "https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "engines": {
+    "node": ">=24"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafelolv/Wipecord.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rafelolv/Wipecord/issues"
+  },
+  "homepage": "https://github.com/rafelolv/Wipecord",
+  "author": "Rafael (rafelolv)",
+  "main": "wipecord.user.js",
+  "scripts": {
+    "start": "npm run watch",
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "prebuild": "rimraf dist",
+    "test": "npm run lint && npm run test:unit && npm run build",
+    "test:unit": "node --test test/*.test.mjs",
+    "lint": "eslint --ext .js,.mjs src test build scripts rollup.config.mjs",
+    "lint:fix": "eslint --ext .js,.mjs src test --fix",
+    "version": "npm run build",
+    "check": "npm test && node scripts/check-artifact.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "delete",
+    "messages",
+    "discord",
+    "wipe",
+    "purge",
+    "clean",
+    "bulk"
+  ],
+  "devDependencies": {
+    "@rollup/plugin-json": "^6.0.0",
+    "eslint": "^8.36.0",
+    "rimraf": "^4.4.1",
+    "rollup": "^3.20.2",
+    "rollup-plugin-baked-env": "^1.0.1",
+    "rollup-plugin-banner2": "^1.2.2",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-serve": "^2.0.2",
+    "tiny-dedent": "^1.0.2"
+  }
+}
