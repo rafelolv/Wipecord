@@ -194,9 +194,9 @@ or threads you lack permission to reopen, are skipped with an explanation.
 ## Troubleshooting
 
 <details>
-<summary><b>The 🗑️ button doesn't appear</b></summary>
+<summary><b>The Wipecord logo button doesn't appear</b></summary>
 
-First check that the script is actually running: your userscript manager's icon should show `1` on a Discord tab.
+Look for the Wipecord logo in Discord's top-right toolbar, next to the search box. First check that the script is actually running: your userscript manager's icon should show `1` on a Discord tab.
 If it shows `0`, the `@match` rules didn't fire — make sure you are on `discord.com/channels/...` and not the
 desktop app.
 

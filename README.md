@@ -9,7 +9,7 @@
   </p>
 </div>
 
-Wipecord adds a 🗑️ button to Discord in your browser. Choose a conversation or server, filter your messages, and review the target before deleting.
+Wipecord adds a button with the Wipecord logo to Discord's top-right toolbar in your browser. Choose a conversation or server, filter your messages, and review the target before deleting.
 
 **DMs & group chats** · **Server channels** · **Text & date filters** · **Stop controls**
 
@@ -35,7 +35,7 @@ Unpacked Chromium packages remain available in [GitHub releases](https://github.
 ## Quick start
 
 1. Open the channel, DM, or group chat you want to clean.
-2. Click **🗑️** in Discord's top-right toolbar.
+2. Click the **Wipecord logo** in Discord's top-right toolbar, next to the search box.
 3. Click **me** beside **Author ID**, then **current** beside **Channel ID**.
 4. Add a text or date filter if you want to narrow the selection.
 5. Click **Delete messages**, review the confirmation, and accept only if the target is correct.
