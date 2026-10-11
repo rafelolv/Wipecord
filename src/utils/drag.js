@@ -10,7 +10,6 @@ const RESIZE_BR = RESIZE_B + RESIZE_R;
 
 /**
  * Make an element draggable/resizable
- * @author Victor N. wwww.vitim.us
  */
 export default class DragResize {
   constructor({ elm, moveHandle, options }) {
@@ -115,6 +114,7 @@ class Draggable {
     let operation = op === MOVE ? moveOp : resizeOp;
 
     function dragStartHandler(e) {
+      if (op === MOVE && e.target.closest('button, a, input, select, textarea')) return;
       const touch = e.type === 'touchstart';
       if ((e.buttons === 1 || e.which === 1) || touch) {
         e.preventDefault();

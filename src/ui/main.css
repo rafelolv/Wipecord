@@ -1,174 +1,127 @@
-/**** Wipecord Button ****/
 #wipecord-btn {
-    position: relative;
-    width: auto;
-    height: 24px;
-    margin: 0 8px;
-    cursor: pointer;
-    color: var(--interactive-icon-default, var(--interactive-normal));
-    flex: 0 0 auto;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: #101827;
+  cursor: pointer;
+  flex: 0 0 auto;
 }
-
-#wipecord-btn progress {
-    position: absolute;
-    top: 23px;
-    left: -4px;
-    width: 32px;
-    height: 12px;
-    display: none;
-}
-
-#wipecord-btn.running {
-    color: var(--control-critical-primary-background-default, var(--button-danger-background)) !important;
-}
-
-#wipecord-btn.running progress {
-    display: block;
-}
-
-/**** Wipecord Interface ****/
+#wipecord-btn:hover { outline: 2px solid #56e0c5; }
+#wipecord-btn:focus-visible { outline: 2px solid #56e0c5; outline-offset: 3px; }
+#wipecord-btn progress { position: absolute; bottom: -5px; left: 0; width: 32px; height: 3px; display: none; accent-color: #56e0c5; }
+#wipecord-btn.running { box-shadow: 0 0 0 2px #56e0c5; }
+#wipecord-btn.running progress { display: block; }
 #wipecord {
-    position: fixed;
-    z-index: 100;
-    top: 58px;
-    right: 10px;
-    display: flex;
-    flex-direction: column;
-    width: 800px;
-    height: 80vh;
-    min-width: 610px;
-    max-width: 100vw;
-    min-height: 448px;
-    max-height: 100vh;
-    color: var(--text-default, var(--text-normal));
-    border-radius: 4px;
-    background-color: var(--background-base-low, var(--background-secondary));
-    box-shadow: var(--elevation-stroke), var(--elevation-high);
-    will-change: top, left, width, height;
+  position: fixed;
+  z-index: 100;
+  top: 64px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 900px;
+  height: 760px;
+  min-width: min(600px, calc(100vw - 24px));
+  min-height: min(480px, calc(100dvh - 80px));
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 80px);
+  overflow: hidden;
+  border: 1px solid var(--wipe-line);
+  border-radius: 18px;
+  background: var(--wipe-bg);
+  color: var(--wipe-text);
+  box-shadow: 0 24px 80px #0006, 0 4px 20px #0003;
+  font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  isolation: isolate;
 }
-
-#wipecord .header .icon {
-    cursor: pointer;
+#wipecord .header { display: flex; align-items: center; gap: 12px; flex-shrink: 0; min-height: 80px; padding: 16px 22px; border-bottom: 1px solid var(--wipe-line); cursor: grab; }
+#wipecord.drag .header { cursor: grabbing; }
+#wipecord .brand-mark { flex-shrink: 0; }
+#wipecord .brand-copy { flex: 1; min-width: 0; }
+#wipecord .brand-copy h3 { font-size: 20px; font-weight: 650; letter-spacing: -.6px; color: var(--wipe-text); }
+#wipecord .brand-copy p { margin-top: 1px; font-size: 11px; color: var(--wipe-muted); }
+#wipecord .version { color: var(--wipe-muted); font: 11px ui-monospace, monospace; }
+#wipecord .icon-button { width: 32px; height: 32px; padding: 0; }
+#wipecord #hide { border: 0; background: transparent; color: var(--wipe-muted); font-size: 24px; font-weight: 400; }
+#wipecord .window-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+#wipecord .sidebar { flex: 0 0 322px; width: 322px; min-width: 0; overflow-y: auto; padding: 22px 18px; border-right: 1px solid var(--wipe-line); background: var(--wipe-panel); }
+#wipecord .eyebrow { display: block; margin-bottom: 5px; color: var(--wipe-accent); font: 10px/1.5 ui-monospace, monospace; letter-spacing: 1.3px; }
+#wipecord h4 { font-size: 16px; font-weight: 600; letter-spacing: -.3px; }
+#wipecord .sidebar-intro { margin: 0 3px 20px; }
+#wipecord .settings-section { margin-bottom: 8px; border: 1px solid var(--wipe-line); border-radius: 10px; overflow: hidden; }
+#wipecord summary { position: relative; display: block; padding: 13px 32px 13px 13px; color: var(--wipe-text); font-size: 12px; font-weight: 600; cursor: pointer; list-style: none; }
+#wipecord summary::-webkit-details-marker { display: none; }
+#wipecord summary::after { content: "+"; position: absolute; top: 11px; right: 13px; color: var(--wipe-muted); font-size: 16px; font-weight: 400; }
+#wipecord details[open] > summary::after { content: "−"; }
+#wipecord summary:hover { background: var(--wipe-hover); }
+#wipecord .section-body { padding: 0 13px 15px; }
+#wipecord .section-body > .sectionDescription:first-child { margin: 0 0 16px; }
+#wipecord .field { margin-bottom: 16px; }
+#wipecord .field:last-child { margin-bottom: 0; }
+#wipecord .field-heading { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 7px; }
+#wipecord .field-heading label { color: var(--wipe-text); font-size: 11px; font-weight: 600; }
+#wipecord .field-heading a { font-size: 10px; color: var(--wipe-muted); }
+#wipecord .multiInput { display: flex; align-items: center; gap: 5px; min-width: 0; }
+#wipecord .multiInput input { flex: 1; min-width: 0; }
+#wipecord .multiInput button { padding: 6px 8px; min-height: 40px; font-size: 11px; }
+#wipecord .range-row { display: flex; align-items: center; gap: 10px; }
+#wipecord .range-row div { min-width: 60px; color: var(--wipe-accent); text-align: right; font: 11px ui-monospace, monospace; }
+#wipecord .info { display: flex; justify-content: space-between; margin: 20px 3px 0; font-size: 11px; }
+#wipecord .info a { color: var(--wipe-muted); }
+#wipecord .main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
+#wipecord.hide-sidebar .sidebar { display: none; }
+#wipecord .activity-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 22px 24px 16px; flex-shrink: 0; }
+#wipecord .quiet-button { background: transparent; border-color: transparent; color: var(--wipe-muted); }
+#wipecord .action-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 24px 16px; flex-shrink: 0; }
+#wipecord .action-buttons { display: flex; align-items: center; gap: 6px; }
+#wipecord #start { min-height: 38px; padding: 8px 18px; border-color: var(--wipe-accent); background: var(--wipe-accent); color: var(--wipe-accent-ink); font-size: 13px; }
+#wipecord #start:hover:not(:disabled) { filter: brightness(1.08); }
+#wipecord #stop { min-height: 38px; color: var(--wipe-danger); }
+#wipecord #stop:not(:disabled) { border-color: var(--wipe-danger); }
+#wipecord .privacy-control { font-size: 11px; }
+#wipecord .safety-note { display: flex; align-items: center; gap: 9px; margin: 0 24px 16px; padding: 10px 12px; border: 1px solid var(--wipe-line); border-radius: 8px; color: var(--wipe-muted); font-size: 11px; line-height: 1.5; flex-shrink: 0; }
+#wipecord .safety-note span { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex-shrink: 0; border: 1px solid var(--wipe-warning); border-radius: 50%; color: var(--wipe-warning); font: bold 10px system-ui, sans-serif; }
+#wipecord #progressBar { width: calc(100% - 48px); min-height: 5px; height: 5px; margin: 0 24px 10px; accent-color: var(--wipe-accent); flex-shrink: 0; }
+#wipecord #logArea { position: relative; flex: 1; min-height: 0; overflow: auto; padding: 12px 24px 24px; white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.65 ui-monospace, "SFMono-Regular", Consolas, monospace; user-select: text; }
+#wipecord #logArea:has(.empty-state) { display: flex; align-items: center; justify-content: center; }
+#wipecord .empty-state { width: 100%; padding: 25px 0; text-align: center; white-space: normal; font-family: system-ui, sans-serif; }
+#wipecord .empty-icon { display: inline-flex; align-items: center; justify-content: center; width: 76px; height: 76px; margin-bottom: 20px; border: 1px solid var(--wipe-line); border-radius: 24px; background: var(--wipe-panel); }
+#wipecord .empty-icon svg { width: 48px; height: 48px; }
+#wipecord .empty-state h4 { font-size: 20px; }
+#wipecord .empty-state p { margin-top: 10px; color: var(--wipe-muted); font-size: 12px; line-height: 1.8; }
+#wipecord .empty-steps { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin-top: 24px; color: var(--wipe-muted); font-size: 10px; }
+#wipecord .footer { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; padding: 12px 24px; border-top: 1px solid var(--wipe-line); flex-shrink: 0; }
+#wipecord #progressPercent { flex: 1; min-width: 0; color: var(--wipe-muted); font: 10px/1.6 ui-monospace, monospace; overflow-wrap: anywhere; }
+#wipecord .footer .check { flex-shrink: 0; font-size: 10px; }
+#wipecord .resize-handle { position: absolute; right: 8px; bottom: 8px; width: 10px; height: 10px; border-right: 2px solid var(--wipe-line); border-bottom: 2px solid var(--wipe-line); cursor: nwse-resize; }
+@media (max-width: 640px) {
+  #wipecord { top: 12px; right: 12px; width: calc(100vw - 24px); height: calc(100dvh - 24px); min-width: 0; min-height: 0; max-height: calc(100dvh - 24px); border-radius: 14px; }
+  #wipecord .header { min-height: 68px; padding: 12px 16px; }
+  #wipecord .brand-copy h3 { font-size: 18px; }
+  #wipecord .brand-copy p { font-size: 10px; }
+  #wipecord .version { display: none; }
+  #wipecord .window-body { flex-direction: column; }
+  #wipecord .sidebar { flex: 1 1 45%; width: 100%; min-height: 0; border-right: 0; border-bottom: 1px solid var(--wipe-line); padding: 16px; }
+  #wipecord .sidebar-intro { margin-bottom: 12px; }
+  #wipecord .main { flex: 0 0 300px; min-height: 280px; }
+  #wipecord .section-body > .sectionDescription:first-child { display: none; }
+  #wipecord .activity-heading { padding: 14px 16px 10px; }
+  #wipecord .action-bar { padding: 0 16px 12px; gap: 8px; }
+  #wipecord .safety-note { margin: 0 16px 12px; }
+  #wipecord #logArea { padding: 8px 16px 16px; }
+  #wipecord .empty-state { padding: 12px 0; }
+  #wipecord .empty-icon, #wipecord .empty-steps { display: none; }
+  #wipecord .empty-state h4 { font-size: 16px; }
+  #wipecord .footer { padding: 10px 16px; }
 }
-
-#wipecord .window-body {
-    height: calc(100% - 48px);
-}
-
-#wipecord .sidebar {
-    overflow: hidden scroll;
-    overflow-y: auto;
-    width: 270px;
-    min-width: 250px;
-    height: 100%;
-    max-height: 100%;
-    padding: 8px;
-    background: var(--bg-overlay-4, var(--background-base-lowest));
-}
-
-#wipecord .sidebar legend,
-#wipecord .sidebar label {
-    display: block;
-    width: 100%;
-}
-
-#wipecord .main {
-    display: flex;
-    max-width: calc(100% - 250px);
-    background-color: var(--bg-overlay-chat, var(--background-base-lower));
-    flex-grow: 1;
-}
-
-#wipecord.hide-sidebar .sidebar {
-    display: none;
-}
-
-#wipecord.hide-sidebar .main {
-    max-width: 100%;
-}
-
-#wipecord #logArea {
-    font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
-    font-size: 0.75rem;
-    overflow: auto;
-    padding: 10px;
-    user-select: text;
-    flex-grow: 1;
-    flex-grow: 1;
-    cursor: auto;
-}
-
-#wipecord .tbar {
-    padding: 8px;
-    background-color: var(--bg-overlay-2, var(--__header-bar-background));
-}
-
-#wipecord .tbar button {
-    margin-right: 4px;
-    margin-bottom: 4px;
-}
-
-#wipecord .footer {
-    cursor: se-resize;
-    padding-right: 30px;
-}
-
-#wipecord .footer #progressPercent {
-    padding: 0 1em;
-    font-size: small;
-    color: var(--interactive-muted);
-    flex-grow: 1;
-}
-
-.resize-handle {
-    position: absolute;
-    bottom: -15px;
-    right: -15px;
-    width: 30px;
-    height: 30px;
-    transform: rotate(-45deg);
-    background: repeating-linear-gradient(0, var(--border-subtle, var(--background-modifier-accent)), var(--border-subtle, var(--background-modifier-accent)) 1px, transparent 2px, transparent 4px);
-    cursor: nwse-resize;
-}
-
-/**** Elements ****/
-#wipecord summary {
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 20px;
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 2px;
-    padding: 6px 10px;
-    cursor: pointer;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: var(--interactive-icon-default, var(--interactive-normal));
-    border-radius: 4px;
-    flex-shrink: 0;
-}
-
-#wipecord fieldset {
-    padding-left: 8px;
-}
-
-#wipecord legend a {
-    float: right;
-    text-transform: initial;
-}
-
-#wipecord progress {
-    height: 8px;
-    margin-top: 4px;
-    flex-grow: 1;
-}
-
-#wipecord .importJson {
-    display: flex;
-    flex-direction: row;
-}
-
-#wipecord .importJson button {
-    margin-left: 5px;
-    width: fit-content;
+@media (max-height: 560px) and (max-width: 640px) {
+  #wipecord .main { flex-basis: 200px; min-height: 200px; }
+  #wipecord .safety-note { display: none; }
+  #wipecord .empty-state p { display: none; }
 }

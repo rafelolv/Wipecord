@@ -1,253 +1,56 @@
-<div id="wipecord" class="browser container redact" style="display:none;">
-    <div class="header">
-        <svg class="icon" aria-hidden="false" width="24" height="24" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M15 3.999V2H9V3.999H3V5.999H21V3.999H15Z"></path>
-            <path fill="currentColor"
-                d="M5 6.99902V18.999C5 20.101 5.897 20.999 7 20.999H17C18.103 20.999 19 20.101 19 18.999V6.99902H5ZM11 17H9V11H11V17ZM15 17H13V11H15V17Z">
-            </path>
-        </svg>
-        <h3>Wipecord</h3>
-        <div class="vert-divider"></div>
-        <span> Bulk delete messages</span>
-        <div class="spacer"></div>
-        <div id="hide" class="icon" aria-label="Close" role="button" tabindex="0">
-            <svg aria-hidden="false" width="24" height="24" viewBox="0 0 24 24">
-                <path fill="currentColor"
-                    d="M18.4 4L12 10.4L5.6 4L4 5.6L10.4 12L4 18.4L5.6 20L12 13.6L18.4 20L20 18.4L13.6 12L20 5.6L18.4 4Z">
-                </path>
-            </svg>
-        </div>
+<div id="wipecord" class="browser container redact" role="dialog" aria-labelledby="wipecord-title" style="display:none;">
+  <div class="header">
+    <svg class="brand-mark" aria-hidden="true" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <title>Wipecord — erase messages</title>
+  <rect width="128" height="128" rx="28" fill="#101827"/>
+  <path d="M85 27H37c-7 0-12 5-12 12v27c0 7 5 12 12 12h3v13l17-13h28c7 0 12-5 12-12V39c0-7-5-12-12-12Z" stroke="#F2F6FC" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M40 44h29M40 58h16" stroke="#F2F6FC" stroke-width="6" stroke-linecap="round"/>
+  <path d="M79 44h3M66 58h3" stroke="#56E0C5" stroke-width="6" stroke-linecap="round"/>
+  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#101827" stroke="#101827" stroke-width="10" stroke-linejoin="round"/>
+  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#56E0C5"/>
+  <path d="m63 90 8-9 27 24-9 6H75L63 100c-3-3-3-7 0-10Z" fill="#F2F6FC"/>
+  <path d="m71 81 27 24" stroke="#101827" stroke-width="4"/>
+  <path d="M59 112h50" stroke="#56E0C5" stroke-width="4" stroke-linecap="round"/>
+</svg>
+
+    <div class="brand-copy"><h3 id="wipecord-title">Wipecord</h3><p>A fresh start for your messages.</p></div>
+    <span class="version">v{{VERSION}}</span>
+    <button id="hide" type="button" class="icon-button" aria-label="Close Wipecord" title="Close">×</button>
+  </div>
+  <div class="window-body">
+    <div class="sidebar scroll" aria-label="Cleanup settings">
+      <div class="sidebar-intro"><span class="eyebrow">01 / SETUP</span><h4>Choose what to clean</h4></div>
+      <details class="settings-section" open><summary>Where to clean</summary><div class="section-body"><p class="sectionDescription">Choose your messages and where to look.</p><div class="field"><div class="field-heading"><label for="authorId">Author ID</label><a href="{{WIKI}}#author-id" target="_blank" rel="noopener noreferrer" aria-label="Help with author id">Help</a></div><div class="multiInput"><input id="authorId" type="text" placeholder="Your user ID" aria-describedby="authorId-hint" priv><button id="getAuthor" type="button">me</button></div><p class="sectionDescription" id="authorId-hint">Use <strong>me</strong> to select your own messages.</p></div><div class="field"><div class="field-heading"><label for="guildId">Server ID</label><a href="{{WIKI}}#server-id" target="_blank" rel="noopener noreferrer" aria-label="Help with server id">Help</a></div><div class="multiInput"><input id="guildId" type="text" placeholder="Server ID or @me"  priv><button id="getGuild" type="button">current</button><button id="getGuilds" type="button" title="Load every server on your account">all</button></div></div><div class="field"><div class="field-heading"><label for="channelId">Channel ID</label><a href="{{WIKI}}#channel-id" target="_blank" rel="noopener noreferrer" aria-label="Help with channel id">Help</a></div><div class="multiInput"><input id="channelId" type="text" placeholder="Channel or conversation ID" aria-describedby="channelId-hint" priv><button id="getChannel" type="button">current</button></div><p class="sectionDescription" id="channelId-hint">Use <strong>current</strong> for this chat. An empty channel field selects the whole server.</p></div><label class="check"><input id="includeNsfw" type="checkbox">Include NSFW channels</label></div></details>
+      <details class="settings-section" ><summary>Filter messages</summary><div class="section-body"><div class="field"><div class="field-heading"><label for="search">Containing text</label><a href="{{WIKI}}#filter" target="_blank" rel="noopener noreferrer" aria-label="Help with filter">Help</a></div><input id="search" type="text" placeholder="Find words or a phrase"  priv></div><div class="check-list"><label class="check"><input id="hasLink" type="checkbox">Only messages with links</label><label class="check"><input id="hasFile" type="checkbox">Only messages with files</label><label class="check"><input id="includePinned" type="checkbox">Include pinned messages</label></div><div class="field"><div class="field-heading"><label for="pattern">Pattern (optional)</label><a href="{{WIKI}}#pattern" target="_blank" rel="noopener noreferrer" aria-label="Help with pattern">Help</a></div><input id="pattern" type="text" placeholder="Regular expression"  priv><p class="sectionDescription" id="pattern-hint">Use a regular expression for more specific matches.</p></div></div></details>
+      <details class="settings-section" ><summary>Date & message range</summary><div class="section-body"><div class="field"><div class="field-heading"><label for="minDate">After date</label><a href="{{WIKI}}#date-interval" target="_blank" rel="noopener noreferrer" aria-label="Help with date interval">Help</a></div><input id="minDate" type="datetime-local"></div><div class="field"><div class="field-heading"><label for="maxDate">Before date</label><a href="{{WIKI}}#date-interval" target="_blank" rel="noopener noreferrer" aria-label="Help with date interval">Help</a></div><input id="maxDate" type="datetime-local"></div><details class="settings-section" ><summary>Use message IDs instead</summary><div class="section-body"><div class="field"><div class="field-heading"><label for="minId">After message</label><a href="{{WIKI}}#messages-interval" target="_blank" rel="noopener noreferrer" aria-label="Help with messages interval">Help</a></div><div class="multiInput"><input id="minId" type="text" placeholder="Message ID"  priv><button id="pickMessageAfter" type="button">Pick</button></div></div><div class="field"><div class="field-heading"><label for="maxId">Before message</label><a href="{{WIKI}}#messages-interval" target="_blank" rel="noopener noreferrer" aria-label="Help with messages interval">Help</a></div><div class="multiInput"><input id="maxId" type="text" placeholder="Message ID"  priv><button id="pickMessageBefore" type="button">Pick</button></div></div><p class="sectionDescription">Message IDs take priority over dates. Leave empty to use dates.</p></div></details></div></details>
+      <details class="settings-section" ><summary>Advanced settings</summary><div class="section-body"><div class="field"><div class="field-heading"><label for="searchDelay">Search delay</label><a href="{{WIKI}}#delays" target="_blank" rel="noopener noreferrer" aria-label="Help with delays">Help</a></div><div class="range-row"><input id="searchDelay" type="range" value="2000" step="100" min="100" max="60000"><div id="searchDelayValue"></div></div></div><div class="field"><div class="field-heading"><label for="deleteDelay">Delete delay</label><a href="{{WIKI}}#delays" target="_blank" rel="noopener noreferrer" aria-label="Help with delays">Help</a></div><div class="range-row"><input id="deleteDelay" type="range" value="1000" step="50" min="50" max="10000"><div id="deleteDelayValue"></div></div><p class="sectionDescription" id="deleteDelay-hint">Default delays are a good starting point. Wipecord waits when Discord asks it to slow down.</p></div><div class="field"><div class="field-heading"><label for="token">Authorization token</label><a href="{{WIKI}}#authorization-token" target="_blank" rel="noopener noreferrer" aria-label="Help with authorization token">Help</a></div><div class="multiInput"><input id="token" type="password" autocomplete="off" placeholder="Detected when you start" priv><button id="getToken" type="button">fill</button></div><p class="sectionDescription" id="token-hint">Usually detected automatically. Never share your token.</p></div></div></details>
+      <details class="settings-section" ><summary>Wipe Archive</summary><div class="section-body"><div class="field"><div class="field-heading"><label for="importJsonInput">Import conversations</label><a href="{{WIKI}}#wipe-a-discord-data-archive" target="_blank" rel="noopener noreferrer" aria-label="Help with wipe a discord data archive">Help</a></div><input type="file" id="importJsonInput" accept="application/json,.json"><p class="sectionDescription" id="importJsonInput-hint">Choose <code>messages/index.json</code> from your Discord data archive. Review the loaded targets before starting.</p></div></div></details>
+      <div class="info"><a href="{{HOME}}" target="_blank" rel="noopener noreferrer">GitHub</a><a href="{{WIKI}}" target="_blank" rel="noopener noreferrer">User guide ↗</a></div>
     </div>
-    <div class="window-body" style="display: flex; flex-direction: row;">
-        <div class="sidebar scroll">
-            <details open>
-                <summary>General</summary>
-                <fieldset>
-                    <legend>
-                        Author ID
-                        <a href="{{WIKI}}#author-id" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="multiInput">
-                        <div class="input-wrapper">
-                            <input class="input" id="authorId" type="text" priv>
-                        </div>
-                        <button id="getAuthor">me</button>
-                    </div>
-                </fieldset>
-                <hr>
-                <fieldset>
-                    <legend>
-                        Server ID
-                        <a href="{{WIKI}}#server-id" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="multiInput">
-                        <div class="input-wrapper">
-                            <input class="input" id="guildId" type="text" priv>
-                        </div>
-                        <button id="getGuild">current</button>
-                        <button id="getGuilds" title="Load all servers" aria-label="Load all servers">all</button>
-                    </div>
-                </fieldset>
-                <fieldset>
-                    <legend>
-                        Channel ID
-                        <a href="{{WIKI}}#channel-id" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="multiInput mb1">
-                        <div class="input-wrapper">
-                            <input class="input" id="channelId" type="text" priv>
-                        </div>
-                        <button id="getChannel">current</button>
-                    </div>
-                    <div class="sectionDescription">
-                        <label class="row"><input id="includeNsfw" type="checkbox">Include NSFW channels</label>
-                    </div>
-                </fieldset>
-            </details>
-            <details>
-                <summary>Wipe Archive</summary>
-                <fieldset>
-                    <legend>
-                        Import index.json
-                        <a href="{{WIKI}}#wipe-a-discord-data-archive" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="input-wrapper">
-                        <input type="file" id="importJsonInput" accept="application/json,.json" style="width:100%";>
-                    </div>
-                    <div class="sectionDescription">
-                        <br>
-                        After requesting your data from discord, you can import it here.<br>
-                        Select the "messages/index.json" file from the discord archive.
-                    </div>
-                </fieldset>
-            </details>
-            <hr>
-            <details>
-                <summary>Filter</summary>
-                <fieldset>
-                    <legend>
-                        Search
-                        <a href="{{WIKI}}#filter" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="input-wrapper">
-                        <input id="search" type="text" placeholder="Containing text" priv>
-                    </div>
-                    <div class="sectionDescription">
-                        Only delete messages that contain the text
-                    </div>
-                    <div class="sectionDescription">
-                        <label><input id="hasLink" type="checkbox">has: link</label>
-                    </div>
-                    <div class="sectionDescription">
-                        <label><input id="hasFile" type="checkbox">has: file</label>
-                    </div>
-                    <div class="sectionDescription">
-                        <label><input id="includePinned" type="checkbox">Include pinned</label>
-                    </div>
-                </fieldset>
-                <hr>
-                <fieldset>
-                    <legend>
-                        Pattern
-                        <a href="{{WIKI}}#pattern" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="sectionDescription">
-                        Delete messages that match the regular expression
-                    </div>
-                    <div class="input-wrapper">
-                        <span class="info">/</span>
-                        <input id="pattern" type="text" placeholder="regular expression" priv>
-                        <span class="info">/</span>
-                    </div>
-                </fieldset>
-            </details>
-            <details>
-                <summary>Messages interval</summary>
-                <fieldset>
-                    <legend>
-                        Interval of messages
-                        <a href="{{WIKI}}#messages-interval" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="multiInput mb1">
-                        <div class="input-wrapper">
-                            <input id="minId" type="text" placeholder="After a message" priv>
-                        </div>
-                        <button id="pickMessageAfter">Pick</button>
-                    </div>
-                    <div class="multiInput">
-                        <div class="input-wrapper">
-                            <input id="maxId" type="text" placeholder="Before a message" priv>
-                        </div>
-                        <button id="pickMessageBefore">Pick</button>
-                    </div>
-                    <div class="sectionDescription">
-                        Specify an interval to delete messages.
-                    </div>
-                </fieldset>
-            </details>
-            <details>
-                <summary>Date interval</summary>
-                <fieldset>
-                    <legend>
-                        After date
-                        <a href="{{WIKI}}#date-interval" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="input-wrapper mb1">
-                        <input id="minDate" type="datetime-local" title="Messages posted AFTER this date">
-                    </div>
-                    <legend>
-                        Before date
-                        <a href="{{WIKI}}#date-interval" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="input-wrapper">
-                        <input id="maxDate" type="datetime-local" title="Messages posted BEFORE this date">
-                    </div>
-                    <div class="sectionDescription">
-                        Delete messages that were posted between the two dates.
-                    </div>
-                    <div class="sectionDescription">
-                        * Filtering by date doesn't work if you use the "Messages interval".
-                    </div>
-                </fieldset>
-            </details>
-            <hr>
-            <details>
-                <summary>Advanced settings</summary>
-                <fieldset>
-                    <legend>
-                        Search delay
-                        <a href="{{WIKI}}#delays" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="input-wrapper">
-                        <input id="searchDelay" type="range" value="2000" step="100" min="100" max="60000">
-                        <div id="searchDelayValue"></div>
-                    </div>
-                </fieldset>
-                <fieldset>
-                    <legend>
-                        Delete delay
-                        <a href="{{WIKI}}#delays" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="input-wrapper">
-                        <input id="deleteDelay" type="range" value="1000" step="50" min="50" max="10000">
-                        <div id="deleteDelayValue"></div>
-                    </div>
-                    <br>
-                    <div class="sectionDescription">
-                        This will affect the speed in which the messages are deleted.
-                        Use the help link for more information.
-                    </div>
-                </fieldset>
-                <hr>
-                <fieldset>
-                    <legend>
-                        Authorization Token
-                        <a href="{{WIKI}}#authorization-token" title="Help" target="_blank" rel="noopener noreferrer">help</a>
-                    </legend>
-                    <div class="multiInput">
-                        <div class="input-wrapper">
-                            <input class="input" id="token" type="text" autocomplete="dont" priv>
-                        </div>
-                        <button id="getToken">fill</button>
-                    </div>
-                </fieldset>
-            </details>
-            <hr>
-            <div></div>
-            <div class="info">
-                Wipecord {{VERSION}}
-                <br> <a href="{{HOME}}" target="_blank" rel="noopener noreferrer">GitHub</a>
-            </div>
-        </div>
-        <div class="main col">
-            <div class="tbar col">
-                <div class="row">
-                    <button id="toggleSidebar" class="sizeMedium icon">☰</button>
-                    <button id="start" class="sizeMedium danger" style="width: 150px;" title="Start the deletion process">▶︎ Delete</button>
-                    <button id="stop" class="sizeMedium" title="Stop the deletion process" disabled>🛑 Stop</button>
-                    <button id="clear" class="sizeMedium">Clear log</button>
-                    <label class="row" title="Hide sensitive information on your screen for taking screenshots">
-                        <input id="redact" type="checkbox" checked> Streamer mode
-                    </label>
-                </div>
-                <div class="row">
-                    <progress id="progressBar" style="display:none;"></progress>
-                </div>
-            </div>
-            <pre id="logArea" class="logarea scroll">
-                <center>
-                    <div>Star <a href="{{HOME}}" target="_blank" rel="noopener noreferrer">this project</a> on GitHub!</div>
-                    <div><a href="{{HOME}}/issues" target="_blank" rel="noopener noreferrer">Report an issue</a></div>
-                </center>
-            </pre>
-            <div class="tbar footer row">
-                <div id="progressPercent"></div>
-                <span class="spacer"></span>
-                <label>
-                    <input id="autoScroll" type="checkbox" checked> Auto scroll
-                </label>
-                <div class="resize-handle"></div>
-            </div>
-        </div>
+    <div class="main col">
+      <div class="activity-heading"><div><span class="eyebrow">02 / CLEANUP</span><h4>Activity</h4></div><button id="clear" type="button" class="quiet-button">Clear log</button></div>
+      <div class="tbar action-bar">
+        <div class="action-buttons"><button id="toggleSidebar" type="button" class="icon-button" aria-label="Hide settings" aria-expanded="true" title="Toggle settings">☰</button><button id="start" type="button" class="danger" title="Review the target before deleting">▶︎ Delete</button><button id="stop" type="button" title="Stop the deletion process" disabled>■ Stop</button></div>
+        <label class="check privacy-control" title="Hide IDs and message contents on your screen"><input id="redact" type="checkbox" checked>Streamer mode</label>
+      </div>
+      <p class="safety-note"><span aria-hidden="true">!</span>Deletion is permanent. Review the confirmation before you begin.</p>
+      <progress id="progressBar" aria-label="Cleanup progress" style="display:none;"></progress>
+      <div id="logArea" class="logarea scroll" role="log" aria-label="Cleanup activity" aria-live="off">
+        <div class="empty-state"><div class="empty-icon" aria-hidden="true"><svg class="brand-mark" aria-hidden="true" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <title>Wipecord — erase messages</title>
+  <rect width="128" height="128" rx="28" fill="#101827"/>
+  <path d="M85 27H37c-7 0-12 5-12 12v27c0 7 5 12 12 12h3v13l17-13h28c7 0 12-5 12-12V39c0-7-5-12-12-12Z" stroke="#F2F6FC" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M40 44h29M40 58h16" stroke="#F2F6FC" stroke-width="6" stroke-linecap="round"/>
+  <path d="M79 44h3M66 58h3" stroke="#56E0C5" stroke-width="6" stroke-linecap="round"/>
+  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#101827" stroke="#101827" stroke-width="10" stroke-linejoin="round"/>
+  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#56E0C5"/>
+  <path d="m63 90 8-9 27 24-9 6H75L63 100c-3-3-3-7 0-10Z" fill="#F2F6FC"/>
+  <path d="m71 81 27 24" stroke="#101827" stroke-width="4"/>
+  <path d="M59 112h50" stroke="#56E0C5" stroke-width="4" stroke-linecap="round"/>
+</svg>
+</div><h4>Ready when you are.</h4><p>Choose a chat, select your messages,<br>then review and start your cleanup.</p><div class="empty-steps"><span>1. Choose</span><span>2. Review</span><span>3. Clean</span></div></div>
+      </div>
+      <div class="tbar footer"><div id="progressPercent" role="status"></div><label class="check"><input id="autoScroll" type="checkbox" checked>Auto scroll</label><div class="resize-handle" aria-hidden="true"></div></div>
     </div>
+  </div>
 </div>

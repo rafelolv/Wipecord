@@ -1,7 +1,7 @@
 {
   "name": "wipecord",
   "nameFull": "Wipecord",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Bulk-delete your own messages in a Discord channel, DM or server",
   "userScript": {
     "namespace": "https://github.com/rafelolv/Wipecord",
@@ -39,7 +39,8 @@
     "lint": "eslint --ext .js,.mjs src test build scripts rollup.config.mjs",
     "lint:fix": "eslint --ext .js,.mjs src test --fix",
     "version": "npm run build",
-    "check": "npm test && node scripts/check-artifact.mjs"
+    "check": "npm test && node scripts/check-artifact.mjs",
+    "test:ui:browser": "node scripts/check-ui-browser.mjs"
   },
   "files": [
     "dist"

@@ -21,6 +21,12 @@ Detailed settings and troubleshooting for the Discord web app. For installation 
 
 </details>
 
+## Panel layout
+
+The settings sidebar contains **Where to clean**, **Filter messages**, **Date & message range**, **Advanced settings**, and **Wipe Archive**. Only target settings are expanded initially. Message-ID bounds are inside **Date & message range → Use message IDs instead**.
+
+The **Activity** area shows the log and progress. Use **☰** to hide or restore settings, **Delete** to begin with a confirmation, and **Stop** to end a run. Disabled actions stay visible. **Clear log** clears the display; it does not stop an active cleanup. Streamer mode starts enabled. The panel supports light/dark themes, narrow screens, dragging and resizing.
+
 ## The panel, field by field
 
 ### Author ID

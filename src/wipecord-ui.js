@@ -23,7 +23,7 @@ import { replaceInterpolations, msToHMS, escapeHTML, isSnowflake } from './utils
 
 // links
 const HOME = 'https://github.com/rafelolv/Wipecord';
-const WIKI = 'https://github.com/rafelolv/Wipecord'; // help links append a README anchor
+const WIKI = 'https://github.com/rafelolv/Wipecord/blob/main/docs/USER-GUIDE.md';
 
 const wipecordCore = new WipecordCore();
 messagePicker.init();
@@ -110,10 +110,17 @@ function initUI() {
 
   // register event listeners
   $('#hide').onclick = toggleWindow;
-  $('#toggleSidebar').onclick = ()=> ui.wipecordWindow.classList.toggle('hide-sidebar');
+  $('#toggleSidebar').onclick = () => {
+    const hidden = ui.wipecordWindow.classList.toggle('hide-sidebar');
+    $('#toggleSidebar').setAttribute('aria-expanded', String(!hidden));
+    $('#toggleSidebar').setAttribute('aria-label', hidden ? 'Show settings' : 'Hide settings');
+  };
   $('button#start').onclick = startAction;
   $('button#stop').onclick = stopAction;
-  $('button#clear').onclick = () => ui.logArea.innerHTML = '';
+  const emptyState = ui.logArea.innerHTML;
+  $('button#clear').onclick = () => {
+    ui.logArea.innerHTML = wipecordCore.busy ? '<div class="log log-verb">Log cleared. Cleanup is still running.</div>' : emptyState;
+  };
   // Only overwrite a field when we actually found something, otherwise a failed
   // lookup wipes what the user typed (or stamps it with "undefined").
   const fillField = (selector, value) => { if (value) $(selector).value = value; };
@@ -150,7 +157,8 @@ function initUI() {
     fillField('input#guildId', getGuildId());
   };
   $('#redact').onchange = () => {
-    const b = ui.wipecordWindow.classList.toggle('redact');
+    const b = $('#redact').checked;
+    ui.wipecordWindow.classList.toggle('redact', b);
     if (b) alert('This mode will attempt to hide personal information, so you can screen share / take screenshots.\nAlways double check you are not sharing sensitive information!');
   };
   $('#pickMessageAfter').onclick = async () => {
@@ -236,6 +244,7 @@ function printLog(type = '', args) {
     return o;
   }).join('\t');
 
+  ui.logArea.querySelector('.empty-state')?.remove();
   ui.logArea.insertAdjacentHTML('beforeend', `<div class="log log-${type}">${line}</div>`);
 
   if (ui.logArea.childElementCount > MAX_LOG_LINES) {

@@ -6,6 +6,8 @@ Wipecord is maintained on `main` at https://github.com/rafelolv/Wipecord.
 
 Use Node.js 24 LTS and `npm ci`. Run `npm run check` after changes: it lints source/build/test files, executes the tests against bundled source with mocked APIs, builds the userscript, checks syntax, and verifies metadata, license inclusion and deterministic output. CI also rejects an artifact that differs from the committed version.
 
+For UI changes, run `npm run test:ui:browser` with Chrome/Chromium installed (`CHROME_BIN` can select its executable). This loads the actual userscript on a loopback fixture, mocks all API calls and checks target controls, privacy, cancellation, stopping, keyboard access and viewport layouts. It produces screenshots in a temporary directory. It does not authenticate to Discord or delete real messages.
+
 `npm start` serves a separate `[DEV]` installation at `http://localhost:10001/wipecord.user.js`. Edit `src/`, then regenerate the root artifact with `npm run build`. Production installs use https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js.
 
 ## Versions

@@ -112,7 +112,7 @@ npm run check
 
 Edit `src/` and regenerate `wipecord.user.js` with `npm run build`. See [contributing](CONTRIBUTING.md), [maintenance](docs/MAINTENANCE.md), and [releases](docs/RELEASING.md).
 
-Automated checks cover mocked behavior and the build. Live Discord and userscript-manager validation is still pending.
+Automated checks cover the core, build, and panel interactions in a local Chrome fixture. Live Discord and userscript-manager validation is still pending.
 
 </details>
 
