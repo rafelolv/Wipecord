@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.2 — 2026-10-11
+
+- Replace runtime HTML parsing with DOM construction from templates compiled at build time. Preserve HTML/SVG namespaces, metadata links, range defaults and the existing interface.
+- Render logs through an attribute-free `b`/`i`/`sup`/`x` allowlist; treat all other markup as text. Preserve formatting and Streamer mode while preventing hostile error data from creating executable elements.
+- Clear logs by cloning the empty-state nodes and update progress through text APIs; remove runtime `innerHTML` and `insertAdjacentHTML` use.
+- Raise the Firefox extension minimum to 142 so Mozilla's desktop and Android compatibility checks both recognize the no-data-collection declaration. Do not declare Android support. Chromium's minimum remains 111.
+- Add Mozilla's add-on validator to `npm run check`, treating warnings as errors. HTML parsing and validation dependencies run only during build/check and are not included in the shipped runtime.
+
+Validation: clean `npm ci` and `npm run check` passed lint, 23 mocked unit tests, metadata/license/syntax, matching runtime hashes and deterministic packaging. Mozilla addons-linter 10.14.0 reported zero errors, zero warnings and zero notices for both the Firefox folder and ZIP. The userscript Chrome fixture passed 21 interaction checks, keyboard controls, dragging/resizing and four viewport/theme checks. Native Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly 1.98.28 (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all eleven scenario groups, including inert hostile markup, log clearing, redaction, defaults, startup/reload and deletion safeguards. No real messages were deleted. AMO server review, independent authenticated Discord checks, Firefox 142, Edge, Brave stable and Android remain unvalidated.
+
 ## 1.3.1 — 2026-10-11
 
 - Wait for a visible channel-header toolbar to remain stable across two checks before initializing the interface.

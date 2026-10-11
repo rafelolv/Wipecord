@@ -31,7 +31,7 @@ For store installation, use the [Firefox Add-ons page](https://addons.mozilla.or
 
 For a local build or the unsigned GitHub release ZIP:
 
-1. Use Firefox 128 or later and disable the Wipecord userscript and other deletion scripts.
+1. Use Firefox 142 or later and disable the Wipecord userscript and other deletion scripts. From Wipecord 1.3.2, this minimum covers the data-collection declaration supported by current Mozilla validation. Android compatibility is not declared or validated.
 2. Open `about:debugging#/runtime/this-firefox`.
 3. Select **Load Temporary Add-on** and choose `dist/firefox/manifest.json` or the Firefox ZIP.
 4. Grant access to Discord if prompted and reload the Discord tab. Use the same button and confirmation flow as the userscript.

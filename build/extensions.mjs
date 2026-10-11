@@ -26,7 +26,7 @@ export function manifest(browser) {
     content_security_policy: { extension_pages: 'script-src \'self\'; object-src \'none\'' },
   };
   if (browser === 'firefox') result.browser_specific_settings = {
-    gecko: { id: 'wipecord@rafelolv.github.io', strict_min_version: '128.0', data_collection_permissions: { required: ['none'] } },
+    gecko: { id: 'wipecord@rafelolv.github.io', strict_min_version: '142.0', data_collection_permissions: { required: ['none'] } },
   };
   else result.minimum_chrome_version = '111';
   return result;

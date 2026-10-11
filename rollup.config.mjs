@@ -8,6 +8,7 @@ import bakedEnv from 'rollup-plugin-baked-env';
 import S from 'tiny-dedent';
 
 import { string } from './build/strings-plugin.mjs';
+import { templates } from './build/templates-plugin.mjs';
 import userScriptMetadataBlock from './build/metadata.mjs';
 const loadJSON = (path) => JSON.parse(fs.readFileSync(new URL(path, import.meta.url)));
 let packageJson = loadJSON('./package.json');
@@ -95,9 +96,7 @@ const config = [
       banner(userScriptMetadataBlock),
 
       // import html as string
-      string({
-        include: ['**/*.html'],
-      }),
+      templates(),
 
       // import css as string
       string({

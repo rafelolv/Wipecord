@@ -6,6 +6,7 @@ All messages, session values and responses are synthetic. Fetch is mocked in the
 
 ## Scenarios
 
+- Hostile error markup remains literal text without creating executable elements; log formatting, default redaction and clear/empty-state behavior survive DOM-only rendering.
 - Delayed header mounting leaves the loading screen and unrelated message toolbars untouched. Hidden headers are ignored, and the single logo button follows a visible replacement header without requests or errors.
 - Native MAIN-world execution and unchanged panel mounting, privacy defaults and default request delays.
 - Installation/page load and popup display produce no API requests, confirmation or deletion.

@@ -4,7 +4,9 @@ Wipecord is maintained on `main` at https://github.com/rafelolv/Wipecord.
 
 ## Development
 
-Use Node.js 24 LTS and `npm ci`. Run `npm run check` after changes: it lints source/build/test files, executes the tests against bundled source with mocked APIs, builds the userscript, checks syntax, and verifies metadata, license inclusion and deterministic output. CI also rejects an artifact that differs from the committed version.
+Use Node.js 24 LTS and `npm ci`. Run `npm run check` after changes: it lints source/build/test files, executes the tests against bundled source with mocked APIs, builds the userscript, checks syntax, and verifies metadata, license inclusion and deterministic output. It also runs Mozilla's add-on validator against the Firefox folder with warnings treated as errors. CI rejects an artifact that differs from the committed version.
+
+Runtime UI templates are compiled to DOM descriptors by `build/templates-plugin.mjs`. Keep templates in `src/ui/`; never parse dynamic HTML in the browser. Log rendering creates only attribute-free `b`, `i`, `sup` and `x` formatting nodes; all other markup is literal text. Preserve redaction and test hostile message/error data after renderer changes. `parse5` and `addons-linter` are build/check dependencies only and are not shipped in the runtime.
 
 For UI changes, run `npm run test:ui:browser` with Chrome/Chromium installed (`CHROME_BIN` can select its executable). This loads the actual userscript on a loopback fixture, mocks all API calls and checks target controls, privacy, cancellation, stopping, keyboard access and viewport layouts. It produces screenshots in a temporary directory. It does not authenticate to Discord or delete real messages.
 
@@ -24,7 +26,7 @@ Use a disposable conversation and messages you intend to delete. Confirm manager
 
 Automated tests exercise core logic with mocks; they do not validate Discord's current DOM, token detection, real permissions, live rate limits or userscript-manager behavior. Record unperformed checks explicitly.
 
-For extension integration, run `npm run test:extensions:browser` with Chrome and Firefox installed (`CHROME_BIN` and `FIREFOX_BIN` select executables). This requires recent browser automation APIs, tests actual extensions in temporary profiles with loopback-only manifests, and uses simulated deletion responses. See [recorded scenarios and limits](EXTENSION-VALIDATION.md). The extension runtime supports Chromium 111+ and Firefox 128+, but automated native loaders require newer browsers; validate minimum supported versions separately before store publication.
+For extension integration, run `npm run test:extensions:browser` with Chrome and Firefox installed (`CHROME_BIN` and `FIREFOX_BIN` select executables). This requires recent browser automation APIs, tests actual extensions in temporary profiles with loopback-only manifests, and uses simulated deletion responses. See [recorded scenarios and limits](EXTENSION-VALIDATION.md). The extension runtime supports Chromium 111+ and Firefox 142+, but automated native loaders require newer browsers; validate minimum supported versions separately before store publication.
 
 Set `WIPECORD_TEST_BROWSERS=chromium` or `WIPECORD_TEST_BROWSERS=firefox` to select one browser. To exercise Brave or Edge, select `chromium` and point `CHROME_BIN` at that executable. Keep test profiles temporary and do not reuse your signed-in profile.
 

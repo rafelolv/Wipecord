@@ -87,6 +87,19 @@ try {
       assert.equal(await page.evaluate('document.getElementById("redact").checked && !document.getElementById("includePinned").checked && document.getElementById("searchDelay").value === "2000" && document.getElementById("deleteDelay").value === "1000"'), true);
 
       await page.evaluate(`(async()=>{
+        const original=window.fetch;
+        window.htmlInjected=false;
+        const payload='<img src=x onerror="window.htmlInjected=true"><svg onload="window.htmlInjected=true">';
+        window.fetch=async()=>{throw Error(payload);};
+        try{await document.getElementById('getGuilds').onclick();}finally{window.fetch=original;}
+        const log=document.getElementById('logArea');
+        if(!log.textContent.includes(payload)||log.querySelector('img,svg,script,iframe')||window.htmlInjected)throw Error('Log payload became active HTML');
+        document.getElementById('clear').click();
+        if(!log.querySelector('.empty-state'))throw Error('Clear did not restore the empty state');
+      })()`);
+      checks.push(`${browser}: hostile error markup remains literal text and clearing restores the empty state`);
+
+      await page.evaluate(`(async()=>{
         const $=id=>document.getElementById(id);
         const wait=async()=>{for(let i=0;i<100;i++){if($('logArea').textContent.includes('before starting')||$('logArea').textContent.includes('earlier'))return;await new Promise(r=>setTimeout(r,20));}throw Error('Validation timeout');};
         $('pattern').value='[';$('start').click();await wait();
@@ -169,6 +182,7 @@ try {
       await start(page);
       await waitFor(() => page.evaluate('deleted.length===1 && !document.getElementById("start").disabled'), 'Filtered deletion did not finish');
       assert.equal(await page.evaluate('JSON.stringify(deleted)'), '["44444444444444444"]', 'Only the exact matching message may be deleted');
+      assert.equal(await page.evaluate('!!document.querySelector("#logArea b x") && getComputedStyle(document.querySelector("#logArea b x")).color === "rgba(0, 0, 0, 0)"'), true, 'Log formatting and default redaction must survive DOM rendering');
       assert.equal(await page.evaluate('prompts.length'), 1);
       assert.ok(await page.evaluate('document.getElementById("summaryText").textContent.includes("1 deleted") && document.getElementById("summaryText").textContent.includes("7 ignored")'));
       const exported = await page.evaluate(`(async()=>{

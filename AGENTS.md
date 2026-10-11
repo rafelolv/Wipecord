@@ -9,6 +9,7 @@ Maintained by rafelolv. Read docs/MAINTENANCE.md for the workflow.
 - Preserve target validation, confirmation, stopping, privacy defaults, pagination and rate-limit backoff. Do not broaden deletion targets or remove guards as part of a branding change.
 - Reject invalid patterns, dates and reversed/equal effective bounds before API access. Validate archive structure and IDs before changing any target fields, including after asynchronous reads. Export only the fixed anonymous run-summary schema; never serialize core options, messages or exceptions.
 - Run npm run check after changes. Tests use mocked Discord/browser objects and cannot prove compatibility with the live Discord client. Record browser checks separately; never claim successful live deletion based only on automated checks.
+- Compile trusted HTML templates to DOM descriptors at build time. Use DOM/text APIs for runtime rendering; never introduce dynamic HTML parsing. Preserve the log formatter's tag allowlist and redaction, and keep Mozilla add-on validation warning-free.
 - Public versions start at 1.0.0. Use three-part semantic versions; package.json and generated @version must agree. Any published userscript change, including metadata, requires a new version. Documentation-only changes do not.
 - Keep development metadata separate from production. Disable other deletion scripts when validating in a browser.
 - Use repository-local Git identity Rafael <82127878+rafelolv@users.noreply.github.com>. Preserve existing Wipecord history. Do not rewrite history or add co-authors automatically.

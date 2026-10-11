@@ -1,7 +1,7 @@
 {
   "name": "wipecord",
   "nameFull": "Wipecord",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Bulk-delete your own messages in a Discord channel, DM or server",
   "userScript": {
     "namespace": "https://github.com/rafelolv/Wipecord",
@@ -10,7 +10,7 @@
       "https://*.discord.com/channels/*",
       "https://*.discord.com/login"
     ],
-    "icon": "https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.1",
+    "icon": "https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.2",
     "downloadURL": "https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js",
     "grant": "none",
     "updateURL": "https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js"
@@ -39,7 +39,8 @@
     "lint": "eslint --ext .js,.mjs src test build scripts rollup.config.mjs",
     "lint:fix": "eslint --ext .js,.mjs src test --fix",
     "version": "npm run build:extensions",
-    "check": "npm test && node scripts/check-artifact.mjs && node build/extensions.mjs && node scripts/check-extensions.mjs",
+    "check": "npm test && node scripts/check-artifact.mjs && node build/extensions.mjs && node scripts/check-extensions.mjs && npm run check:firefox",
+    "check:firefox": "addons-linter dist/firefox --warnings-as-errors",
     "test:ui:browser": "node scripts/check-ui-browser.mjs",
     "build:extensions": "npm run build && node build/extensions.mjs",
     "test:extensions:browser": "node scripts/check-extensions-browser.mjs"
@@ -59,7 +60,9 @@
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
     "@rollup/plugin-json": "^6.0.0",
+    "addons-linter": "^10.14.0",
     "eslint": "^8.36.0",
+    "parse5": "^8.0.1",
     "rimraf": "^4.4.1",
     "rollup": "^3.20.2",
     "rollup-plugin-baked-env": "^1.0.1",

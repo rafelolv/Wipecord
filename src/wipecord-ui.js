@@ -14,12 +14,13 @@ import { parseArchive, resolveFilters } from './validation.js';
 import { buildPurgePlan } from './wipecord-plan.js';
 import Drag from './utils/drag';
 import createElm from './utils/createElm';
+import renderLog from './utils/renderLog.js';
 import insertCss from './utils/insertCss';
 import messagePicker from './utils/messagePicker';
 import { getAuthorId, getGuildId, getGuildIds, fetchGuildIds, getChannelId, fillToken } from './utils/getIds';
 
 import { log, setLogFn } from './utils/log.js';
-import { replaceInterpolations, msToHMS, escapeHTML, isSnowflake } from './utils/helpers';
+import { msToHMS, escapeHTML, isSnowflake } from './utils/helpers';
 
 // -------------------------- User interface ------------------------------- //
 
@@ -79,12 +80,11 @@ function initUI() {
   insertCss(dragCss);
 
   // create wipecord window
-  const wipecordUI = replaceInterpolations(wipecordTemplate, {
+  ui.wipecordWindow = createElm(wipecordTemplate, {
     VERSION,
     HOME,
     WIKI,
   });
-  ui.wipecordWindow = createElm(wipecordUI);
   document.body.appendChild(ui.wipecordWindow);
 
   // enable drag and resize on wipecord window
@@ -146,9 +146,11 @@ function initUI() {
     const { counts, reason, durationMs } = finalReport;
     $('#summaryText').textContent = `${labels[reason]} · ${counts.deleted} deleted · ${counts.ignored} ignored · ${counts.failed} failed · ${counts.alreadyGone} already gone · ${msToHMS(durationMs)}`;
   };
-  const emptyState = ui.logArea.innerHTML;
+  const emptyState = [...ui.logArea.childNodes].map(node => node.cloneNode(true));
   $('button#clear').onclick = () => {
-    ui.logArea.innerHTML = wipecordCore.busy ? '<div class="log log-verb">Log cleared. Cleanup is still running.</div>' : emptyState;
+    ui.logArea.replaceChildren(...(wipecordCore.busy
+      ? [renderLog('verb', ['Log cleared. Cleanup is still running.'])]
+      : emptyState.map(node => node.cloneNode(true))));
   };
   // Only overwrite a field when we actually found something, otherwise a failed
   // lookup wipes what the user typed (or stamps it with "undefined").
@@ -267,19 +269,12 @@ function initUI() {
 const MAX_LOG_LINES = 5000;
 
 function printLog(type = '', args) {
-  // String arguments come from this codebase and carry deliberate markup
-  // (redaction tags, <b>, <i>). Anything else is API data and gets escaped.
-  const line = Array.from(args).map(o => {
-    if (typeof o === 'object' && o !== null) return escapeHTML(JSON.stringify(o, o instanceof Error ? Object.getOwnPropertyNames(o) : undefined));
-    return o;
-  }).join('\t');
-
   ui.logArea.querySelector('.empty-state')?.remove();
-  ui.logArea.insertAdjacentHTML('beforeend', `<div class="log log-${type}">${line}</div>`);
+  ui.logArea.appendChild(renderLog(type, args));
 
   if (ui.logArea.childElementCount > MAX_LOG_LINES) {
     while (ui.logArea.childElementCount > MAX_LOG_LINES) ui.logArea.firstElementChild.remove();
-    ui.logArea.insertAdjacentHTML('afterbegin', '<div class="log log-verb">[older lines trimmed]</div>');
+    ui.logArea.prepend(renderLog('verb', ['[older lines trimmed]']));
   }
 
   if (ui.autoScroll.checked) ui.logArea.lastElementChild.scrollIntoView(false);
@@ -314,12 +309,12 @@ function setupWipecordCore() {
     const throttled = stats.deleteBackoff > 0 ? ` (throttled +${stats.deleteBackoff | 0}ms)` : '';
 
     if (state.historyMode) {
-      ui.percent.innerHTML = `Scanning history: ${state.historyScanned} checked, ${value} processed${throttled}`;
+      ui.percent.textContent = `Scanning history: ${state.historyScanned} checked, ${value} processed${throttled}`;
       ui.progressIcon.removeAttribute('value');
       ui.progressMain.removeAttribute('value');
       return;
     }
-    ui.percent.innerHTML = `${percent} (${value}/${max}) Elapsed: ${elapsed} Remaining: ${remaining}${throttled}`;
+    ui.percent.textContent = `${percent} (${value}/${max}) Elapsed: ${elapsed} Remaining: ${remaining}${throttled}`;
 
     ui.progressIcon.value = value;
     ui.progressMain.value = value;
@@ -331,7 +326,7 @@ function setupWipecordCore() {
     } else {
       ui.progressIcon.removeAttribute('value');
       ui.progressMain.removeAttribute('value');
-      ui.percent.innerHTML = '...';
+      ui.percent.textContent = '...';
     }
   };
 
@@ -421,7 +416,7 @@ async function performStartAction() {
   if (!authToken) return; // get token already logs an error.
 
   // clear logArea
-  ui.logArea.innerHTML = '';
+  ui.logArea.replaceChildren();
 
   wipecordCore.resetState();
   wipecordCore.options = {

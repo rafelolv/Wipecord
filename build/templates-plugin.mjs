@@ -1,0 +1,25 @@
+import { parseFragment } from 'parse5';
+
+/** Compile repository-owned templates to data, never executable HTML strings. */
+export function templates() {
+  function describe(node) {
+    if (node.nodeName === '#text') return node.value;
+    if (!node.tagName) return null;
+    if (node.tagName === 'script' || node.attrs.some(attribute => /^on/i.test(attribute.name))) throw Error('Executable template markup is not allowed.');
+    return {
+      tag: node.tagName,
+      namespace: node.namespaceURI,
+      attributes: node.attrs.map(attribute => [attribute.name, attribute.value, attribute.namespace || null, attribute.prefix || null]),
+      children: (node.childNodes || []).map(describe).filter(child => child !== null),
+    };
+  }
+  return {
+    name: 'wipecord-templates',
+    transform(code, id) {
+      if (!id.endsWith('.html')) return;
+      const root = parseFragment(code).childNodes.find(node => node.tagName);
+      if (!root) throw Error('Template must have a root element.');
+      return { code: `export default ${JSON.stringify(describe(root))};`, map: { mappings: '' } };
+    },
+  };
+}

@@ -18,6 +18,11 @@ for (const browser of ['chromium', 'firefox']) {
   assert.equal(info.userscriptSHA256, hash(runtime));
   assert.deepEqual(readFileSync(`${folder}/wipecord.user.js`), runtime, 'Packaged engine must be byte-identical');
   assert.equal(manifest.manifest_version, 3);
+  if (browser === 'firefox') {
+    assert.equal(manifest.browser_specific_settings.gecko.strict_min_version, '142.0');
+    assert.deepEqual(manifest.browser_specific_settings.gecko.data_collection_permissions, { required: ['none'] });
+    assert.equal(manifest.browser_specific_settings.gecko_android, undefined, 'Do not declare untested Android support');
+  }
   assert.equal(manifest.permissions, undefined, 'No extension API permissions are needed');
   assert.equal(manifest.host_permissions, undefined, 'Only declarative content script matches grant site access');
   assert.equal(manifest.web_accessible_resources, undefined);
