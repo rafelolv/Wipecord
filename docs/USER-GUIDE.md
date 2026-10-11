@@ -4,6 +4,8 @@
 
 Detailed settings and troubleshooting for the Discord web app. For installation and your first cleanup, use the [quick start](../README.md#quick-start).
 
+The userscript is the primary installation. For the alternative experimental browser packages, see [extension installation and updates](EXTENSION.md). Both use the same panel and deletion engine; keep only one installation enabled.
+
 - [Panel settings](#the-panel-field-by-field)
 - [How it works](#how-it-works)
 - [Troubleshooting](#troubleshooting)

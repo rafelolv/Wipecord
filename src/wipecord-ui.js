@@ -9,6 +9,7 @@ import buttonHtml from './ui/wipecord-button.html';
 import wipecordTemplate from './ui/wipecord.html';
 
 import WipecordCore from './wipecord-core';
+import { setRuntimeState } from './runtime-guard.js';
 import { buildPurgePlan } from './wipecord-plan.js';
 import Drag from './utils/drag';
 import createElm from './utils/createElm';
@@ -26,7 +27,6 @@ const HOME = 'https://github.com/rafelolv/Wipecord';
 const WIKI = 'https://github.com/rafelolv/Wipecord/blob/main/docs/USER-GUIDE.md';
 
 const wipecordCore = new WipecordCore();
-messagePicker.init();
 
 const ui = {
   wipecordWindow: null,
@@ -64,6 +64,7 @@ function mountBtn() {
 }
 
 function initUI() {
+  messagePicker.init();
 
   insertCss(themeCss);
   insertCss(mainCss);
@@ -259,7 +260,7 @@ function printLog(type = '', args) {
 function setupWipecordCore() {
 
   wipecordCore.onStart = (state, stats) => {
-    console.log(PREFIX, 'onStart', state, stats);
+    setRuntimeState('running');
     $('#start').disabled = true;
     $('#stop').disabled = false;
 
@@ -305,7 +306,7 @@ function setupWipecordCore() {
   };
 
   wipecordCore.onStop = (state, stats) => {
-    console.log(PREFIX, 'onStop', state, stats);
+    setRuntimeState('idle');
     $('#start').disabled = false;
     $('#stop').disabled = true;
     ui.wipecordBtn.classList.remove('running');
@@ -314,7 +315,26 @@ function setupWipecordCore() {
   };
 }
 
+let startPending = false;
 async function startAction() {
+  if (startPending || wipecordCore.busy) return log.error('Already running!');
+  startPending = true;
+  try {
+    // Compatible installations in other tabs share this origin-wide lock.
+    // Never queue a destructive run to start automatically when another ends.
+    if (!navigator.locks) return log.error('This browser cannot coordinate deletion runs. Update your browser.');
+    await navigator.locks.request('wipecord-deletion', { ifAvailable: true }, async lock => {
+      if (!lock) return log.error('Wipecord is already running in another tab. Stop it before starting here.');
+      await performStartAction();
+    });
+  } catch (error) {
+    log.error('Could not coordinate the deletion run:', escapeHTML(error?.message || error));
+  } finally {
+    startPending = false;
+  }
+}
+
+async function performStartAction() {
   console.log(PREFIX, 'startAction');
   // Bail before resetState(), which would otherwise clear the flag the core
   // checks and let a second delete loop run over the same state.

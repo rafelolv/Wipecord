@@ -97,6 +97,7 @@ try {
     check(!$('wipecord').classList.contains('redact'),'Privacy toggle follows checkbox');
     $('redact').checked=true;$('redact').dispatchEvent(new Event('change'));
     $('guildId').value='invalid';$('start').click();
+    await wait(()=>$('logArea').textContent.includes('Server ID'));
     check(window.fixtureRequests.length===0&&$('logArea').textContent.includes('Server ID'),'Invalid target makes no API request');
     $('getChannel').click();$('start').click();
     await wait(()=>window.fixturePrompts.length===1&&!$('start').disabled);

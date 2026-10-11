@@ -40,6 +40,7 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 const messagePicker = {
   init() {
     insertCss(messagePickerCss);
+    window.messagePicker = messagePicker;
   },
   grab(auxiliary) {
     return new Promise((resolve) => {
@@ -77,4 +78,3 @@ const messagePicker = {
 };
 
 export default messagePicker;
-window.messagePicker = messagePicker;

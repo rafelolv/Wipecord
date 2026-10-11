@@ -24,6 +24,8 @@ Wipecord adds a 🗑️ button to Discord in your browser. Choose a conversation
 
 Use the browser web app. Disable any other message-deletion scripts before running Wipecord. If the install link opens plain text, follow [manual installation](docs/USER-GUIDE.md#manual-installation).
 
+**Prefer using no userscript manager?** An [experimental extension for Chrome, Brave, Edge and Firefox](docs/EXTENSION.md) uses the same Wipecord interface and engine. The userscript remains the recommended option.
+
 ## Quick start
 
 1. Open the channel, DM, or group chat you want to clean.

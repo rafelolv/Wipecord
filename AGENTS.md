@@ -11,7 +11,17 @@ Maintained by rafelolv. Read docs/MAINTENANCE.md for the workflow.
 - Public versions start at 1.0.0. Use three-part semantic versions; package.json and generated @version must agree. Any published userscript change, including metadata, requires a new version. Documentation-only changes do not.
 - Keep development metadata separate from production. Disable other deletion scripts when validating in a browser.
 - Use repository-local Git identity Rafael <82127878+rafelolv@users.noreply.github.com>. Preserve existing Wipecord history. Do not rewrite history or add co-authors automatically.
-- Adapt general AdBonk practices; do not add Twitch workers, ad-blocking integrations, extension packages or variant counters to this userscript project.
+- Wipecord is independent. Do not import unrelated project code, branding or features.
+
+## Experimental browser extensions
+
+- The userscript remains the primary distribution. Extensions are experimental alternatives for Chromium and Firefox, not separate deletion engines.
+- Keep extension runtime adapters in src/extension/, popup templates in src/ui/extension/, and packaging in build/. Ship the generated production wipecord.user.js byte-for-byte in both packages. Never edit dist/ or maintain a copied engine.
+- All distributions use package.json's semantic version. Any shared runtime or extension change requires a new version and rebuilding both packages with npm run check. Commit the root userscript with shared source changes. dist/ contains reproducible local outputs; release automation attaches both ZIPs.
+- Package all executable code locally. No remote executable updates, telemetry, remote configuration, background deletion, installation actions or destructive popup commands. Use declarative Discord-only matches and no extra API permissions unless justified and documented.
+- Preserve the DOM runtime claim and the non-queued origin-wide Web Lock. Duplicate installations must not initialize a second engine; concurrent runs in tabs of the same origin must be refused. The status bridge is read-only and must never expose tokens, targets or messages.
+- Run npm run test:extensions:browser with temporary profiles and simulated API responses after integration changes. It uses loopback-only temporary manifests with byte-identical executable files. Record actual browsers, tests and limitations; never delete real messages without specific authorization.
+- Document unsigned local installation, manual updates, store signing and store review separately. Do not publish to stores without explicit authorization.
 
 ## Release requests
 

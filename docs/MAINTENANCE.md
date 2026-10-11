@@ -12,6 +12,8 @@ For UI changes, run `npm run test:ui:browser` with Chrome/Chromium installed (`C
 
 ## Versions
 
+The experimental Chromium and Firefox extensions use the same package version as the userscript. `npm run check` builds both local folders and deterministic ZIPs, and verifies byte-identical packaged engines. `npm run build:extensions` rebuilds all artifacts without running the full check. Edit popup adapters in `src/extension/` and templates in `src/ui/extension/`; do not edit generated package folders. Shared changes must rebuild both browser packages. See [extension architecture and installation](EXTENSION.md).
+
 Wipecord starts at `1.0.0`. Increment patch for compatible fixes, minor for compatible features, and major for breaking changes. Any published artifact change requires a new version, including metadata. Align package.json and the lockfile using `npm version <version> --no-git-tag-version`, then build. Documentation-only changes need no runtime bump.
 
 Wipecord has a distinct namespace. Reinstall manually when migrating from another script, and disable the previous installation. Do not assume managers migrate existing installations or accept a lower public version automatically.
@@ -21,6 +23,10 @@ Wipecord has a distinct namespace. Reinstall manually when migrating from anothe
 Use a disposable conversation and messages you intend to delete. Confirm manager installation, toolbar mounting, navigation, theme, streamer mode, target preview, cancellation, stop behavior, DM/group history filtering, server search and pacing. Never run destructive tests against someone else's account or unattended against real history. Do not capture tokens or private messages in issue reports.
 
 Automated tests exercise core logic with mocks; they do not validate Discord's current DOM, token detection, real permissions, live rate limits or userscript-manager behavior. Record unperformed checks explicitly.
+
+For extension integration, run `npm run test:extensions:browser` with Chrome and Firefox installed (`CHROME_BIN` and `FIREFOX_BIN` select executables). This requires recent browser automation APIs, tests actual extensions in temporary profiles with loopback-only manifests, and uses simulated deletion responses. See [recorded scenarios and limits](EXTENSION-VALIDATION.md). The extension runtime supports Chromium 111+ and Firefox 128+, but automated native loaders require newer browsers; validate minimum supported versions separately before store publication.
+
+Set `WIPECORD_TEST_BROWSERS=chromium` or `WIPECORD_TEST_BROWSERS=firefox` to select one browser. To exercise Brave or Edge, select `chromium` and point `CHROME_BIN` at that executable. Keep test profiles temporary and do not reuse your signed-in profile.
 
 ## Updates
 

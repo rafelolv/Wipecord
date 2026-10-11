@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.0 — 2026-10-11
+
+- Add experimental Manifest V3 packages and unpacked folders for Chromium and Firefox; keep the userscript as the primary installation.
+- Ship the production userscript byte-for-byte in both extensions, with locally generated icons, complete licensing, version/hash records and deterministic ZIPs.
+- Add a black, white and green read-only popup with runtime status, duplicate notices and support links. Request only declarative access to existing Discord routes, with no extension API permissions or remote executable code.
+- Coordinate compatible installations through a shared DOM claim and a non-queued Web Lock for deletion runs in tabs of the same origin. Preserve the interface, confirmation, filters, pacing and Stop behavior.
+- Avoid logging complete core state at UI lifecycle transitions. Keep sensitive account/message data out of the extension status bridge.
+- Document local installation, updates, unsigned Firefox limitations, store publication and shared-source maintenance rules. Include both browser ZIPs in future GitHub release automation.
+
+Validation: `npm run check` passed lint, 17 mocked unit tests, userscript metadata/license/syntax checks, byte-identical engine hashes, minimal manifests, ZIP contents and deterministic rebuilding. The userscript Chrome fixture passed 21 interaction checks, keyboard controls, dragging/resizing and four viewport/theme checks. Native extension tests passed all seven scenario groups in Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly 154.1.98.28 (Chromium 154.0.8037.58), using temporary profiles, loopback-only match patterns and simulated API responses. Both ZIPs also passed independent `unzip -t` integrity checks.
+
+Not validated: Edge directly, Brave stable, minimum supported browser versions, live Discord authentication/DOM/CSP/API, every userscript manager, signed/store installations or real deletions. The Firefox popup's live status/links were checked, but its screenshot is unavailable through BiDi. Locks cover one origin, not different Discord subdomains, profiles or browsers. Legacy scripts loaded after the guarded runtime remain unsupported; disable old installations before testing. See [extension validation](docs/EXTENSION-VALIDATION.md).
+
 ## 1.1.1 — 2026-10-11
 
 - Refine the interface with neutral black/white surfaces and green actions.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Wipecord
 // @description Bulk-delete your own messages in a Discord channel, DM or server
-// @version     1.1.1
+// @version     1.2.0
 // @author      Rafael (rafelolv)
 // @homepageURL https://github.com/rafelolv/Wipecord
 // @supportURL  https://github.com/rafelolv/Wipecord/issues
@@ -10,7 +10,7 @@
 // @match       https://*.discord.com/login
 // @license     MIT
 // @namespace   https://github.com/rafelolv/Wipecord
-// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.1.1
+// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.2.0
 // @downloadURL https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
 // @grant       none
 // @updateURL   https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
@@ -43,7 +43,7 @@ SOFTWARE.
 	'use strict';
 
 	/* rollup-plugin-baked-env */
-	const VERSION = "1.1.1";
+	const VERSION = "1.2.0";
 
 	var themeCss = (`
 /* Self-contained colors keep the panel readable when Discord changes its tokens. */
@@ -1394,6 +1394,28 @@ SOFTWARE.
 	  }
 	}
 
+	/** A DOM claim is shared by page-world scripts and userscript wrappers alike. */
+	function claimRuntime(document, version) {
+	  const existing = document.getElementById('wipecord-runtime');
+	  if (existing) {
+	    existing.dataset.duplicates = String(Number(existing.dataset.duplicates || 0) + 1);
+	    return false;
+	  }
+	  const marker = document.createElement('meta');
+	  marker.id = 'wipecord-runtime';
+	  marker.dataset.version = document.getElementById('wipecord') ? 'legacy' : version;
+	  marker.dataset.state = 'idle';
+	  marker.dataset.duplicates = '0';
+	  document.head.appendChild(marker);
+	  // Older installations cannot participate in the claim protocol. Defer to
+	  // their existing panel rather than adding a second engine to the page.
+	  return marker.dataset.version !== 'legacy';
+	}
+
+	function setRuntimeState(state) {
+	  document.getElementById('wipecord-runtime').dataset.state = state;
+	}
+
 	function parseIdList(value) {
 	  return [...new Set(String(value ?? '').split(/[\s,]+/).filter(Boolean))];
 	}
@@ -1715,6 +1737,7 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	const messagePicker = {
 	  init() {
 	    insertCss(messagePickerCss);
+	    window.messagePicker = messagePicker;
 	  },
 	  grab(auxiliary) {
 	    return new Promise((resolve) => {
@@ -1750,7 +1773,6 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	    });
 	  }
 	};
-	window.messagePicker = messagePicker;
 
 	/** Discord encrypts the stored token in the desktop app; that value is unusable here. */
 	const ENCRYPTED_TOKEN_PREFIX = 'dQw4w9WgXcQ:';
@@ -1950,7 +1972,6 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	const WIKI = 'https://github.com/rafelolv/Wipecord/blob/main/docs/USER-GUIDE.md';
 
 	const wipecordCore = new WipecordCore();
-	messagePicker.init();
 
 	const ui = {
 	  wipecordWindow: null,
@@ -1988,6 +2009,7 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	}
 
 	function initUI() {
+	  messagePicker.init();
 
 	  insertCss(themeCss);
 	  insertCss(mainCss);
@@ -2183,7 +2205,7 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	function setupWipecordCore() {
 
 	  wipecordCore.onStart = (state, stats) => {
-	    console.log(PREFIX, 'onStart', state, stats);
+	    setRuntimeState('running');
 	    $('#start').disabled = true;
 	    $('#stop').disabled = false;
 
@@ -2229,7 +2251,7 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	  };
 
 	  wipecordCore.onStop = (state, stats) => {
-	    console.log(PREFIX, 'onStop', state, stats);
+	    setRuntimeState('idle');
 	    $('#start').disabled = false;
 	    $('#stop').disabled = true;
 	    ui.wipecordBtn.classList.remove('running');
@@ -2238,7 +2260,26 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	  };
 	}
 
+	let startPending = false;
 	async function startAction() {
+	  if (startPending || wipecordCore.busy) return log.error('Already running!');
+	  startPending = true;
+	  try {
+	    // Compatible installations in other tabs share this origin-wide lock.
+	    // Never queue a destructive run to start automatically when another ends.
+	    if (!navigator.locks) return log.error('This browser cannot coordinate deletion runs. Update your browser.');
+	    await navigator.locks.request('wipecord-deletion', { ifAvailable: true }, async lock => {
+	      if (!lock) return log.error('Wipecord is already running in another tab. Stop it before starting here.');
+	      await performStartAction();
+	    });
+	  } catch (error) {
+	    log.error('Could not coordinate the deletion run:', escapeHTML(error?.message || error));
+	  } finally {
+	    startPending = false;
+	  }
+	}
+
+	async function performStartAction() {
 	  console.log(PREFIX, 'startAction');
 	  // Bail before resetState(), which would otherwise clear the flag the core
 	  // checks and let a second delete loop run over the same state.
@@ -2326,6 +2367,7 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 
 	// ---- END Wipecord ----
 
-	initUI();
+	if (claimRuntime(document, VERSION)) initUI();
+	else console.warn('[WIPECORD] Another installation already owns this page. Disable the duplicate and reload.');
 
 })();
