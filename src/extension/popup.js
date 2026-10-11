@@ -1,6 +1,6 @@
 /* global chrome */
 const status = document.getElementById('status');
-document.getElementById('version').textContent = `v${chrome.runtime.getManifest().version} · experimental`;
+document.getElementById('version').textContent = `v${chrome.runtime.getManifest().version}`;
 
 async function refresh() {
   try {

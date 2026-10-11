@@ -13,9 +13,9 @@ Maintained by rafelolv. Read docs/MAINTENANCE.md for the workflow.
 - Use repository-local Git identity Rafael <82127878+rafelolv@users.noreply.github.com>. Preserve existing Wipecord history. Do not rewrite history or add co-authors automatically.
 - Wipecord is independent. Do not import unrelated project code, branding or features.
 
-## Experimental browser extensions
+## Browser extensions
 
-- The userscript remains the primary distribution. Extensions are experimental alternatives for Chromium and Firefox, not separate deletion engines.
+- The userscript remains the primary distribution. Extensions are alternatives for Chromium and Firefox, not separate deletion engines.
 - Keep extension runtime adapters in src/extension/, popup templates in src/ui/extension/, and packaging in build/. Ship the generated production wipecord.user.js byte-for-byte in both packages. Never edit dist/ or maintain a copied engine.
 - All distributions use package.json's semantic version. Any shared runtime or extension change requires a new version and rebuilding both packages with npm run check. Commit the root userscript with shared source changes. dist/ contains reproducible local outputs; release automation attaches both ZIPs.
 - Package all executable code locally. No remote executable updates, telemetry, remote configuration, background deletion, installation actions or destructive popup commands. Use declarative Discord-only matches and no extra API permissions unless justified and documented.

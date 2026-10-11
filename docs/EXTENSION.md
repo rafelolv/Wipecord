@@ -1,6 +1,6 @@
-# Experimental browser extension
+# Browser extension
 
-The userscript is Wipecord's primary installation. The extension is an experimental alternative that runs the same interface and deletion engine without Tampermonkey or another manager. Chrome, Brave and Edge use the Chromium package; Firefox uses its own package. These are desktop browser packages, not Discord desktop integrations.
+The userscript is Wipecord's primary installation. The extension is an alternative that runs the same interface and deletion engine without Tampermonkey or another manager. Chrome, Brave and Edge use the Chromium package; Firefox uses its own package. These are desktop browser packages, not Discord desktop integrations.
 
 ## Get the local packages
 
@@ -46,7 +46,7 @@ Local installations do not fetch new executable code. Download or rebuild a newe
 
 Store versions need a developer account, reviewed listing, screenshots, accurate permission/data disclosures and an incremented version. Submit the Chromium ZIP to the Chrome Web Store, or to Edge Add-ons for an Edge listing. Brave supports Chrome Web Store installations. Submit the Firefox ZIP to AMO for review/signing; distribute the resulting **signed XPI**, not the local ZIP, for permanent Firefox installation. Store clients update whole reviewed packages. There is no custom update server or remotely loaded JavaScript in Wipecord.
 
-No store submission or signing is performed by the build. Store acceptance and compatibility with Discord's current client remain unverified. Follow [Chrome publication](https://developer.chrome.com/docs/webstore/publish) and [Mozilla signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/) when publication is authorized.
+No store submission or signing is performed by the build. Store acceptance has not been verified. Automated browser checks use simulated responses; see the validation log. Follow [Chrome publication](https://developer.chrome.com/docs/webstore/publish) and [Mozilla signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/) when publication is authorized.
 
 ## Architecture, permissions and privacy
 

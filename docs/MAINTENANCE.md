@@ -12,7 +12,7 @@ For UI changes, run `npm run test:ui:browser` with Chrome/Chromium installed (`C
 
 ## Versions
 
-The experimental Chromium and Firefox extensions use the same package version as the userscript. `npm run check` builds both local folders and deterministic ZIPs, and verifies byte-identical packaged engines. `npm run build:extensions` rebuilds all artifacts without running the full check. Edit popup adapters in `src/extension/` and templates in `src/ui/extension/`; do not edit generated package folders. Shared changes must rebuild both browser packages. See [extension architecture and installation](EXTENSION.md).
+The Chromium and Firefox extensions use the same package version as the userscript. `npm run check` builds both local folders and deterministic ZIPs, and verifies byte-identical packaged engines. `npm run build:extensions` rebuilds all artifacts without running the full check. Edit popup adapters in `src/extension/` and templates in `src/ui/extension/`; do not edit generated package folders. Shared changes must rebuild both browser packages. See [extension architecture and installation](EXTENSION.md).
 
 Wipecord starts at `1.0.0`. Increment patch for compatible fixes, minor for compatible features, and major for breaking changes. Any published artifact change requires a new version, including metadata. Align package.json and the lockfile using `npm version <version> --no-git-tag-version`, then build. Documentation-only changes need no runtime bump.
 

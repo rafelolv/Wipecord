@@ -1,8 +1,17 @@
 # Changelog
 
+## 1.2.1 — 2026-10-11
+
+- Publish Wipecord's first GitHub release with the userscript and Chromium/Firefox packages.
+- Use the standard Wipecord name in browser manifests and remove prerelease labeling from the popup, installation guides and maintenance rules.
+- Keep the userscript as the primary installation and the extensions as supported alternatives sharing its exact generated engine.
+- Add a release download link and record the maintainer's report of successful extension use separately from automated validation.
+
+Validation: clean `npm ci` and `npm run check` passed, including 17 mocked unit tests, metadata/license/syntax, matching shared-runtime hashes, minimal permissions, ZIP contents and deterministic rebuilds. Native extension integration passed all seven scenario groups in Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly 154.1.98.28 (Chromium 154.0.8037.58), with temporary profiles and simulated API responses. The maintainer reported successful extension use before this release. No additional live Discord deletion was performed by the release process; Edge, Brave stable, minimum browser versions and store/signed installation remain untested.
+
 ## 1.2.0 — 2026-10-11
 
-- Add experimental Manifest V3 packages and unpacked folders for Chromium and Firefox; keep the userscript as the primary installation.
+- Add Manifest V3 packages and unpacked folders for Chromium and Firefox; keep the userscript as the primary installation.
 - Ship the production userscript byte-for-byte in both extensions, with locally generated icons, complete licensing, version/hash records and deterministic ZIPs.
 - Add a black, white and green read-only popup with runtime status, duplicate notices and support links. Request only declarative access to existing Discord routes, with no extension API permissions or remote executable code.
 - Coordinate compatible installations through a shared DOM claim and a non-queued Web Lock for deletion runs in tabs of the same origin. Preserve the interface, confirmation, filters, pacing and Stop behavior.

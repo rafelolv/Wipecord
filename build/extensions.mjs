@@ -12,7 +12,7 @@ const hash = data => createHash('sha256').update(data).digest('hex');
 export function manifest(browser) {
   const result = {
     manifest_version: 3,
-    name: 'Wipecord (experimental)',
+    name: 'Wipecord',
     version: pkg.version,
     description: 'Use Wipecord in Discord without a userscript manager. Deletions require your confirmation.',
     author: 'Rafael (rafelolv)',

@@ -6,4 +6,4 @@ Preserve target guards, rate limits, privacy defaults and license notices. Add f
 
 Describe what changed, why, checks performed and browser scenarios not tested. Coordinate release versions with the maintainer.
 
-The experimental extensions package the userscript byte-for-byte. Keep adapters in `src/extension/`, popup templates in `src/ui/extension/` and packaging in `build/`. Rebuild both packages with shared changes and run `npm run test:extensions:browser` after integration changes. See [extension maintenance rules](AGENTS.md#experimental-browser-extensions) and [validation](docs/EXTENSION-VALIDATION.md).
+The extensions package the userscript byte-for-byte. Keep adapters in `src/extension/`, popup templates in `src/ui/extension/` and packaging in `build/`. Rebuild both packages with shared changes and run `npm run test:extensions:browser` after integration changes. See [extension maintenance rules](AGENTS.md#browser-extensions) and [validation](docs/EXTENSION-VALIDATION.md).

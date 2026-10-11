@@ -5,8 +5,8 @@
 | File | Version | Purpose |
 | --- | --- | --- |
 | wipecord.user.js | <version> | Browser userscript |
-| wipecord-chromium-<version>.zip | <version> | Experimental unpacked Chromium package |
-| wipecord-firefox-<version>.zip | <version> | Experimental temporary Firefox package (unsigned) |
+| wipecord-chromium-<version>.zip | <version> | Unpacked Chromium package |
+| wipecord-firefox-<version>.zip | <version> | Temporary Firefox package (unsigned) |
 | LICENSE | — | Required copyright and permission notices |
 | SHA256SUMS | — | Artifact checksums |
 
@@ -16,7 +16,7 @@ Install the attached userscript with your userscript manager, or [install from m
 
 <Include any migration requirements that apply.>
 
-For the experimental extensions, follow [local installation and updates](https://github.com/rafelolv/Wipecord/blob/main/docs/EXTENSION.md). These ZIPs are not store releases or signed Firefox XPIs. Keep only one Wipecord installation enabled and reload Discord after updating.
+For the extensions, follow [local installation and updates](https://github.com/rafelolv/Wipecord/blob/main/docs/EXTENSION.md). These ZIPs are not store releases or signed Firefox XPIs. Keep only one Wipecord installation enabled and reload Discord after updating.
 
 ## Validation
 

@@ -18,6 +18,10 @@ All messages, session values and responses are synthetic. Fetch is mocked in the
 - No injection on an unmatched route; no page errors during the tested flows.
 - `npm run check` verifies core regressions, runtime claims, metadata, syntax, engine hashes, matching package versions, minimal manifests, ZIP contents and deterministic rebuilding.
 
+## Maintainer validation
+
+Before the 1.2.1 release, the maintainer reported that the extension worked successfully. Browser, account actions and detailed scenarios were not specified. This is a user-reported result, separate from the automated fixture checks; no additional live deletion was performed by the release process.
+
 ## Limits
 
 Browser versions and actual results for this change are recorded in CHANGELOG.md. Chrome, Firefox and the installed Brave Origin Nightly passed; Edge, Brave stable and minimum supported versions have not been exercised directly. Browser tests use temporary loopback match patterns, not Discord's live DOM, CSP, authentication or API. Userscript coexistence is tested by loading its complete artifact as a page script, not through every userscript manager's injection behavior.

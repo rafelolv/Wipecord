@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="images/icon.svg?v=1.1.1" width="80" height="80" alt="Wipecord logo">
+  <img src="images/icon.svg?v=1.2.1" width="80" height="80" alt="Wipecord logo">
   <h1>Wipecord</h1>
   <p>Clean up your Discord messages.</p>
   <p>
@@ -24,7 +24,9 @@ Wipecord adds a 🗑️ button to Discord in your browser. Choose a conversation
 
 Use the browser web app. Disable any other message-deletion scripts before running Wipecord. If the install link opens plain text, follow [manual installation](docs/USER-GUIDE.md#manual-installation).
 
-**Prefer using no userscript manager?** An [experimental extension for Chrome, Brave, Edge and Firefox](docs/EXTENSION.md) uses the same Wipecord interface and engine. The userscript remains the recommended option.
+Download a fixed version from [GitHub releases](https://github.com/rafelolv/Wipecord/releases/latest).
+
+**Prefer using no userscript manager?** An [extension for Chrome, Brave, Edge and Firefox](docs/EXTENSION.md) uses the same Wipecord interface and engine. The userscript remains the recommended option.
 
 ## Quick start
 
@@ -114,7 +116,7 @@ npm run check
 
 Edit `src/` and regenerate `wipecord.user.js` with `npm run build`. See [contributing](CONTRIBUTING.md), [maintenance](docs/MAINTENANCE.md), and [releases](docs/RELEASING.md).
 
-Automated checks cover the core, build, and panel interactions in a local Chrome fixture. Live Discord and userscript-manager validation is still pending.
+Automated checks cover the core, build, and panel interactions in a local Chrome fixture. The maintainer reported successful extension use. Automated browser checks use simulated API responses; see [validation details and limits](docs/EXTENSION-VALIDATION.md).
 
 </details>
 
