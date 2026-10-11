@@ -25,7 +25,7 @@
   right: 20px;
   display: flex;
   flex-direction: column;
-  width: 860px;
+  width: 960px;
   height: 700px;
   min-width: min(600px, calc(100vw - 24px));
   min-height: min(480px, calc(100dvh - 80px));
@@ -49,7 +49,7 @@
 #wipecord .icon-button { width: 32px; height: 32px; padding: 0; }
 #wipecord #hide { border: 0; background: transparent; color: var(--wipe-muted); font-size: 24px; font-weight: 400; }
 #wipecord .window-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-#wipecord .sidebar { flex: 0 0 310px; width: 310px; min-width: 0; overflow-y: auto; padding: 8px 14px; border-right: 1px solid var(--wipe-line); background: var(--wipe-panel); }
+#wipecord .sidebar { flex: 0 0 350px; width: 350px; min-width: 0; overflow-y: auto; padding: 8px 14px; border-right: 1px solid var(--wipe-line); background: var(--wipe-panel); }
 #wipecord h4 { font-size: 16px; font-weight: 600; letter-spacing: -.3px; }
 #wipecord .settings-section { margin: 0; border: 0; border-bottom: 1px solid var(--wipe-line); border-radius: 0; overflow: hidden; }
 #wipecord summary { position: relative; display: block; padding: 16px 22px 16px 0; color: var(--wipe-text); font-size: 13px; font-weight: 600; cursor: pointer; list-style: none; }

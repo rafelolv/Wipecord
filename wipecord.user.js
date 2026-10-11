@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Wipecord
 // @description Bulk-delete your own messages in a Discord channel, DM or server
-// @version     1.3.3
+// @version     1.3.4
 // @author      Rafael (rafelolv)
 // @homepageURL https://github.com/rafelolv/Wipecord
 // @supportURL  https://github.com/rafelolv/Wipecord/issues
@@ -10,7 +10,7 @@
 // @match       https://*.discord.com/login
 // @license     MIT
 // @namespace   https://github.com/rafelolv/Wipecord
-// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.3
+// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.4
 // @downloadURL https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
 // @grant       none
 // @updateURL   https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
@@ -43,7 +43,7 @@ SOFTWARE.
 	'use strict';
 
 	/* rollup-plugin-baked-env */
-	const VERSION = "1.3.3";
+	const VERSION = "1.3.4";
 
 	var themeCss = (`
 /* Self-contained colors keep the panel readable when Discord changes its tokens. */
@@ -102,7 +102,7 @@ SOFTWARE.
 #wipecord-btn progress { position: absolute; bottom: -5px; left: 0; width: 32px; height: 3px; display: none; accent-color: #58d68d; }
 #wipecord-btn.running { box-shadow: 0 0 0 2px #58d68d; }
 #wipecord-btn.running progress { display: block; }
-#wipecord { position: fixed; z-index: 100; top: 64px; right: 20px; display: flex; flex-direction: column; width: 860px; height: 700px; min-width: min(600px, calc(100vw - 24px)); min-height: min(480px, calc(100dvh - 80px)); max-width: calc(100vw - 24px); max-height: calc(100dvh - 80px); overflow: hidden; border: 1px solid var(--wipe-line); border-radius: 10px; background: var(--wipe-bg); color: var(--wipe-text); box-shadow: 0 12px 36px #0005; font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; isolation: isolate; }
+#wipecord { position: fixed; z-index: 100; top: 64px; right: 20px; display: flex; flex-direction: column; width: 960px; height: 700px; min-width: min(600px, calc(100vw - 24px)); min-height: min(480px, calc(100dvh - 80px)); max-width: calc(100vw - 24px); max-height: calc(100dvh - 80px); overflow: hidden; border: 1px solid var(--wipe-line); border-radius: 10px; background: var(--wipe-bg); color: var(--wipe-text); box-shadow: 0 12px 36px #0005; font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; isolation: isolate; }
 #wipecord .header { display: flex; align-items: center; gap: 12px; flex-shrink: 0; min-height: 62px; padding: 12px 20px; border-bottom: 1px solid var(--wipe-line); cursor: grab; }
 #wipecord.drag .header { cursor: grabbing; }
 #wipecord .brand-mark { flex-shrink: 0; }
@@ -112,7 +112,7 @@ SOFTWARE.
 #wipecord .icon-button { width: 32px; height: 32px; padding: 0; }
 #wipecord #hide { border: 0; background: transparent; color: var(--wipe-muted); font-size: 24px; font-weight: 400; }
 #wipecord .window-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-#wipecord .sidebar { flex: 0 0 310px; width: 310px; min-width: 0; overflow-y: auto; padding: 8px 14px; border-right: 1px solid var(--wipe-line); background: var(--wipe-panel); }
+#wipecord .sidebar { flex: 0 0 350px; width: 350px; min-width: 0; overflow-y: auto; padding: 8px 14px; border-right: 1px solid var(--wipe-line); background: var(--wipe-panel); }
 #wipecord h4 { font-size: 16px; font-weight: 600; letter-spacing: -.3px; }
 #wipecord .settings-section { margin: 0; border: 0; border-bottom: 1px solid var(--wipe-line); border-radius: 0; overflow: hidden; }
 #wipecord summary { position: relative; display: block; padding: 16px 22px 16px 0; color: var(--wipe-text); font-size: 13px; font-weight: 600; cursor: pointer; list-style: none; }

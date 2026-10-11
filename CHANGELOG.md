@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.4 — 2026-10-11
+
+- Increase the default panel width from 860 to 960 pixels and the settings sidebar from 310 to 350 pixels, giving target fields, scope warnings and activity logs more room. Keep the 700-pixel height and responsive viewport limits.
+- Add an intermediate 800 × 720 viewport to the userscript layout checks, with the all-server warning visible.
+- Include the 1.3.3 all-server scope warning and clearer outcome, cancellation, message-bound and automatic-pause text in this GitHub release; 1.3.3 was available on main without a separate release.
+- Rebuild the userscript and both browser packages at version 1.3.4.
+
+Validation: clean `npm ci` and `npm run check` passed lint, 23 mocked unit tests, metadata/license/syntax, matching runtime hashes and deterministic packaging. Mozilla validation reported zero errors, warnings and notices. The userscript Chrome fixture passed 27 interaction checks, keyboard controls, dragging/resizing and five viewport/theme checks. Native Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly 1.98.28 (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all twelve scenario groups. No real messages were deleted. Live Discord, Edge, minimum browser versions, AMO review and signed/store updates remain unvalidated.
+
 ## 1.3.3 — 2026-10-11
 
 - Highlight the Server ID field and all-server button in red while a broad server selection is active. Show a persistent, accessible scope warning in both themes; reset it when returning to the current target or importing conversations.

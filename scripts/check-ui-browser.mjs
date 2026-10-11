@@ -157,7 +157,7 @@ try {
   assert.ok(await evaluate('document.getElementById("wipecord").getBoundingClientRect().width') > bounds.width, 'Resize handle changes panel width');
   await evaluate('Object.assign(document.getElementById("wipecord").style,{left:"",top:"",width:"",height:""})');
   await evaluate('document.getElementById("guildId").value="22222222222222222,55555555555555555";document.getElementById("channelId").value="";document.getElementById("guildId").dispatchEvent(new Event("input"))');
-  for (const [name, width, height, light] of [['desktop', 1280, 960, false], ['light', 1280, 960, true], ['compact', 390, 844, false], ['short', 520, 480, false]]) {
+  for (const [name, width, height, light] of [['desktop', 1280, 960, false], ['light', 1280, 960, true], ['medium', 800, 720, false], ['compact', 390, 844, false], ['short', 520, 480, false]]) {
     await page('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
     await evaluate(`document.documentElement.classList.toggle('theme-light', ${light})`);
     const layout = await evaluate('(()=>{const p=document.getElementById(\'wipecord\'),r=p.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:innerWidth,height:innerHeight,overflow:p.scrollWidth>p.clientWidth};})()');
@@ -167,7 +167,7 @@ try {
     const screenshot = await page('Page.captureScreenshot', { format: 'png' });
     writeFileSync(join(directory, `${name}.png`), Buffer.from(screenshot.data, 'base64'));
   }
-  console.log(`${results.length} interaction checks, keyboard controls, dragging, resizing and four viewport/theme checks passed.`);
+  console.log(`${results.length} interaction checks, keyboard controls, dragging, resizing and five viewport/theme checks passed.`);
   console.log(`Visual previews: ${directory}`);
   await call('Browser.close');
 } finally {
