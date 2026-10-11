@@ -81,6 +81,8 @@ test('anonymous reports deduplicate outcomes and retain only aggregate data afte
 
 test('batch summaries accumulate all jobs and separate skipped, missing and failed messages', async () => {
   const restoreConsole = muteConsole(), originalConfirm = window.confirm;
+  const info = [];
+  console.info = (...args) => info.push(args.join(' '));
   window.confirm = () => true;
   try {
     const core = new WipecordCore();
@@ -97,6 +99,9 @@ test('batch summaries accumulate all jobs and separate skipped, missing and fail
     assert.deepEqual(core.report.counts, { deleted: 2, ignored: 4, failed: 2, alreadyGone: 2 });
     assert.equal(core.report.reason, 'completed');
     assert.equal(core.busy, false);
+    const targetCounts = info.filter(line => line.includes('deletion(s) confirmed in this target'));
+    assert.equal(targetCounts.length, 2);
+    assert.ok(targetCounts.every(line => line.startsWith('1 deletion(s) confirmed')));
   } finally { window.confirm = originalConfirm; restoreConsole(); }
 });
 

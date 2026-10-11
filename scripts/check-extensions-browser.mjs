@@ -100,6 +100,21 @@ try {
       checks.push(`${browser}: hostile error markup remains literal text and clearing restores the empty state`);
 
       await page.evaluate(`(async()=>{
+        const $=id=>document.getElementById(id), original=window.fetch;
+        const initial=[requests.length,prompts.length,$('authorId').value,$('search').value];
+        window.fetch=async()=>new Response(JSON.stringify([{id:'22222222222222222'},{id:'55555555555555555'}]),{status:200});
+        try{await $('getGuilds').onclick();}finally{window.fetch=original;}
+        if(!$('guildId').classList.contains('broad-scope')||!$('getGuilds').classList.contains('broad-scope')||$('serverScopeWarning').hidden)throw Error('All servers did not show a scope warning');
+        if($('channelId').value||$('authorId').value!==initial[2]||$('search').value!==initial[3]||requests.length!==initial[0]||prompts.length!==initial[1])throw Error('Selecting all changed filters or started a run');
+        $('getChannel').click();
+        if(!$('serverScopeWarning').hidden||$('getGuilds').classList.contains('broad-scope'))throw Error('Current target did not clear the scope warning');
+        $('guildId').value='22222222222222222,55555555555555555';$('guildId').dispatchEvent(new Event('input'));
+        if($('serverScopeWarning').hidden||!$('serverScopeWarning').textContent.includes('Channel IDs'))throw Error('Manual server selection lost its channel limits');
+        $('getChannel').click();$('clear').click();
+      })()`);
+      checks.push(`${browser}: all-server and manual selection warnings, reset to current target, preserved filters and no automatic run`);
+
+      await page.evaluate(`(async()=>{
         const $=id=>document.getElementById(id);
         const wait=async()=>{for(let i=0;i<100;i++){if($('logArea').textContent.includes('before starting')||$('logArea').textContent.includes('earlier'))return;await new Promise(r=>setTimeout(r,20));}throw Error('Validation timeout');};
         $('pattern').value='[';$('start').click();await wait();

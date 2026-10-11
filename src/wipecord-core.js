@@ -303,7 +303,7 @@ class WipecordCore {
       this.#busy = false;
       this.#batchIndex = 0;
       this.#batchTotal = 0;
-      log.info('Batch finished.');
+      log.info('Batch ended. See the final summary for its outcome.');
       this.#report.finish();
       if (this.onStop) this.onStop(this.state, this.stats);
     }
@@ -325,7 +325,7 @@ class WipecordCore {
     this.state.cursorId = toSnowflake(this.options.maxId) || null;
     this.state.historyMode = this.options.guildId === '@me';
 
-    log.success(`\nStarted at ${this.stats.startTime.toLocaleString()}`);
+    log.info(`\nStarted at ${this.stats.startTime.toLocaleString()}`);
     log.debug(
       `authorId = "${redact(this.options.authorId)}"`,
       `guildId = "${redact(this.options.guildId)}"`,
@@ -398,7 +398,7 @@ class WipecordCore {
           if (this.state.historyMode || remaining === 0 || this.state.emptyPages >= this.options.emptyPageRetries) {
             if (!this.state.historyMode && this.state.confirmedDelCount > deletedBeforePass && sweeps < MAX_SWEEPS) {
               sweeps++;
-              log.verb(`Reached the end. Sweeping the channel again to catch anything the search index was hiding... (${sweeps}/${MAX_SWEEPS})`);
+              log.verb(`Checking again for matching messages Discord search may have missed... (${sweeps}/${MAX_SWEEPS})`);
               deletedBeforePass = this.state.confirmedDelCount;
               this.state.cursorId = toSnowflake(this.options.maxId) || null;
               this.state.emptyPages = 0;
@@ -406,7 +406,7 @@ class WipecordCore {
             }
             log.verb(this.state.historyMode
               ? 'Reached the beginning of the channel history.'
-              : 'Ended because the API returned an empty page.');
+              : 'Discord returned no more messages for this search.');
             if (isJob) break; // break without stopping if this is part of a job
             this.state.running = false;
             break;
@@ -414,8 +414,8 @@ class WipecordCore {
           this.state.emptyPages++;
           const settle = this.state.emptyPages * Math.max(this.options.searchDelay, 2000);
           log.warn(
-            `The page came back empty but the API still reports ${remaining} message(s).`,
-            `Waiting ${(settle / 1000).toFixed(1)}s for the search index to catch up...`,
+            `Discord returned an empty page but still reports ${remaining} message(s).`,
+            `Waiting ${(settle / 1000).toFixed(1)}s for Discord search to update...`,
             `(${this.state.emptyPages}/${this.options.emptyPageRetries})`
           );
           await this.cooldown(settle);
@@ -449,10 +449,10 @@ class WipecordCore {
       throw error;
     } finally {
       this.stats.endTime = new Date();
-      log.success(`Ended at ${this.stats.endTime.toLocaleString()}! Total time: ${msToHMS(this.stats.endTime.getTime() - this.stats.startTime.getTime())}`);
+      log.info(`Run ended at ${this.stats.endTime.toLocaleString()}. Elapsed time: ${msToHMS(this.stats.endTime.getTime() - this.stats.startTime.getTime())}. See the final summary for its outcome.`);
       this.printStats();
-      log.debug(`Deleted ${this.state.delCount} messages, ${this.state.failCount} failed.\n`);
-      if (this.state.failCount > 0) log.info('Run it again to retry the messages that failed.');
+      log.info(`${this.state.confirmedDelCount} deletion(s) confirmed in this target. See the final summary for failed, ignored and already-gone messages.`);
+      if (this.state.failCount > 0) log.info('Review skipped messages and errors above before retrying. Access or permission errors must be resolved first.');
 
       if (!isJob) {
         // A batch keeps state.running set so its loop can continue; a plain run
@@ -523,11 +523,11 @@ class WipecordCore {
 
     if (!answer) {
       this.#report?.end('cancelled');
-      log.error('Aborted by you!');
+      log.info('Confirmation cancelled by you.');
       return false;
     }
     else {
-      log.verb('OK');
+      log.info('Confirmed. Starting deletion of matching messages.');
       this.options.askForConfirmation = false; // do not ask for confirmation again on the next request
       return true;
     }
@@ -559,7 +559,7 @@ class WipecordCore {
         const w = (asked > 0 ? asked : clamp(this.effectiveDelay('search'), 1000, MAX_SEARCH_DELAY)) + RETRY_MARGIN;
         this.stats.throttledCount++;
         this.stats.throttledTotalTime += w;
-        log.warn(`Being rate limited by the API for ${w}ms! Slowing down channel lookups...`);
+        log.warn(`Discord requested a ${(w / 1000).toFixed(1)}-second pause. Wipecord will continue automatically.`);
         this.printStats();
         await this.cooldown(w);
         continue;
@@ -629,7 +629,7 @@ class WipecordCore {
         const w = (asked > 0 ? asked : clamp(this.effectiveDelay('search'), 1000, MAX_SEARCH_DELAY)) + RETRY_MARGIN;
         this.stats.throttledCount++;
         this.stats.throttledTotalTime += w;
-        log.warn(`Being rate limited by the API for ${w}ms! Slowing down history requests...`);
+        log.warn(`Discord requested a ${(w / 1000).toFixed(1)}-second pause. Wipecord will continue automatically.`);
         this.printStats();
         await this.cooldown(w);
         continue;
@@ -714,7 +714,7 @@ class WipecordCore {
         const w = clamp(retryAfterMs(resp, json) || 5000, 1000, MAX_SEARCH_DELAY);
         this.stats.throttledCount++;
         this.stats.throttledTotalTime += w;
-        log.warn(`This channel isn't indexed yet. Waiting ${(w / 1000).toFixed(1)}s for discord to index it...`);
+        log.warn(`Discord is preparing search results for this channel. Retrying automatically in ${(w / 1000).toFixed(1)} seconds...`);
         await this.cooldown(w);
         continue;
       }
@@ -728,7 +728,7 @@ class WipecordCore {
         const w = (asked > 0 ? asked : clamp(this.effectiveDelay('search'), 1000, MAX_SEARCH_DELAY)) + RETRY_MARGIN;
         this.stats.throttledCount++;
         this.stats.throttledTotalTime += w;
-        log.warn(`Being rate limited by the API for ${w}ms! Slowing down searches...`);
+        log.warn(`Discord requested a ${(w / 1000).toFixed(1)}-second pause. Wipecord will continue automatically.`);
         this.printStats();
         await this.cooldown(w);
         continue;
@@ -811,10 +811,10 @@ class WipecordCore {
   async deleteMessagesFromList() {
     for (let i = 0; i < this.state._messagesToDelete.length; i++) {
       const message = this.state._messagesToDelete[i];
-      if (!this.state.running) return log.error('Stopped by you!');
+      if (!this.state.running) return log.info('Stopped by you.');
 
       log.debug(
-        `[${this.state.delCount + 1}/${this.state.grandTotal}] ` +
+        `Attempting deletion [${this.state.delCount + 1}/${this.state.grandTotal}]: ` +
         `<sup>${new Date(message.timestamp).toLocaleString()}</sup> ` +
         `<b>${redact(displayName(message.author))}</b>` +
         `: <i>${redact(messagePreview(message)).replace(/\n/g, '↵')}</i>`,
@@ -828,7 +828,7 @@ class WipecordCore {
       let transientRetries = 0;
       for (;;) {
         await this.pace('delete');
-        if (!this.state.running) return log.error('Stopped by you!');
+        if (!this.state.running) return log.info('Stopped by you.');
 
         result = await this.deleteMessage(message);
 
@@ -915,7 +915,7 @@ class WipecordCore {
     const w = (asked > 0 ? asked : clamp(this.effectiveDelay('delete'), 500, MAX_DELETE_DELAY)) + RETRY_MARGIN;
     this.stats.throttledCount++;
     this.stats.throttledTotalTime += w;
-    log.warn(`Being rate limited by the API for ${w}ms! Slowing down deletions...`);
+    log.warn(`Discord requested a ${(w / 1000).toFixed(1)}-second pause. Wipecord will continue automatically.`);
     this.printStats();
     this.stats.deleteNextAt = Date.now() + w;
     return RETRY;
@@ -1098,8 +1098,8 @@ class WipecordCore {
       `Last Ping: ${this.stats.lastPing}ms, Average Ping: ${this.stats.avgPing | 0}ms`,
     );
     log.verb(
-      `Rate Limited: ${this.stats.throttledCount} times.`,
-      `Total time throttled: ${msToHMS(this.stats.throttledTotalTime)}.`
+      `Discord-requested pauses: ${this.stats.throttledCount}.`,
+      `Total time paused: ${msToHMS(this.stats.throttledTotalTime)}.`
     );
   }
 }

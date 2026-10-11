@@ -89,6 +89,20 @@ try {
     check($('stop').disabled&&getComputedStyle($('stop')).display!=='none','Disabled Stop stays visible');
     $('getAuthor').click();$('getChannel').click();
     check($('authorId').value==='11111111111111111'&&$('channelId').value==='${channel}'&&$('guildId').value==='${guild}','Current target buttons fill correct IDs');
+    const originalFetch=window.fetch;
+    window.fetch=async()=>new Response(JSON.stringify([{id:'${guild}'},{id:'55555555555555555'}]),{status:200});
+    try { await $('getGuilds').onclick(); } finally { window.fetch=originalFetch; }
+    check($('guildId').classList.contains('broad-scope')&&$('getGuilds').classList.contains('broad-scope')&&!$('serverScopeWarning').hidden,'All servers shows a persistent scope warning');
+    check($('channelId').value===''&&$('authorId').value==='11111111111111111'&&window.fixturePrompts.length===0&&window.fixtureRequests.length===0,'All servers preserves author and never starts deletion');
+    const darkColor=getComputedStyle($('getGuilds')).color;
+    document.documentElement.classList.add('theme-light');
+    check(getComputedStyle($('getGuilds')).color!==darkColor&&!$('serverScopeWarning').hidden,'Scope warning adapts to light theme');
+    document.documentElement.classList.remove('theme-light');
+    $('getChannel').click();
+    check(!$('guildId').classList.contains('broad-scope')&&$('serverScopeWarning').hidden,'Current target clears the broad selection warning');
+    $('guildId').value='${guild},55555555555555555';$('guildId').dispatchEvent(new Event('input'));
+    check(!$('serverScopeWarning').hidden&&$('serverScopeWarning').textContent.includes('Channel IDs'),'Manual server lists also warn without misrepresenting channel limits');
+    $('getChannel').click();
     $('toggleSidebar').click();
     check($('wipecord').classList.contains('hide-sidebar')&&$('toggleSidebar').getAttribute('aria-expanded')==='false','Settings toggle collapses');
     $('toggleSidebar').click();
@@ -104,6 +118,7 @@ try {
     check(window.fixturePrompts[0].includes('Synthetic preview message'),'Confirmation appears before deletion');
     check(window.fixtureRequests.every(r=>r.method!=='DELETE'),'Cancelling confirmation deletes nothing');
     check($('stop').disabled&&!$('start').disabled,'Actions reset after cancellation');
+    check($('logArea').textContent.includes('Confirmation cancelled by you.')&&!Array.from($('logArea').querySelectorAll('.log-error')).some(node=>node.textContent.includes('cancelled')),'Cancellation is logged as a normal user action');
     check(!$('logArea').querySelector('.empty-state'),'Activity replaces placeholder');
     window.fixtureHold=true;$('start').click();
     await wait(()=>!!window.fixtureRelease);
@@ -141,6 +156,7 @@ try {
   await page('Input.dispatchMouseEvent', { type: 'mouseReleased', x: bounds.right - 2, y: bounds.bottom - 2, button: 'left', buttons: 0, clickCount: 1 });
   assert.ok(await evaluate('document.getElementById("wipecord").getBoundingClientRect().width') > bounds.width, 'Resize handle changes panel width');
   await evaluate('Object.assign(document.getElementById("wipecord").style,{left:"",top:"",width:"",height:""})');
+  await evaluate('document.getElementById("guildId").value="22222222222222222,55555555555555555";document.getElementById("channelId").value="";document.getElementById("guildId").dispatchEvent(new Event("input"))');
   for (const [name, width, height, light] of [['desktop', 1280, 960, false], ['light', 1280, 960, true], ['compact', 390, 844, false], ['short', 520, 480, false]]) {
     await page('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
     await evaluate(`document.documentElement.classList.toggle('theme-light', ${light})`);

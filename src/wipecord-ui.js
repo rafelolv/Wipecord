@@ -144,7 +144,8 @@ function initUI() {
     if (!finalReport) return;
     const labels = { completed: 'Completed', cancelled: 'Confirmation cancelled', stopped: 'Stopped by you', error: 'Ended with errors' };
     const { counts, reason, durationMs } = finalReport;
-    $('#summaryText').textContent = `${labels[reason]} · ${counts.deleted} deleted · ${counts.ignored} ignored · ${counts.failed} failed · ${counts.alreadyGone} already gone · ${msToHMS(durationMs)}`;
+    const outcome = reason === 'completed' && counts.failed > 0 ? 'Finished with failed messages' : labels[reason];
+    $('#summaryText').textContent = `${outcome} · ${counts.deleted} deleted · ${counts.ignored} ignored · ${counts.failed} failed · ${counts.alreadyGone} already gone · ${msToHMS(durationMs)}`;
   };
   const emptyState = [...ui.logArea.childNodes].map(node => node.cloneNode(true));
   $('button#clear').onclick = () => {
@@ -154,7 +155,25 @@ function initUI() {
   };
   // Only overwrite a field when we actually found something, otherwise a failed
   // lookup wipes what the user typed (or stamps it with "undefined").
-  const fillField = (selector, value) => { if (value) $(selector).value = value; };
+  let allServersSelected = false;
+  const updateServerScope = () => {
+    const multiple = $('input#guildId').value.split(',').filter(value => value.trim()).length > 1;
+    const broad = multiple || allServersSelected;
+    $('#guildId').classList.toggle('broad-scope', broad);
+    $('#getGuilds').classList.toggle('broad-scope', broad);
+    $('#serverScopeWarning').hidden = !broad;
+    $('#serverScopeWarning').textContent = $('input#channelId').value.trim()
+      ? 'Broad server selection. Channel IDs, author and filters still limit the cleanup. Review the targets before starting.'
+      : 'All channels in the selected servers will be searched. Only messages matching the selected author and filters are eligible. Nothing is deleted until you start and confirm.';
+  };
+  $('#guildId').addEventListener('input', () => { allServersSelected = false; updateServerScope(); });
+  $('#channelId').addEventListener('input', updateServerScope);
+  const fillField = (selector, value) => {
+    if (value) {
+      $(selector).value = value;
+      $(selector).dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  };
   $('button#getAuthor').onclick = () => fillField('input#authorId', getAuthorId());
   $('button#getGuild').onclick = () => {
     const guildId = getGuildId();
@@ -178,7 +197,9 @@ function initUI() {
       $('input#guildId').value = guildIds.join(',');
       $('input#channelId').value = '';
       if (!$('input#authorId').value.trim()) fillField('input#authorId', getAuthorId());
-      log.info(`Loaded ${guildIds.length} servers. Channel ID was cleared so every server is purged in full.`);
+      allServersSelected = true;
+      updateServerScope();
+      log.warn(`Selected ${guildIds.length} servers and all their channels. The selected author and filters still apply. Review the targets, then start and confirm to delete messages.`);
     } finally {
       loadingGuilds = false;
     }
@@ -193,14 +214,14 @@ function initUI() {
     if (b) alert('This mode will attempt to hide personal information, so you can screen share / take screenshots.\nAlways double check you are not sharing sensitive information!');
   };
   $('#pickMessageAfter').onclick = async () => {
-    alert('Select a message on the chat.\nThe message below it will be deleted.');
+    alert('Select a message to set the lower limit.\nOnly matching messages newer than it will be eligible. The selected message is excluded. Nothing is deleted until you start and confirm.');
     toggleWindow();
     const id = await messagePicker.grab('after');
     if (id) $('input#minId').value = id;
     toggleWindow();
   };
   $('#pickMessageBefore').onclick = async () => {
-    alert('Select a message on the chat.\nThe message above it will be deleted.');
+    alert('Select a message to set the upper limit.\nOnly matching messages older than it will be eligible. The selected message is excluded. Nothing is deleted until you start and confirm.');
     toggleWindow();
     const id = await messagePicker.grab('before');
     if (id) $('input#maxId').value = id;
@@ -253,9 +274,11 @@ function initUI() {
       guildIdField.value = '@me';
       $('input#authorId').value = authorId;
       channelIdField.value = channelIds.join(',');
+      allServersSelected = false;
+      updateServerScope();
       log.info(`Loaded ${channelIds.length} channels.`);
     } catch(err) {
-      log.error('Error parsing file!', err);
+      log.error('Could not import conversations:', err);
     }
   };
 
@@ -306,7 +329,7 @@ function setupWipecordCore() {
     const remaining = msToHMS(stats.etr);
     // Show when we are pacing ourselves above the configured delay, instead of
     // rewriting the user's slider behind their back.
-    const throttled = stats.deleteBackoff > 0 ? ` (throttled +${stats.deleteBackoff | 0}ms)` : '';
+    const throttled = stats.deleteBackoff > 0 ? ` (extra delay: ${(stats.deleteBackoff / 1000).toFixed(1)}s)` : '';
 
     if (state.historyMode) {
       ui.percent.textContent = `Scanning history: ${state.historyScanned} checked, ${value} processed${throttled}`;

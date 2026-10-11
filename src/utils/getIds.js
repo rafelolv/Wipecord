@@ -61,7 +61,7 @@ function fromWebpack(pick) {
       }
     }]);
   } catch (err) {
-    log.verb('Webpack lookup failed:', err);
+    log.verb('Automatic session lookup failed:', err);
   } finally {
     chunks.pop(); // don't leave our fake chunk behind
   }
@@ -72,7 +72,7 @@ export function getToken() {
   const stored = parseStored(readLocalStorage(['token']).token);
   if (looksLikeToken(stored)) return stored;
 
-  log.info('Could not read the Authorization Token from local storage, trying webpack...');
+  log.info('Trying another method to detect your Discord session...');
   // The token module exports getToken directly; the auth store exposes it on
   // default. Other modules (i18n) also have a getToken that returns an object,
   // hence the string check.
@@ -154,7 +154,7 @@ export async function fetchGuildIds(authToken) {
       const suffix = Number.isFinite(retryAfter) && retryAfter > 0 ? ` Try again in ${retryAfter.toFixed(1)}s.` : '';
       log.warn(`Discord rate limited the server list request.${suffix}`);
     }
-    else if (resp.status === 401) log.error('Your Authorization Token is invalid or expired.');
+    else if (resp.status === 401) log.error('Your Discord session is invalid or expired. Sign in again, then retry.');
     else log.error(`Could not load your servers; Discord responded with status ${resp.status}.`);
     return [];
   }
@@ -167,7 +167,7 @@ export async function fetchGuildIds(authToken) {
 export function getGuildId() {
   const m = location.href.match(/channels\/([\w@]+)\/(\d+)/);
   if (m) return m[1];
-  alert('Could not find the Guild ID!\nPlease make sure you are on a Server or DM.');
+  alert('Could not detect the Server ID.\nOpen a server channel or conversation, then retry.');
   return '';
 }
 

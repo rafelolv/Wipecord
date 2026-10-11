@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.3 — 2026-10-11
+
+- Highlight the Server ID field and all-server button in red while a broad server selection is active. Show a persistent, accessible scope warning in both themes; reset it when returning to the current target or importing conversations.
+- Warn for manually entered server lists too. Explain that selecting all clears Channel ID and includes all server channels while retaining the selected author and filters; selection never starts deletion.
+- Clarify message-picker bounds, import failures, session detection, automatic pauses and search retries. Show pauses in seconds and distinguish an attempted deletion from a confirmed result.
+- Treat user cancellation/stopping and generic run termination as neutral events. Report only confirmed removals as deletions; use the final summary for aggregate ignored, failed and already-gone counts, and explicitly label completed runs with failed messages.
+- Rebuild the userscript and both extension packages from the same shared runtime.
+
+Validation: `npm run check` passed lint, 23 mocked tests, metadata/license/syntax checks, matching shared-runtime hashes and deterministic packaging. Mozilla validation reported zero errors, warnings and notices. The Chrome userscript fixture passed 27 interaction checks plus keyboard, drag/resize and four viewport/theme checks with the scope warning active. Native Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly 1.98.28 (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all twelve scenario groups, including selection warnings, preserved filters, no automatic run, duplicate execution, cancellation and stopping. All messages and API responses were simulated. Live Discord, Edge, minimum supported browser versions and signed/store updates remain unvalidated.
+
 ## 1.3.2 — 2026-10-11
 
 - Replace runtime HTML parsing with DOM construction from templates compiled at build time. Preserve HTML/SVG namespaces, metadata links, range defaults and the existing interface.
