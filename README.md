@@ -26,7 +26,11 @@ Use the browser web app. Disable any other message-deletion scripts before runni
 
 Download a fixed version from [GitHub releases](https://github.com/rafelolv/Wipecord/releases/latest).
 
-**Prefer using no userscript manager?** An [extension for Chrome, Brave, Edge and Firefox](docs/EXTENSION.md) uses the same Wipecord interface and engine. The userscript remains the recommended option.
+**Firefox:** [Wipecord on Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/wipecord/) offers the same interface and engine without a userscript manager. See the [extension guide](docs/EXTENSION.md).
+
+**Chrome, Brave and Edge:** Keep using the userscript. Wipecord is not published on the Chrome Web Store. Google charges a [$5 one-time developer registration fee](https://blog.chromium.org/2020/03/new-developer-dashboard-and.html) to publish there. What a generous way to support people sharing free, useful tools. Embarrassing, Google.
+
+Unpacked Chromium packages remain available in [GitHub releases](https://github.com/rafelolv/Wipecord/releases/latest) for manual installation.
 
 ## Quick start
 

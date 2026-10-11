@@ -2,6 +2,8 @@
 
 The userscript is Wipecord's primary installation. The extension is an alternative that runs the same interface and deletion engine without Tampermonkey or another manager. Chrome, Brave and Edge use the Chromium package; Firefox uses its own package. These are desktop browser packages, not Discord desktop integrations.
 
+The Firefox listing is [Wipecord on Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/wipecord/). Chrome, Brave and Edge users should keep using the [userscript](https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js); Wipecord is not published on the Chrome Web Store. Local Chromium packages remain available as a manual alternative.
+
 ## Get the local packages
 
 From a checkout, use Node.js 24 and run:
@@ -25,6 +27,10 @@ The minimum Chromium version is 111, which introduced declarative MAIN-world scr
 
 ## Firefox
 
+For store installation, use the [Firefox Add-ons page](https://addons.mozilla.org/en-US/firefox/addon/wipecord/), install the add-on when the listing is available, allow access to Discord and reload your Discord tabs. Store installations use Mozilla-signed packages and receive updates through Firefox.
+
+For a local build or the unsigned GitHub release ZIP:
+
 1. Use Firefox 128 or later and disable the Wipecord userscript and other deletion scripts.
 2. Open `about:debugging#/runtime/this-firefox`.
 3. Select **Load Temporary Add-on** and choose `dist/firefox/manifest.json` or the Firefox ZIP.
@@ -44,7 +50,9 @@ Compatible Wipecord installations share a DOM claim: the first installation owns
 
 Local installations do not fetch new executable code. Download or rebuild a newer package. Stop any running operation, replace the Chromium folder and click **Reload** on its extension card; load the new Firefox package as a temporary add-on. Reload all Discord tabs afterward, since existing tabs can retain an earlier runtime. The popup lists package and running-core versions to help identify this situation.
 
-Store versions need a developer account, reviewed listing, screenshots, accurate permission/data disclosures and an incremented version. Submit the Chromium ZIP to the Chrome Web Store, or to Edge Add-ons for an Edge listing. Brave supports Chrome Web Store installations. Submit the Firefox ZIP to AMO for review/signing; distribute the resulting **signed XPI**, not the local ZIP, for permanent Firefox installation. Store clients update whole reviewed packages. There is no custom update server or remotely loaded JavaScript in Wipecord.
+Wipecord's current store distribution is planned through the [Firefox Add-ons listing](https://addons.mozilla.org/en-US/firefox/addon/wipecord/). Chromium users should use the userscript or install the unpacked package manually; Chrome Web Store publication is not planned.
+
+Store versions need a developer account, reviewed listing, screenshots, accurate permission/data disclosures and an incremented version. Submit the Firefox ZIP to AMO for review/signing; distribute the resulting **signed XPI**, not the local ZIP, for permanent Firefox installation. Store clients update whole reviewed packages. There is no custom update server or remotely loaded JavaScript in Wipecord.
 
 No store submission or signing is performed by the build. Store acceptance has not been verified. Automated browser checks use simulated responses; see the validation log. Follow [Chrome publication](https://developer.chrome.com/docs/webstore/publish) and [Mozilla signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/) when publication is authorized.
 
