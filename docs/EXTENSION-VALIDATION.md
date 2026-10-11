@@ -25,6 +25,8 @@ All messages, session values and responses are synthetic. Fetch is mocked in the
 
 Before the 1.2.1 release, the maintainer reported that the extension worked successfully. Browser, account actions and detailed scenarios were not specified. This is a user-reported result, separate from the automated fixture checks; no additional live deletion was performed by the release process.
 
+Before the 1.3.1 release, the maintainer confirmed that the reported problems were resolved after the startup correction. The affected browser was Brave Origin Nightly 1.98.28 (Chromium 154.0.8037.58) on Linux/Wayland. This report supports the observed recovery in that session, but does not establish the exact crash cause or constitute an independent live-deletion test.
+
 ## Limits
 
 Browser versions and actual results for this change are recorded in CHANGELOG.md. Chrome, Firefox and the installed Brave Origin Nightly passed; Edge, Brave stable and minimum supported versions have not been exercised directly. Browser tests use temporary loopback match patterns, not Discord's live DOM, CSP, authentication or API. Userscript coexistence is tested by loading its complete artifact as a page script, not through every userscript manager's injection behavior.
