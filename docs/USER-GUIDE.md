@@ -25,7 +25,7 @@ Detailed settings and troubleshooting for the Discord web app. For installation 
 
 The settings sidebar contains **Where to clean**, **Filter messages**, **Date & message range**, **Advanced settings**, and **Wipe Archive**. Only target settings are expanded initially. Message-ID bounds are inside **Date & message range → Use message IDs instead**.
 
-The **Activity** area shows the log and progress. Use **☰** to hide or restore settings, **Delete** to begin with a confirmation, and **Stop** to end a run. Disabled actions stay visible. **Clear log** clears the display; it does not stop an active cleanup. Streamer mode starts enabled. The panel supports light/dark themes, narrow screens, dragging and resizing.
+The **Activity** area shows the log and progress. Use **☰** to hide or restore settings, **Delete messages** to begin with a confirmation, and **Stop** to end a run. Disabled actions stay visible. **Clear log** clears the display; it does not stop an active cleanup. Streamer mode starts enabled. The panel supports light/dark themes, narrow screens, dragging and resizing.
 
 ## The panel, field by field
 
@@ -74,7 +74,7 @@ the archive's channel index straight in:
 2. **Wipe Archive** → choose `messages/index.json`.
 3. Wipecord fills *Server ID* with `@me`, *Author ID* with your own, and *Channel ID* with every channel in the
    archive.
-4. Press **▶︎ Delete** and leave it running.
+4. Press **Delete messages** and leave it running.
 
 Wipecord checks each archive entry and scans live DMs and group DMs. Server channels, deleted conversations, and
 channels you can no longer access are skipped with a warning while the queue continues. Old private messages are

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Wipecord
 // @description Bulk-delete your own messages in a Discord channel, DM or server
-// @version     1.1.0
+// @version     1.1.1
 // @author      Rafael (rafelolv)
 // @homepageURL https://github.com/rafelolv/Wipecord
 // @supportURL  https://github.com/rafelolv/Wipecord/issues
@@ -10,7 +10,7 @@
 // @match       https://*.discord.com/login
 // @license     MIT
 // @namespace   https://github.com/rafelolv/Wipecord
-// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg
+// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.1.1
 // @downloadURL https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
 // @grant       none
 // @updateURL   https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
@@ -43,35 +43,35 @@ SOFTWARE.
 	'use strict';
 
 	/* rollup-plugin-baked-env */
-	const VERSION = "1.1.0";
+	const VERSION = "1.1.1";
 
 	var themeCss = (`
 /* Self-contained colors keep the panel readable when Discord changes its tokens. */
-#wipecord { --wipe-bg: #121820; --wipe-panel: #171f29; --wipe-input: #10161e; --wipe-hover: #24313e; --wipe-line: #2a3542; --wipe-text: #edf2f8; --wipe-muted: #a5b2c2; --wipe-accent: #56e0c5; --wipe-accent-ink: #0c342c; --wipe-danger: #f08d91; --wipe-warning: #e8bd77; color-scheme: dark; }
-.theme-light #wipecord { --wipe-bg: #ffffff; --wipe-panel: #f4f7fa; --wipe-input: #ffffff; --wipe-hover: #e5edf2; --wipe-line: #d4dfe8; --wipe-text: #192632; --wipe-muted: #536478; --wipe-accent: #117f6b; --wipe-accent-ink: #ffffff; --wipe-danger: #a62b3c; --wipe-warning: #8c5911; color-scheme: light; }
+#wipecord { --wipe-bg: #090909; --wipe-panel: #111111; --wipe-input: #0b0b0b; --wipe-hover: #202020; --wipe-line: #2b2b2b; --wipe-text: #f5f5f5; --wipe-muted: #a3a3a3; --wipe-accent: #58d68d; --wipe-accent-ink: #071b0e; --wipe-danger: #f5f5f5; --wipe-warning: #bfbfbf; color-scheme: dark; }
+.theme-light #wipecord { --wipe-bg: #ffffff; --wipe-panel: #f5f5f5; --wipe-input: #ffffff; --wipe-hover: #ededed; --wipe-line: #d8d8d8; --wipe-text: #151515; --wipe-muted: #616161; --wipe-accent: #187d3b; --wipe-accent-ink: #ffffff; --wipe-danger: #151515; --wipe-warning: #616161; color-scheme: light; }
 #wipecord, #wipecord * { box-sizing: border-box; }
 #wipecord button, #wipecord input, #wipecord summary { font: inherit; }
 #wipecord h3, #wipecord h4, #wipecord p { margin: 0; }
 #wipecord a { color: var(--wipe-accent); text-decoration: none; }
 #wipecord a:hover { text-decoration: underline; }
-#wipecord button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 32px; padding: 6px 11px; border: 1px solid var(--wipe-line); border-radius: 8px; background: var(--wipe-panel); color: var(--wipe-text); font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
+#wipecord button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 32px; padding: 6px 11px; border: 1px solid var(--wipe-line); border-radius: 5px; background: var(--wipe-panel); color: var(--wipe-text); font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
 #wipecord button:hover:not(:disabled) { background: var(--wipe-hover); border-color: var(--wipe-muted); }
 #wipecord button:disabled { opacity: .4; cursor: not-allowed; }
 #wipecord :focus-visible { outline: 2px solid var(--wipe-accent); outline-offset: 3px; }
-#wipecord input[type="text"], #wipecord input[type="password"], #wipecord input[type="datetime-local"] { width: 100%; min-width: 0; height: 40px; padding: 9px 11px; border: 1px solid var(--wipe-line); border-radius: 8px; background: var(--wipe-input); color: var(--wipe-text); font-size: 12px; }
+#wipecord input[type="text"], #wipecord input[type="password"], #wipecord input[type="datetime-local"] { width: 100%; min-width: 0; height: 40px; padding: 9px 11px; border: 1px solid var(--wipe-line); border-radius: 5px; background: var(--wipe-input); color: var(--wipe-text); font-size: 13px; }
 #wipecord input::placeholder { color: var(--wipe-muted); opacity: .8; }
 #wipecord input[type="checkbox"] { width: 15px; height: 15px; margin: 0; flex-shrink: 0; accent-color: var(--wipe-accent); }
 #wipecord input[type="range"] { min-width: 0; width: 100%; accent-color: var(--wipe-accent); cursor: pointer; }
-#wipecord input[type="file"] { width: 100%; min-width: 0; font-size: 12px; color: var(--wipe-muted); }
+#wipecord input[type="file"] { width: 100%; min-width: 0; font-size: 13px; color: var(--wipe-muted); }
 #wipecord input::file-selector-button { padding: 8px; margin-right: 8px; border: 1px solid var(--wipe-line); border-radius: 6px; background: var(--wipe-input); color: var(--wipe-text); cursor: pointer; }
-#wipecord .check { display: flex; align-items: center; gap: 8px; font-size: 12px; line-height: 1.5; color: var(--wipe-muted); cursor: pointer; }
+#wipecord .check { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.5; color: var(--wipe-muted); cursor: pointer; }
 #wipecord .check-list { display: grid; gap: 10px; margin: 4px 0 18px; }
-#wipecord .sectionDescription { margin-top: 8px; color: var(--wipe-muted); font-size: 11px; line-height: 1.6; }
+#wipecord .sectionDescription { margin-top: 8px; color: var(--wipe-muted); font-size: 12px; line-height: 1.6; }
 #wipecord .sectionDescription strong { color: var(--wipe-text); font-weight: 500; }
 #wipecord code { font-family: ui-monospace, monospace; font-size: 11px; }
 #wipecord .scroll { scrollbar-width: thin; scrollbar-color: var(--wipe-line) transparent; }
 #wipecord .scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-#wipecord .scroll::-webkit-scrollbar-thumb { background: var(--wipe-line); border-radius: 8px; }
+#wipecord .scroll::-webkit-scrollbar-thumb { background: var(--wipe-line); border-radius: 5px; }
 #wipecord .scroll::-webkit-scrollbar-track { background: transparent; }
 /* Keep privacy behavior independent of the visual layout. */
 #wipecord.redact .priv { display: none !important; }
@@ -83,8 +83,8 @@ SOFTWARE.
 #wipecord .log-debug { color: var(--wipe-muted); }
 #wipecord .log-info { color: var(--wipe-text); }
 #wipecord .log-verb { color: var(--wipe-muted); }
-#wipecord .log-warn { color: var(--wipe-warning); }
-#wipecord .log-error { color: var(--wipe-danger); }
+#wipecord .log-warn { color: var(--wipe-text); border-left: 2px solid var(--wipe-muted); padding-left: 10px; }
+#wipecord .log-error { color: var(--wipe-text); border-left: 3px solid var(--wipe-text); padding-left: 10px; font-weight: 600; }
 #wipecord .log-success { color: var(--wipe-accent); }
 @media (prefers-reduced-motion: reduce) { #wipecord button { transition: none; }
 }
@@ -92,81 +92,73 @@ SOFTWARE.
 `);
 
 	var mainCss = (`
-#wipecord-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0 6px; padding: 0; border: 0; border-radius: 9px; background: #101827; cursor: pointer; flex: 0 0 auto; }
-#wipecord-btn:hover { outline: 2px solid #56e0c5; }
-#wipecord-btn:focus-visible { outline: 2px solid #56e0c5; outline-offset: 3px; }
-#wipecord-btn progress { position: absolute; bottom: -5px; left: 0; width: 32px; height: 3px; display: none; accent-color: #56e0c5; }
-#wipecord-btn.running { box-shadow: 0 0 0 2px #56e0c5; }
+#wipecord-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0 6px; padding: 0; border: 0; border-radius: 6px; background: #090909; cursor: pointer; flex: 0 0 auto; }
+#wipecord-btn:hover { outline: 2px solid #58d68d; }
+#wipecord-btn:focus-visible { outline: 2px solid #58d68d; outline-offset: 3px; }
+#wipecord-btn progress { position: absolute; bottom: -5px; left: 0; width: 32px; height: 3px; display: none; accent-color: #58d68d; }
+#wipecord-btn.running { box-shadow: 0 0 0 2px #58d68d; }
 #wipecord-btn.running progress { display: block; }
-#wipecord { position: fixed; z-index: 100; top: 64px; right: 20px; display: flex; flex-direction: column; width: 900px; height: 760px; min-width: min(600px, calc(100vw - 24px)); min-height: min(480px, calc(100dvh - 80px)); max-width: calc(100vw - 24px); max-height: calc(100dvh - 80px); overflow: hidden; border: 1px solid var(--wipe-line); border-radius: 18px; background: var(--wipe-bg); color: var(--wipe-text); box-shadow: 0 24px 80px #0006, 0 4px 20px #0003; font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; isolation: isolate; }
-#wipecord .header { display: flex; align-items: center; gap: 12px; flex-shrink: 0; min-height: 80px; padding: 16px 22px; border-bottom: 1px solid var(--wipe-line); cursor: grab; }
+#wipecord { position: fixed; z-index: 100; top: 64px; right: 20px; display: flex; flex-direction: column; width: 860px; height: 700px; min-width: min(600px, calc(100vw - 24px)); min-height: min(480px, calc(100dvh - 80px)); max-width: calc(100vw - 24px); max-height: calc(100dvh - 80px); overflow: hidden; border: 1px solid var(--wipe-line); border-radius: 10px; background: var(--wipe-bg); color: var(--wipe-text); box-shadow: 0 12px 36px #0005; font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; isolation: isolate; }
+#wipecord .header { display: flex; align-items: center; gap: 12px; flex-shrink: 0; min-height: 62px; padding: 12px 20px; border-bottom: 1px solid var(--wipe-line); cursor: grab; }
 #wipecord.drag .header { cursor: grabbing; }
 #wipecord .brand-mark { flex-shrink: 0; }
 #wipecord .brand-copy { flex: 1; min-width: 0; }
-#wipecord .brand-copy h3 { font-size: 20px; font-weight: 650; letter-spacing: -.6px; color: var(--wipe-text); }
-#wipecord .brand-copy p { margin-top: 1px; font-size: 11px; color: var(--wipe-muted); }
+#wipecord .brand-copy h3 { font-size: 18px; font-weight: 600; letter-spacing: -.3px; color: var(--wipe-text); }
 #wipecord .version { color: var(--wipe-muted); font: 11px ui-monospace, monospace; }
 #wipecord .icon-button { width: 32px; height: 32px; padding: 0; }
 #wipecord #hide { border: 0; background: transparent; color: var(--wipe-muted); font-size: 24px; font-weight: 400; }
 #wipecord .window-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-#wipecord .sidebar { flex: 0 0 322px; width: 322px; min-width: 0; overflow-y: auto; padding: 22px 18px; border-right: 1px solid var(--wipe-line); background: var(--wipe-panel); }
-#wipecord .eyebrow { display: block; margin-bottom: 5px; color: var(--wipe-accent); font: 10px/1.5 ui-monospace, monospace; letter-spacing: 1.3px; }
+#wipecord .sidebar { flex: 0 0 310px; width: 310px; min-width: 0; overflow-y: auto; padding: 8px 14px; border-right: 1px solid var(--wipe-line); background: var(--wipe-panel); }
 #wipecord h4 { font-size: 16px; font-weight: 600; letter-spacing: -.3px; }
-#wipecord .sidebar-intro { margin: 0 3px 20px; }
-#wipecord .settings-section { margin-bottom: 8px; border: 1px solid var(--wipe-line); border-radius: 10px; overflow: hidden; }
-#wipecord summary { position: relative; display: block; padding: 13px 32px 13px 13px; color: var(--wipe-text); font-size: 12px; font-weight: 600; cursor: pointer; list-style: none; }
+#wipecord .settings-section { margin: 0; border: 0; border-bottom: 1px solid var(--wipe-line); border-radius: 0; overflow: hidden; }
+#wipecord summary { position: relative; display: block; padding: 16px 22px 16px 0; color: var(--wipe-text); font-size: 13px; font-weight: 600; cursor: pointer; list-style: none; }
 #wipecord summary::-webkit-details-marker { display: none; }
-#wipecord summary::after { content: "+"; position: absolute; top: 11px; right: 13px; color: var(--wipe-muted); font-size: 16px; font-weight: 400; }
+#wipecord summary::after { content: "+"; position: absolute; top: 13px; right: 2px; color: var(--wipe-muted); font-size: 16px; font-weight: 400; }
 #wipecord details[open] > summary::after { content: "−"; }
 #wipecord summary:hover { background: var(--wipe-hover); }
-#wipecord .section-body { padding: 0 13px 15px; }
+#wipecord .section-body { padding: 0 0 18px; }
 #wipecord .section-body > .sectionDescription:first-child { margin: 0 0 16px; }
 #wipecord .field { margin-bottom: 16px; }
 #wipecord .field:last-child { margin-bottom: 0; }
 #wipecord .field-heading { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 7px; }
-#wipecord .field-heading label { color: var(--wipe-text); font-size: 11px; font-weight: 600; }
-#wipecord .field-heading a { font-size: 10px; color: var(--wipe-muted); }
+#wipecord .field-heading label { color: var(--wipe-text); font-size: 12px; font-weight: 500; }
+#wipecord .field-heading a { font-size: 11px; color: var(--wipe-muted); }
 #wipecord .multiInput { display: flex; align-items: center; gap: 5px; min-width: 0; }
 #wipecord .multiInput input { flex: 1; min-width: 0; }
-#wipecord .multiInput button { padding: 6px 8px; min-height: 40px; font-size: 11px; }
+#wipecord .multiInput button { padding: 6px 8px; min-height: 40px; font-size: 12px; }
 #wipecord .range-row { display: flex; align-items: center; gap: 10px; }
 #wipecord .range-row div { min-width: 60px; color: var(--wipe-accent); text-align: right; font: 11px ui-monospace, monospace; }
 #wipecord .info { display: flex; justify-content: space-between; margin: 20px 3px 0; font-size: 11px; }
 #wipecord .info a { color: var(--wipe-muted); }
 #wipecord .main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 #wipecord.hide-sidebar .sidebar { display: none; }
-#wipecord .activity-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 22px 24px 16px; flex-shrink: 0; }
+#wipecord .activity-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 20px 22px 18px; flex-shrink: 0; }
 #wipecord .quiet-button { background: transparent; border-color: transparent; color: var(--wipe-muted); }
-#wipecord .action-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 24px 16px; flex-shrink: 0; }
+#wipecord .action-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 22px 16px; flex-shrink: 0; }
 #wipecord .action-buttons { display: flex; align-items: center; gap: 6px; }
-#wipecord #start { min-height: 38px; padding: 8px 18px; border-color: var(--wipe-accent); background: var(--wipe-accent); color: var(--wipe-accent-ink); font-size: 13px; }
+#wipecord #start { min-height: 38px; padding: 8px 14px; border-color: var(--wipe-accent); background: var(--wipe-accent); color: var(--wipe-accent-ink); font-size: 13px; }
 #wipecord #start:hover:not(:disabled) { filter: brightness(1.08); }
 #wipecord #stop { min-height: 38px; color: var(--wipe-danger); }
 #wipecord #stop:not(:disabled) { border-color: var(--wipe-danger); }
-#wipecord .privacy-control { font-size: 11px; }
-#wipecord .safety-note { display: flex; align-items: center; gap: 9px; margin: 0 24px 16px; padding: 10px 12px; border: 1px solid var(--wipe-line); border-radius: 8px; color: var(--wipe-muted); font-size: 11px; line-height: 1.5; flex-shrink: 0; }
+#wipecord .privacy-control { font-size: 12px; }
+#wipecord .safety-note { display: flex; align-items: center; gap: 9px; margin: 0 22px 16px; padding: 0 0 14px; border: 0; border-bottom: 1px solid var(--wipe-line); border-radius: 0; color: var(--wipe-muted); font-size: 12px; line-height: 1.5; flex-shrink: 0; }
 #wipecord .safety-note span { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex-shrink: 0; border: 1px solid var(--wipe-warning); border-radius: 50%; color: var(--wipe-warning); font: bold 10px system-ui, sans-serif; }
 #wipecord #progressBar { width: calc(100% - 48px); min-height: 5px; height: 5px; margin: 0 24px 10px; accent-color: var(--wipe-accent); flex-shrink: 0; }
-#wipecord #logArea { position: relative; flex: 1; min-height: 0; overflow: auto; padding: 12px 24px 24px; white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.65 ui-monospace, "SFMono-Regular", Consolas, monospace; user-select: text; }
-#wipecord #logArea:has(.empty-state) { display: flex; align-items: center; justify-content: center; }
-#wipecord .empty-state { width: 100%; padding: 25px 0; text-align: center; white-space: normal; font-family: system-ui, sans-serif; }
-#wipecord .empty-icon { display: inline-flex; align-items: center; justify-content: center; width: 76px; height: 76px; margin-bottom: 20px; border: 1px solid var(--wipe-line); border-radius: 24px; background: var(--wipe-panel); }
-#wipecord .empty-icon svg { width: 48px; height: 48px; }
-#wipecord .empty-state h4 { font-size: 20px; }
+#wipecord #logArea { position: relative; flex: 1; min-height: 0; overflow: auto; padding: 8px 22px 22px; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.65 ui-monospace, "SFMono-Regular", Consolas, monospace; user-select: text; }
+#wipecord #logArea:has(.empty-state) { display: block; white-space: normal; }
+#wipecord .empty-state { width: 100%; padding: 16px 0; text-align: left; white-space: normal; font-family: system-ui, sans-serif; }
+#wipecord .empty-state h4 { display: inline; font-size: 13px; font-weight: 500; color: var(--wipe-muted); }
 #wipecord .empty-state p { margin-top: 10px; color: var(--wipe-muted); font-size: 12px; line-height: 1.8; }
-#wipecord .empty-steps { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin-top: 24px; color: var(--wipe-muted); font-size: 10px; }
 #wipecord .footer { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; padding: 12px 24px; border-top: 1px solid var(--wipe-line); flex-shrink: 0; }
 #wipecord #progressPercent { flex: 1; min-width: 0; color: var(--wipe-muted); font: 10px/1.6 ui-monospace, monospace; overflow-wrap: anywhere; }
 #wipecord .footer .check { flex-shrink: 0; font-size: 10px; }
 #wipecord .resize-handle { position: absolute; right: 8px; bottom: 8px; width: 10px; height: 10px; border-right: 2px solid var(--wipe-line); border-bottom: 2px solid var(--wipe-line); cursor: nwse-resize; }
-@media (max-width: 640px) { #wipecord { top: 12px; right: 12px; width: calc(100vw - 24px); height: calc(100dvh - 24px); min-width: 0; min-height: 0; max-height: calc(100dvh - 24px); border-radius: 14px; }
-  #wipecord .header { min-height: 68px; padding: 12px 16px; }
+@media (max-width: 640px) { #wipecord { top: 12px; right: 12px; width: calc(100vw - 24px); height: calc(100dvh - 24px); min-width: 0; min-height: 0; max-height: calc(100dvh - 24px); border-radius: 8px; }
+  #wipecord .header { min-height: 60px; padding: 12px 16px; }
   #wipecord .brand-copy h3 { font-size: 18px; }
-  #wipecord .brand-copy p { font-size: 10px; }
   #wipecord .version { display: none; }
   #wipecord .window-body { flex-direction: column; }
   #wipecord .sidebar { flex: 1 1 45%; width: 100%; min-height: 0; border-right: 0; border-bottom: 1px solid var(--wipe-line); padding: 16px; }
-  #wipecord .sidebar-intro { margin-bottom: 12px; }
   #wipecord .main { flex: 0 0 300px; min-height: 280px; }
   #wipecord .section-body > .sectionDescription:first-child { display: none; }
   #wipecord .activity-heading { padding: 14px 16px 10px; }
@@ -174,14 +166,17 @@ SOFTWARE.
   #wipecord .safety-note { margin: 0 16px 12px; }
   #wipecord #logArea { padding: 8px 16px 16px; }
   #wipecord .empty-state { padding: 12px 0; }
-  #wipecord .empty-icon, #wipecord .empty-steps { display: none; }
-  #wipecord .empty-state h4 { font-size: 16px; }
+  #wipecord .empty-state h4 { font-size: 13px; }
   #wipecord .footer { padding: 10px 16px; }
 }
 @media (max-height: 560px) and (max-width: 640px) { #wipecord .main { flex-basis: 200px; min-height: 200px; }
   #wipecord .safety-note { display: none; }
   #wipecord .empty-state p { display: none; }
 }
+#wipecord .header .brand-mark { width: 30px; height: 30px; }
+#wipecord .idle-dot { display: inline-block; width: 6px; height: 6px; margin-right: 8px; vertical-align: middle; border-radius: 50%; background: var(--wipe-muted); }
+#wipecord .empty-state strong { font-weight: 500; color: var(--wipe-text); }
+#wipecord .settings-section .settings-section { margin-top: 8px; border-bottom: 0; border-top: 1px solid var(--wipe-line); }
 
 `);
 
@@ -202,15 +197,15 @@ SOFTWARE.
 	var buttonHtml = (`
 <button id="wipecord-btn" type="button" aria-label="Open Wipecord" title="Clean up messages with Wipecord"><svg class="brand-mark" aria-hidden="true" width="26" height="26" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
   <title>Wipecord — erase messages</title>
-  <rect width="128" height="128" rx="28" fill="#101827"/>
-  <path d="M85 27H37c-7 0-12 5-12 12v27c0 7 5 12 12 12h3v13l17-13h28c7 0 12-5 12-12V39c0-7-5-12-12-12Z" stroke="#F2F6FC" stroke-width="6" stroke-linejoin="round"/>
-  <path d="M40 44h29M40 58h16" stroke="#F2F6FC" stroke-width="6" stroke-linecap="round"/>
-  <path d="M79 44h3M66 58h3" stroke="#56E0C5" stroke-width="6" stroke-linecap="round"/>
-  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#101827" stroke="#101827" stroke-width="10" stroke-linejoin="round"/>
-  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#56E0C5"/>
-  <path d="m63 90 8-9 27 24-9 6H75L63 100c-3-3-3-7 0-10Z" fill="#F2F6FC"/>
-  <path d="m71 81 27 24" stroke="#101827" stroke-width="4"/>
-  <path d="M59 112h50" stroke="#56E0C5" stroke-width="4" stroke-linecap="round"/>
+  <rect width="128" height="128" rx="28" fill="#090909"/>
+  <path d="M85 27H37c-7 0-12 5-12 12v27c0 7 5 12 12 12h3v13l17-13h28c7 0 12-5 12-12V39c0-7-5-12-12-12Z" stroke="#F5F5F5" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M40 44h29M40 58h16" stroke="#F5F5F5" stroke-width="6" stroke-linecap="round"/>
+  <path d="M79 44h3M66 58h3" stroke="#58D68D" stroke-width="6" stroke-linecap="round"/>
+  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#090909" stroke="#090909" stroke-width="10" stroke-linejoin="round"/>
+  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#58D68D"/>
+  <path d="m63 90 8-9 27 24-9 6H75L63 100c-3-3-3-7 0-10Z" fill="#F5F5F5"/>
+  <path d="m71 81 27 24" stroke="#090909" stroke-width="4"/>
+  <path d="M59 112h50" stroke="#58D68D" stroke-width="4" stroke-linecap="round"/>
 </svg>
 <progress aria-label="Cleanup progress"></progress></button>
 
@@ -221,25 +216,24 @@ SOFTWARE.
   <div class="header">
     <svg class="brand-mark" aria-hidden="true" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
   <title>Wipecord — erase messages</title>
-  <rect width="128" height="128" rx="28" fill="#101827"/>
-  <path d="M85 27H37c-7 0-12 5-12 12v27c0 7 5 12 12 12h3v13l17-13h28c7 0 12-5 12-12V39c0-7-5-12-12-12Z" stroke="#F2F6FC" stroke-width="6" stroke-linejoin="round"/>
-  <path d="M40 44h29M40 58h16" stroke="#F2F6FC" stroke-width="6" stroke-linecap="round"/>
-  <path d="M79 44h3M66 58h3" stroke="#56E0C5" stroke-width="6" stroke-linecap="round"/>
-  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#101827" stroke="#101827" stroke-width="10" stroke-linejoin="round"/>
-  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#56E0C5"/>
-  <path d="m63 90 8-9 27 24-9 6H75L63 100c-3-3-3-7 0-10Z" fill="#F2F6FC"/>
-  <path d="m71 81 27 24" stroke="#101827" stroke-width="4"/>
-  <path d="M59 112h50" stroke="#56E0C5" stroke-width="4" stroke-linecap="round"/>
+  <rect width="128" height="128" rx="28" fill="#090909"/>
+  <path d="M85 27H37c-7 0-12 5-12 12v27c0 7 5 12 12 12h3v13l17-13h28c7 0 12-5 12-12V39c0-7-5-12-12-12Z" stroke="#F5F5F5" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M40 44h29M40 58h16" stroke="#F5F5F5" stroke-width="6" stroke-linecap="round"/>
+  <path d="M79 44h3M66 58h3" stroke="#58D68D" stroke-width="6" stroke-linecap="round"/>
+  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#090909" stroke="#090909" stroke-width="10" stroke-linejoin="round"/>
+  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#58D68D"/>
+  <path d="m63 90 8-9 27 24-9 6H75L63 100c-3-3-3-7 0-10Z" fill="#F5F5F5"/>
+  <path d="m71 81 27 24" stroke="#090909" stroke-width="4"/>
+  <path d="M59 112h50" stroke="#58D68D" stroke-width="4" stroke-linecap="round"/>
 </svg>
 
-    <div class="brand-copy"><h3 id="wipecord-title">Wipecord</h3><p>A fresh start for your messages.</p></div>
+    <div class="brand-copy"><h3 id="wipecord-title">Wipecord</h3></div>
     <span class="version">v{{VERSION}}</span>
     <button id="hide" type="button" class="icon-button" aria-label="Close Wipecord" title="Close">×</button>
   </div>
   <div class="window-body">
     <div class="sidebar scroll" aria-label="Cleanup settings">
-      <div class="sidebar-intro"><span class="eyebrow">01 / SETUP</span><h4>Choose what to clean</h4></div>
-      <details class="settings-section" open><summary>Where to clean</summary><div class="section-body"><p class="sectionDescription">Choose your messages and where to look.</p><div class="field"><div class="field-heading"><label for="authorId">Author ID</label><a href="{{WIKI}}#author-id" target="_blank" rel="noopener noreferrer" aria-label="Help with author id">Help</a></div><div class="multiInput"><input id="authorId" type="text" placeholder="Your user ID" aria-describedby="authorId-hint" priv><button id="getAuthor" type="button">me</button></div><p class="sectionDescription" id="authorId-hint">Use <strong>me</strong> to select your own messages.</p></div><div class="field"><div class="field-heading"><label for="guildId">Server ID</label><a href="{{WIKI}}#server-id" target="_blank" rel="noopener noreferrer" aria-label="Help with server id">Help</a></div><div class="multiInput"><input id="guildId" type="text" placeholder="Server ID or @me"  priv><button id="getGuild" type="button">current</button><button id="getGuilds" type="button" title="Load every server on your account">all</button></div></div><div class="field"><div class="field-heading"><label for="channelId">Channel ID</label><a href="{{WIKI}}#channel-id" target="_blank" rel="noopener noreferrer" aria-label="Help with channel id">Help</a></div><div class="multiInput"><input id="channelId" type="text" placeholder="Channel or conversation ID" aria-describedby="channelId-hint" priv><button id="getChannel" type="button">current</button></div><p class="sectionDescription" id="channelId-hint">Use <strong>current</strong> for this chat. An empty channel field selects the whole server.</p></div><label class="check"><input id="includeNsfw" type="checkbox">Include NSFW channels</label></div></details>
+            <details class="settings-section" open><summary>Where to clean</summary><div class="section-body"><div class="field"><div class="field-heading"><label for="authorId">Author ID</label><a href="{{WIKI}}#author-id" target="_blank" rel="noopener noreferrer" aria-label="Help with author id">Help</a></div><div class="multiInput"><input id="authorId" type="text" placeholder="Your user ID" aria-describedby="authorId-hint" priv><button id="getAuthor" type="button">me</button></div><p class="sectionDescription" id="authorId-hint">Select <strong>me</strong> to delete your own messages.</p></div><div class="field"><div class="field-heading"><label for="guildId">Server ID</label><a href="{{WIKI}}#server-id" target="_blank" rel="noopener noreferrer" aria-label="Help with server id">Help</a></div><div class="multiInput"><input id="guildId" type="text" placeholder="Server ID or @me"  priv><button id="getGuild" type="button">current</button><button id="getGuilds" type="button" title="Load every server on your account">all</button></div></div><div class="field"><div class="field-heading"><label for="channelId">Channel ID</label><a href="{{WIKI}}#channel-id" target="_blank" rel="noopener noreferrer" aria-label="Help with channel id">Help</a></div><div class="multiInput"><input id="channelId" type="text" placeholder="Channel or conversation ID" aria-describedby="channelId-hint" priv><button id="getChannel" type="button">current</button></div><p class="sectionDescription" id="channelId-hint">Leave empty to search the entire server.</p></div><label class="check"><input id="includeNsfw" type="checkbox">Include NSFW channels</label></div></details>
       <details class="settings-section" ><summary>Filter messages</summary><div class="section-body"><div class="field"><div class="field-heading"><label for="search">Containing text</label><a href="{{WIKI}}#filter" target="_blank" rel="noopener noreferrer" aria-label="Help with filter">Help</a></div><input id="search" type="text" placeholder="Find words or a phrase"  priv></div><div class="check-list"><label class="check"><input id="hasLink" type="checkbox">Only messages with links</label><label class="check"><input id="hasFile" type="checkbox">Only messages with files</label><label class="check"><input id="includePinned" type="checkbox">Include pinned messages</label></div><div class="field"><div class="field-heading"><label for="pattern">Pattern (optional)</label><a href="{{WIKI}}#pattern" target="_blank" rel="noopener noreferrer" aria-label="Help with pattern">Help</a></div><input id="pattern" type="text" placeholder="Regular expression"  priv><p class="sectionDescription" id="pattern-hint">Use a regular expression for more specific matches.</p></div></div></details>
       <details class="settings-section" ><summary>Date & message range</summary><div class="section-body"><div class="field"><div class="field-heading"><label for="minDate">After date</label><a href="{{WIKI}}#date-interval" target="_blank" rel="noopener noreferrer" aria-label="Help with date interval">Help</a></div><input id="minDate" type="datetime-local"></div><div class="field"><div class="field-heading"><label for="maxDate">Before date</label><a href="{{WIKI}}#date-interval" target="_blank" rel="noopener noreferrer" aria-label="Help with date interval">Help</a></div><input id="maxDate" type="datetime-local"></div><details class="settings-section" ><summary>Use message IDs instead</summary><div class="section-body"><div class="field"><div class="field-heading"><label for="minId">After message</label><a href="{{WIKI}}#messages-interval" target="_blank" rel="noopener noreferrer" aria-label="Help with messages interval">Help</a></div><div class="multiInput"><input id="minId" type="text" placeholder="Message ID"  priv><button id="pickMessageAfter" type="button">Pick</button></div></div><div class="field"><div class="field-heading"><label for="maxId">Before message</label><a href="{{WIKI}}#messages-interval" target="_blank" rel="noopener noreferrer" aria-label="Help with messages interval">Help</a></div><div class="multiInput"><input id="maxId" type="text" placeholder="Message ID"  priv><button id="pickMessageBefore" type="button">Pick</button></div></div><p class="sectionDescription">Message IDs take priority over dates. Leave empty to use dates.</p></div></details></div></details>
       <details class="settings-section" ><summary>Advanced settings</summary><div class="section-body"><div class="field"><div class="field-heading"><label for="searchDelay">Search delay</label><a href="{{WIKI}}#delays" target="_blank" rel="noopener noreferrer" aria-label="Help with delays">Help</a></div><div class="range-row"><input id="searchDelay" type="range" value="2000" step="100" min="100" max="60000"><div id="searchDelayValue"></div></div></div><div class="field"><div class="field-heading"><label for="deleteDelay">Delete delay</label><a href="{{WIKI}}#delays" target="_blank" rel="noopener noreferrer" aria-label="Help with delays">Help</a></div><div class="range-row"><input id="deleteDelay" type="range" value="1000" step="50" min="50" max="10000"><div id="deleteDelayValue"></div></div><p class="sectionDescription" id="deleteDelay-hint">Default delays are a good starting point. Wipecord waits when Discord asks it to slow down.</p></div><div class="field"><div class="field-heading"><label for="token">Authorization token</label><a href="{{WIKI}}#authorization-token" target="_blank" rel="noopener noreferrer" aria-label="Help with authorization token">Help</a></div><div class="multiInput"><input id="token" type="password" autocomplete="off" placeholder="Detected when you start" priv><button id="getToken" type="button">fill</button></div><p class="sectionDescription" id="token-hint">Usually detected automatically. Never share your token.</p></div></div></details>
@@ -247,27 +241,15 @@ SOFTWARE.
       <div class="info"><a href="{{HOME}}" target="_blank" rel="noopener noreferrer">GitHub</a><a href="{{WIKI}}" target="_blank" rel="noopener noreferrer">User guide ↗</a></div>
     </div>
     <div class="main col">
-      <div class="activity-heading"><div><span class="eyebrow">02 / CLEANUP</span><h4>Activity</h4></div><button id="clear" type="button" class="quiet-button">Clear log</button></div>
+      <div class="activity-heading"><div><h4>Activity</h4></div><button id="clear" type="button" class="quiet-button">Clear log</button></div>
       <div class="tbar action-bar">
-        <div class="action-buttons"><button id="toggleSidebar" type="button" class="icon-button" aria-label="Hide settings" aria-expanded="true" title="Toggle settings">☰</button><button id="start" type="button" class="danger" title="Review the target before deleting">▶︎ Delete</button><button id="stop" type="button" title="Stop the deletion process" disabled>■ Stop</button></div>
+        <div class="action-buttons"><button id="toggleSidebar" type="button" class="icon-button" aria-label="Hide settings" aria-expanded="true" title="Toggle settings">☰</button><button id="start" type="button" class="primary-action" title="Review the target before deleting">Delete messages</button><button id="stop" type="button" title="Stop the deletion process" disabled>Stop</button></div>
         <label class="check privacy-control" title="Hide IDs and message contents on your screen"><input id="redact" type="checkbox" checked>Streamer mode</label>
       </div>
-      <p class="safety-note"><span aria-hidden="true">!</span>Deletion is permanent. Review the confirmation before you begin.</p>
+      <p class="safety-note"><span aria-hidden="true">!</span>Deleted messages cannot be restored.</p>
       <progress id="progressBar" aria-label="Cleanup progress" style="display:none;"></progress>
       <div id="logArea" class="logarea scroll" role="log" aria-label="Cleanup activity" aria-live="off">
-        <div class="empty-state"><div class="empty-icon" aria-hidden="true"><svg class="brand-mark" aria-hidden="true" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
-  <title>Wipecord — erase messages</title>
-  <rect width="128" height="128" rx="28" fill="#101827"/>
-  <path d="M85 27H37c-7 0-12 5-12 12v27c0 7 5 12 12 12h3v13l17-13h28c7 0 12-5 12-12V39c0-7-5-12-12-12Z" stroke="#F2F6FC" stroke-width="6" stroke-linejoin="round"/>
-  <path d="M40 44h29M40 58h16" stroke="#F2F6FC" stroke-width="6" stroke-linecap="round"/>
-  <path d="M79 44h3M66 58h3" stroke="#56E0C5" stroke-width="6" stroke-linecap="round"/>
-  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#101827" stroke="#101827" stroke-width="10" stroke-linejoin="round"/>
-  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#56E0C5"/>
-  <path d="m63 90 8-9 27 24-9 6H75L63 100c-3-3-3-7 0-10Z" fill="#F2F6FC"/>
-  <path d="m71 81 27 24" stroke="#101827" stroke-width="4"/>
-  <path d="M59 112h50" stroke="#56E0C5" stroke-width="4" stroke-linecap="round"/>
-</svg>
-</div><h4>Ready when you are.</h4><p>Choose a chat, select your messages,<br>then review and start your cleanup.</p><div class="empty-steps"><span>1. Choose</span><span>2. Review</span><span>3. Clean</span></div></div>
+        <div class="empty-state"><span class="idle-dot" aria-hidden="true"></span><h4>No activity yet</h4><p>Select your author and channel, then click <strong>Delete messages</strong>.<br>You will review the target before anything is deleted.</p></div>
       </div>
       <div class="tbar footer"><div id="progressPercent" role="status"></div><label class="check"><input id="autoScroll" type="checkbox" checked>Auto scroll</label><div class="resize-handle" aria-hidden="true"></div></div>
     </div>

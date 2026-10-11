@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1 — 2026-10-11
+
+- Refine the interface with neutral black/white surfaces and green actions.
+- Remove decorative step labels, section cards, duplicate logos and promotional copy.
+- Reduce the header and simplify the idle activity view while preserving target settings and deletion controls.
+- Align the icon palette and refresh its userscript URL.
+
+Validation: lint, all 15 core tests, build and artifact checks passed. Local Chrome fixtures passed 21 interaction checks, keyboard controls, dragging/resizing and four viewport/theme checks. Live Discord validation has not been performed.
+
 ## 1.1.0 — 2026-10-11
 
 - Redesign the panel with Wipecord branding, clearer target fields and a dedicated activity area.

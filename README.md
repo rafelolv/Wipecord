@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="images/icon.svg?v=bce88ed" width="80" height="80" alt="Wipecord logo">
+  <img src="images/icon.svg?v=1.1.1" width="80" height="80" alt="Wipecord logo">
   <h1>Wipecord</h1>
   <p>Clean up your Discord messages.</p>
   <p>
@@ -30,9 +30,9 @@ Use the browser web app. Disable any other message-deletion scripts before runni
 2. Click **🗑️** in Discord's top-right toolbar.
 3. Click **me** beside **Author ID**, then **current** beside **Channel ID**.
 4. Add a text or date filter if you want to narrow the selection.
-5. Click **▶︎ Delete**, review the confirmation, and accept only if the target is correct.
+5. Click **Delete messages**, review the confirmation, and accept only if the target is correct.
 
-Watch the progress in the panel. **🛑 Stop** stops the run; messages already deleted stay deleted.
+Watch the progress in the panel. **Stop** stops the run; messages already deleted stay deleted.
 
 ### Choose your scope
 
