@@ -1,8 +1,5 @@
 MIT License
 
-Copyright (c) 2019-2025 Victornpb and contributors (original project, Undiscord)
-Copyright (c) 2026 feelmypain and contributors (this fork, Purgecord)
-
 Copyright (c) 2026 Rafael (rafelolv), Wipecord modifications
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -14,9 +11,6 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
-Attribution: Original project (https://github.com/victornpb/undiscord)
-Derivatives must keep attribution comments to the original project in the code readme and license.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,

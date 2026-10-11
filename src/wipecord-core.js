@@ -141,8 +141,6 @@ function messagePreview(message) {
 
 /**
  * Delete all messages in a Discord channel or DM
- * @author Victornpb <https://www.github.com/victornpb>
- * @see https://github.com/victornpb/undiscord
  */
 class WipecordCore {
 

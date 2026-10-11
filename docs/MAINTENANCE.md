@@ -1,10 +1,10 @@
 # Maintenance
 
-Wipecord is maintained on `main` at https://github.com/rafelolv/Wipecord. The source snapshot was imported into the existing independent repository without its Git history. The baseline identifiers and license remain in [BASELINE.md](BASELINE.md) and [LICENSE](../LICENSE).
+Wipecord is maintained on `main` at https://github.com/rafelolv/Wipecord.
 
 ## Development
 
-Use Node.js 24 LTS and `npm ci`. Run `npm run check` after changes: it lints source/build/test files, executes the inherited tests against bundled source with mocked APIs, builds the userscript, checks syntax, and verifies metadata, license inclusion and deterministic output. CI also rejects an artifact that differs from the committed version.
+Use Node.js 24 LTS and `npm ci`. Run `npm run check` after changes: it lints source/build/test files, executes the tests against bundled source with mocked APIs, builds the userscript, checks syntax, and verifies metadata, license inclusion and deterministic output. CI also rejects an artifact that differs from the committed version.
 
 `npm start` serves a separate `[DEV]` installation at `http://localhost:10001/wipecord.user.js`. Edit `src/`, then regenerate the root artifact with `npm run build`. Production installs use https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js.
 
@@ -20,9 +20,9 @@ Use a disposable conversation and messages you intend to delete. Confirm manager
 
 Automated tests exercise core logic with mocks; they do not validate Discord's current DOM, token detection, real permissions, live rate limits or userscript-manager behavior. Record unperformed checks explicitly.
 
-## Source updates
+## Updates
 
-Inspect changes from the recorded baseline in a temporary checkout. Bring over selected fixes only after reviewing their dependencies and testing them. Preserve Wipecord names, URLs, legal notices and deletion guards. Do not replace the project wholesale or import third-party history by accident.
+Review fixes and their dependencies on a working branch before integration. Preserve Wipecord names, URLs and deletion guards. Validate the source and rebuild the artifact before committing.
 
 ## Git and publication
 

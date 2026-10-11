@@ -8,7 +8,7 @@
 // @match       https://*.discord.com/app
 // @match       https://*.discord.com/channels/*
 // @match       https://*.discord.com/login
-// @license     SEE LICENSE IN LICENSE
+// @license     MIT
 // @namespace   https://github.com/rafelolv/Wipecord
 // @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg
 // @downloadURL https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
@@ -18,9 +18,6 @@
 
 /*
 MIT License
-
-Copyright (c) 2019-2025 Victornpb and contributors (original project, Undiscord)
-Copyright (c) 2026 feelmypain and contributors (this fork, Purgecord)
 
 Copyright (c) 2026 Rafael (rafelolv), Wipecord modifications
 
@@ -33,9 +30,6 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
-Attribution: Original project (https://github.com/victornpb/undiscord)
-Derivatives must keep attribution comments to the original project in the code readme and license.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -628,8 +622,6 @@ SOFTWARE.
 
 	/**
 	 * Delete all messages in a Discord channel or DM
-	 * @author Victornpb <https://www.github.com/victornpb>
-	 * @see https://github.com/victornpb/undiscord
 	 */
 	class WipecordCore {
 
@@ -2497,36 +2489,6 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	}
 
 	// ---- END Wipecord ----
-
-	/*
-	MIT License
-
-	Copyright (c) 2019-2025 Victornpb and contributors (original project, Undiscord)
-	Copyright (c) 2026 feelmypain and contributors (this fork, Purgecord)
-
-	Copyright (c) 2026 Rafael (rafelolv), Wipecord modifications
-
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-
-	The above copyright notice and this permission notice shall be included in all
-	copies or substantial portions of the Software.
-
-	Attribution: Original project (https://github.com/victornpb/undiscord)
-	Derivatives must keep attribution comments to the original project in the code readme and license.
-
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
-	*/
 
 	initUI();
 

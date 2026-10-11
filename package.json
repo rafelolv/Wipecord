@@ -15,7 +15,7 @@
     "grant": "none",
     "updateURL": "https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js"
   },
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "engines": {
     "node": ">=24"
   },

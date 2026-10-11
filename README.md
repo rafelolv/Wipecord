@@ -36,7 +36,7 @@ It only ever deletes messages **you** can delete. No Wipecord account or backend
 - [Troubleshooting](#troubleshooting)
 - [Security](#security)
 - [Building from source](#building-from-source)
-- [Credits and license](#credits-and-license)
+- [License](#license)
 
 ---
 
@@ -380,6 +380,6 @@ src/
 
 ## License
 
-Maintained by [rafelolv](https://github.com/rafelolv). Includes code from [Undiscord](https://github.com/victornpb/undiscord) by victornpb and contributors, via Purgecord by feelmypain and contributors. See [LICENSE](LICENSE) for the retained copyright, permission and additional attribution requirement.
+Maintained by [rafelolv](https://github.com/rafelolv). See [LICENSE](LICENSE).
 
 Development rules: [AGENTS.md](AGENTS.md). Maintenance, versions and validation: [docs/MAINTENANCE.md](docs/MAINTENANCE.md). Releases: [docs/RELEASING.md](docs/RELEASING.md).

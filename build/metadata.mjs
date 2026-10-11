@@ -5,7 +5,6 @@ const loadJSON = (path) => JSON.parse(fs.readFileSync(new URL(path, import.meta.
 //
 // Generate metadata block with information from package.json
 // https://sourceforge.net/p/greasemonkey/wiki/Metadata_Block/
-// @author victornpb
 //
 
 const production = !process.env.ROLLUP_WATCH;
