@@ -3,6 +3,7 @@
 ## 1.0.0 — Unreleased
 
 - Establish Wipecord branding, maintainer links, original icon and independent versioning.
+- Redesign the icon as a chat bubble being erased to represent message cleanup.
 - Include the deletion engine and regression suite.
 - Add source/artifact verification, CI, release automation and maintenance instructions.
 - Update compatible build dependencies and remove inactive commit-hook tooling.
