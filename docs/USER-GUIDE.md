@@ -193,6 +193,18 @@ or threads you lack permission to reopen, are skipped with an explanation.
 
 ## Troubleshooting
 
+| Message or diagnostic | What to do |
+| --- | --- |
+| Invalid or expired session / HTTP 401 | Sign in to Discord again, refresh the page and retry. The run stops rather than repeating unauthorized requests. |
+| Access or permission denied / HTTP 403 | Check that you can open the target and delete your own messages there. Repeated requests do not restore permissions. |
+| Target unavailable / HTTP 404 | Check the target IDs and whether the conversation or channel still exists and is accessible. An already-gone message is counted separately. |
+| Locked thread or system message | These messages are skipped. A locked thread needs someone with permission to unlock it; system messages cannot be deleted. |
+| Request rejected / HTTP 400 | Review target IDs and filters; update Wipecord if the problem persists. |
+| Server error / HTTP 5xx | Wait before retrying after the current run ends. Check whether Discord is available if the problem persists. |
+| Connection failed or timed out | Check your connection. Wipecord keeps bounded retries; review the summary if it cannot recover. |
+
+Logs retain numeric HTTP statuses and Discord error codes for support, without repeating API response bodies or request exception payloads. Report those numbers with your browser and Wipecord version; never include tokens or private messages. Always review the final summary before retrying a partially completed run.
+
 <details>
 <summary><b>The Wipecord logo button doesn't appear</b></summary>
 
@@ -209,10 +221,9 @@ For a locally installed extension, reload Wipecord in your browser's extension m
 </details>
 
 <details>
-<summary><b>"Could not automatically detect Authorization Token"</b></summary>
+<summary><b>"Could not detect your Discord session"</b></summary>
 
-Close DevTools and click **fill** again. Discord deletes the stored token from local storage while DevTools is open,
-as an anti-scam measure.
+Open a conversation in the Discord web app while signed in, refresh the page and update Wipecord. Retry session detection with **fill** in Advanced settings. Never paste a token into an issue or share it with someone helping you.
 
 If you are running Wipecord inside the *desktop* app via a client mod, the stored token is encrypted and cannot be
 read — use the web app instead.
@@ -220,9 +231,9 @@ read — use the web app instead.
 </details>
 
 <details>
-<summary><b>It says "Being rate limited" over and over</b></summary>
+<summary><b>It says "Discord requested a pause" over and over</b></summary>
 
-That is the script doing its job — it backs off and keeps going. If it happens constantly, raise both delays. Very
+During a cleanup, Wipecord waits for the requested pause and resumes automatically within its retry limit. If it happens constantly, raise both delays. Loading the server list with **all** is different: wait for the indicated interval and click **all** again; that request is not retried automatically. Very
 large or old histories are slow by nature; scanning years of a busy group DM can take hours.
 
 </details>
@@ -240,10 +251,9 @@ threads you lack permission to reopen are reported individually with the reason.
 </details>
 
 <details>
-<summary><b>"Blocked by Cloudflare"</b></summary>
+<summary><b>"Discord temporarily blocked requests"</b></summary>
 
-Too many requests reached Discord's edge and your IP is temporarily blocked — potentially for up to 24 hours. Stop,
-wait, and use larger delays next time. Nothing else you do will speed this up.
+Wipecord stops instead of retrying the block automatically. Stop other deletion tools too, wait before trying again, and use longer request delays next time. The block response does not establish an exact recovery time.
 
 </details>
 

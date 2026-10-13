@@ -30,6 +30,101 @@ function jsonResponse(status, body = {}) {
   });
 }
 
+function errorTestCore() {
+  const core = new WipecordCore();
+  core.options = { ...core.options, guildId: '22222222222222222', channelId: '44444444444444444', deleteDelay: 0, searchDelay: 0 };
+  core.state.running = true;
+  core.state.historyValidated = true;
+  core.pace = core.cooldown = async () => {};
+  return core;
+}
+
+test('all API operations report expired sessions and blocks without exposing response data', async () => {
+  for (const method of ['validatePrivateChannel', 'history', 'search', 'unarchiveThread', 'deleteMessage']) {
+    for (const [status, code] of [[401, 0], [429, 40333]]) {
+      const core = errorTestCore();
+      let requests = 0;
+      core.request = async () => { requests++; return jsonResponse(status, { code, message: 'synthetic-private-body' }); };
+      const argument = method === 'deleteMessage' ? historyMessage('90000000000000000', '33333333333333333', 'synthetic-private-message') : '44444444444444444';
+      await assert.rejects(core[method](argument), error => {
+        assert.equal(error.fatal, true);
+        assert.match(error.message, status === 401 ? /Sign in to Discord again/ : /will not retry this block automatically/);
+        assert.equal(error.message.includes('synthetic-private'), false);
+        return true;
+      });
+      assert.equal(requests, 1);
+    }
+  }
+});
+
+test('denied and missing read targets keep their skip behavior and show actionable diagnostics', async () => {
+  const restoreConsole = muteConsole();
+  const warnings = [];
+  console.warn = (...args) => warnings.push(args.join(' '));
+  try {
+    for (const method of ['validatePrivateChannel', 'history', 'search']) {
+      for (const [status, code] of [[403, 50001], [404, 10003]]) {
+        const core = errorTestCore();
+        let requests = 0;
+        core.request = async () => { requests++; return jsonResponse(status, { code, message: 'synthetic-private-body' }); };
+        const result = await core[method]();
+        assert.equal(result, method === 'validatePrivateChannel' ? false : null);
+        assert.equal(requests, 1);
+        const text = warnings.at(-1);
+        assert.match(text, status === 403 ? /permission/ : /Check the target/);
+        assert.match(text, new RegExp(`HTTP ${status}`));
+        assert.match(text, /Skipping this target/);
+        assert.equal(text.includes('synthetic-private-body'), false);
+      }
+    }
+  } finally { restoreConsole(); }
+});
+
+test('deletion guidance preserves permanent skips, missing messages, retries and rate-limit backoff', async () => {
+  const restoreConsole = muteConsole(), logs = [];
+  console.warn = console.error = (...args) => logs.push(args.join(' '));
+  try {
+    const message = historyMessage('90000000000000000', '33333333333333333', 'synthetic-private-message');
+    for (const [status, code, outcome, wording] of [
+      [403, 50013, 'SKIPPED', /permission/], [400, 50021, 'SKIPPED', /system message/],
+      [403, 160005, 'SKIPPED', /locked/], [404, 10008, 'ALREADY_GONE', null],
+      [503, 0, 'FAILED', /server error/], [400, 0, 'FAILED', /target IDs and filters/],
+      [429, 0, 'RETRY', /continue automatically/],
+    ]) {
+      const core = errorTestCore();
+      core.request = async () => jsonResponse(status, { code, retry_after: 2, message: 'synthetic-private-body' });
+      const before = Date.now();
+      assert.equal(await core.deleteMessage(message), outcome);
+      if (wording) assert.match(logs.at(-1), wording);
+      if (status === 429) {
+        assert.ok(core.stats.deleteNextAt >= before + 2250);
+        assert.equal(core.stats.throttledCount, 1);
+      }
+    }
+    const core = errorTestCore();
+    core.request = async () => { throw Error('synthetic-private-exception'); };
+    assert.equal(await core.deleteMessage(message), 'FAILED');
+    assert.match(logs.at(-1), /Check your connection/);
+    assert.equal(logs.join(' ').includes('synthetic-private'), false);
+  } finally { restoreConsole(); }
+});
+
+test('exhausted connection retries stop with guidance and server-list errors require manual retry', async () => {
+  const restoreConsole = muteConsole(), originalFetch = globalThis.fetch, logs = [];
+  console.warn = console.error = (...args) => logs.push(args.join(' '));
+  try {
+    const core = errorTestCore();
+    let requests = 0;
+    core.request = async () => { requests++; throw Error('synthetic-private-exception'); };
+    await assert.rejects(core.search(), /after 20 attempts.*Check your connection/);
+    assert.equal(requests, 20);
+    globalThis.fetch = async () => { throw Error('synthetic-private-exception'); };
+    assert.deepEqual(await fetchGuildIds('synthetic-session'), []);
+    assert.match(logs.at(-1), /server list is not retried automatically/);
+    assert.equal(logs.join(' ').includes('synthetic-private'), false);
+  } finally { globalThis.fetch = originalFetch; restoreConsole(); }
+});
+
 test('rejects malformed patterns, invalid calendar dates and reversed effective bounds', () => {
   for (const options of [
     { pattern: '[' }, { minId: '2026-02-30T12:00' }, { minId: '2026-10-11T24:00' }, { minId: 'nonsense' },
@@ -338,7 +433,7 @@ test('does not retry a Cloudflare edge block while loading servers', async () =>
   }
 
   assert.equal(requests, 1);
-  assert.match(errorLog, /Blocked by Cloudflare/);
+  assert.match(errorLog, /temporarily blocked requests/);
 });
 
 test('runs each planned server as a separate whole-server search', async () => {

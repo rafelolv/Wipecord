@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.5 — 2026-10-13
+
+- Give request failures a plain-English explanation and next step for expired sessions, access/permission denial, unavailable targets, invalid requests, locked/system messages, service errors, timeouts and temporary blocks.
+- Share the guidance between deletion, channel/history/search requests, thread reopening and server-list loading. Preserve existing skip, fatal-stop, retry, pacing and backoff decisions.
+- Clarify bounded automatic retries, retry exhaustion and manual server-list retry. Replace token-copy instructions with session detection/sign-in guidance; stop presenting a guessed recovery time for temporary blocks.
+- Keep numeric HTTP and Discord diagnostics without echoing API bodies, request exception payloads or a related message object into error logs. Keep formatting, redaction and the anonymous report schema unchanged.
+- Expand troubleshooting documentation and regression coverage; rebuild the same generated engine into both extension packages.
+
+Validation: `npm run check` passed lint, 27 mocked unit tests, metadata/license/syntax checks, matching shared-runtime hashes and deterministic packaging. Mozilla validation reported zero errors, warnings and notices. The Chrome userscript fixture passed 27 interaction checks, keyboard controls, dragging/resizing and five viewport/theme checks. Native Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all thirteen scenario groups, including simulated error guidance, released controls, payload privacy, preserved filters, no automatic deletion, cancellation and stopping. No real messages were deleted. Live Discord, live rate limiting, Edge, minimum browser versions and signed/store updates remain unvalidated.
+
 ## 1.3.4 — 2026-10-11
 
 - Increase the default panel width from 860 to 960 pixels and the settings sidebar from 310 to 350 pixels, giving target fields, scope warnings and activity logs more room. Keep the 700-pixel height and responsive viewport limits.

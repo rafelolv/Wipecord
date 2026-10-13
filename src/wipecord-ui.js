@@ -376,8 +376,8 @@ async function startAction() {
       if (!lock) return log.error('Wipecord is already running in another tab. Stop it before starting here.');
       await performStartAction();
     });
-  } catch (error) {
-    log.error('Could not coordinate the deletion run:', escapeHTML(error?.message || error));
+  } catch {
+    log.error('Wipecord could not coordinate this run between tabs. Review any existing run summary, then refresh Discord and update your browser before retrying.');
   } finally {
     startPending = false;
   }
@@ -465,7 +465,7 @@ async function performStartAction() {
     if (jobs.length > 1) await wipecordCore.runBatch(jobs);
     else await wipecordCore.run();
   } catch (err) {
-    log.error('CoreException', escapeHTML(err && err.message || err));
+    log.error('Run ended with an error:', err?.name === 'WipecordError' ? escapeHTML(err.message) : 'An unexpected error occurred. Refresh Discord and update Wipecord before retrying. If it persists, report the problem without account or message data.');
   } finally {
     // run() unlocks the UI itself; this only covers a throw that escaped it.
     if (wipecordCore.state.running) wipecordCore.stop();

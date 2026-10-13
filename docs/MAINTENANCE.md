@@ -8,6 +8,8 @@ Use Node.js 24 LTS and `npm ci`. Run `npm run check` after changes: it lints sou
 
 Runtime UI templates are compiled to DOM descriptors by `build/templates-plugin.mjs`. Keep templates in `src/ui/`; never parse dynamic HTML in the browser. Log rendering creates only attribute-free `b`, `i`, `sup` and `x` formatting nodes; all other markup is literal text. Preserve redaction and test hostile message/error data after renderer changes. `parse5` and `addons-linter` are build/check dependencies only and are not shipped in the runtime.
 
+Keep request-error guidance in `src/utils/errors.js` consistent across the core and server-list loader. Explain the next action and whether a retry is automatic or manual. Preserve existing fatal/skip/retry decisions and backoff; do not log API response bodies, request exception payloads or related message objects. Numeric HTTP statuses and Discord codes are sufficient for support. Avoid promising a recovery time for temporary blocks.
+
 For UI changes, run `npm run test:ui:browser` with Chrome/Chromium installed (`CHROME_BIN` can select its executable). This loads the actual userscript on a loopback fixture, mocks all API calls and checks target controls, privacy, cancellation, stopping, keyboard access and viewport layouts. It produces screenshots in a temporary directory. It does not authenticate to Discord or delete real messages.
 
 `npm start` serves a separate `[DEV]` installation at `http://localhost:10001/wipecord.user.js`. Edit `src/`, then regenerate the root artifact with `npm run build`. Production installs use https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js.

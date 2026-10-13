@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Wipecord
 // @description Bulk-delete your own messages in a Discord channel, DM or server
-// @version     1.3.4
+// @version     1.3.5
 // @author      Rafael (rafelolv)
 // @homepageURL https://github.com/rafelolv/Wipecord
 // @supportURL  https://github.com/rafelolv/Wipecord/issues
@@ -10,7 +10,7 @@
 // @match       https://*.discord.com/login
 // @license     MIT
 // @namespace   https://github.com/rafelolv/Wipecord
-// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.4
+// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.5
 // @downloadURL https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
 // @grant       none
 // @updateURL   https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
@@ -43,7 +43,7 @@ SOFTWARE.
 	'use strict';
 
 	/* rollup-plugin-baked-env */
-	const VERSION = "1.3.4";
+	const VERSION = "1.3.5";
 
 	var themeCss = (`
 /* Self-contained colors keep the panel readable when Discord changes its tokens. */
@@ -349,6 +349,37 @@ SOFTWARE.
 	  }
 	}
 
+	// Keep API diagnostics numeric; response bodies and exceptions can contain private data.
+	const SESSION_EXPIRED = 'Your Discord session is invalid or expired. Sign in to Discord again, refresh the page, then retry.';
+	const TEMPORARY_BLOCK = 'Discord temporarily blocked requests. Wipecord will not retry this block automatically. Stop other deletion tools and wait before trying again; use longer request delays next time.';
+
+	function requestError(status, code, action) {
+	  let guidance;
+	  if (status === 401) guidance = SESSION_EXPIRED;
+	  else if (code === 160005) guidance = 'The thread is locked. It must be unlocked by someone with permission before you can retry.';
+	  else if (code === 50021) guidance = 'This is a system message that Discord does not allow you to delete. Retrying will not help.';
+	  else if (code === 50003) guidance = 'Discord does not support this action in a direct message. Check the selected conversation.';
+	  else if (code === 50024) guidance = 'Discord cannot perform this action on the selected channel type. Check the target before retrying.';
+	  else if (status === 404) guidance = 'The selected resource is unavailable or no longer exists. Check the target and whether you can still open it in Discord before retrying.';
+	  else if (status === 403 || code === 50001 || code === 50013) guidance = 'Discord denied access or permission. Check that you can open the target and delete your own messages there. Repeating the request will not fix missing permissions.';
+	  else if (status === 400) guidance = 'Discord rejected the request. Review the target IDs and filters. If they are correct, update Wipecord and report the problem if it persists.';
+	  else if (status >= 500 && status <= 599) guidance = 'Discord returned a server error. Wait and try again after the current run ends. If it persists, check whether Discord is available.';
+	  else guidance = 'Discord could not complete this request. Review the final summary before retrying. If it persists, update Wipecord and report the status and error code without account or message data.';
+
+	  const diagnostics = [];
+	  if (Number.isInteger(status) && status > 0 && status <= 599) diagnostics.push(`HTTP ${status}`);
+	  if (Number.isInteger(code) && code > 0) diagnostics.push(`Discord code ${code}`);
+	  return `Could not ${action}. ${guidance}${diagnostics.length ? ` (${diagnostics.join(', ')})` : ''}`;
+	}
+
+	function connectionError(action) {
+	  return `Could not reach Discord to ${action}; the connection failed or timed out. Check your connection. Retries are limited; if this run cannot recover, wait and try again.`;
+	}
+
+	function exhaustedRetries(action, attempts) {
+	  return `Stopped trying to ${action} after ${attempts} attempts. Check your connection and the warnings above. Wait before starting another run.`;
+	}
+
 	const PREFIX$1 = '[WIPECORD]';
 
 	/** Absolute URLs also work in extension contexts that cannot resolve relative fetch URLs. */
@@ -615,7 +646,7 @@ SOFTWARE.
 	        try {
 	          await this.run(true);
 	        } catch (err) {
-	          log.error(`Job ${i + 1} failed:`, escapeHTML(err && err.message || err));
+	          log.error(`Target ${i + 1}/${queue.length} ended with an error:`, err instanceof WipecordError ? escapeHTML(err.message) : 'An unexpected error occurred. Refresh Discord and update Wipecord before retrying.');
 	          // A dead token or an edge block fails identically for every remaining
 	          // job, so there is nothing to be gained by continuing.
 	          if (err && err.fatal) {
@@ -879,14 +910,14 @@ SOFTWARE.
 	      let resp;
 	      try {
 	        resp = await this.request(url);
-	      } catch (err) {
-	        log.warn('Channel lookup failed:', escapeHTML(err && err.message || err));
+	      } catch {
+	        log.warn(connectionError('check the selected conversation'));
 	        this.penalize('search', MAX_SEARCH_DELAY);
 	        await this.cooldown(this.effectiveDelay('search'));
 	        continue;
 	      }
 
-	      const { json, text } = await readBody(resp);
+	      const { json } = await readBody(resp);
 	      if (isEdgeBlock(resp, json)) throw this.edgeBlocked();
 
 	      if (resp.status === 429) {
@@ -904,14 +935,14 @@ SOFTWARE.
 	      if (!resp.ok) {
 	        const code = json && json.code;
 	        if (resp.status === 401) {
-	          throw new WipecordError('Your authorization token is invalid or expired. Press "fill" to grab a fresh one.', { fatal: true, status: 401 });
+	          throw new WipecordError(SESSION_EXPIRED, { fatal: true, status: 401 });
 	        }
 	        if (resp.status === 403 || resp.status === 404 || code === 50001 || code === 50024) {
-	          log.warn(`Skipping this channel, the API responded with status ${resp.status}:`, escapeHTML(text));
+	          log.warn(requestError(resp.status, code, 'check the selected conversation'), 'Skipping this target.');
 	          this.#report?.end('error');
 	          return false;
 	        }
-	        throw new WipecordError(`Error checking the channel, API responded with status ${resp.status}! ${text}`, { status: resp.status, code });
+	        throw new WipecordError(requestError(resp.status, code, 'check the selected conversation'), { status: resp.status, code });
 	      }
 
 	      this.updatePace('search', resp);
@@ -927,7 +958,7 @@ SOFTWARE.
 	      return true;
 	    }
 
-	    throw new WipecordError(`Giving up on checking the channel after ${MAX_SEARCH_ATTEMPTS} attempts.`);
+	    throw new WipecordError(exhaustedRetries('check the selected conversation', MAX_SEARCH_ATTEMPTS));
 	  }
 
 	  async history() {
@@ -949,14 +980,14 @@ SOFTWARE.
 	      let resp;
 	      try {
 	        resp = await this.request(url);
-	      } catch (err) {
-	        log.warn('History request failed:', escapeHTML(err && err.message || err));
+	      } catch {
+	        log.warn(connectionError('read conversation history'));
 	        this.penalize('search', MAX_SEARCH_DELAY);
 	        await this.cooldown(this.effectiveDelay('search'));
 	        continue;
 	      }
 
-	      const { json, text } = await readBody(resp);
+	      const { json } = await readBody(resp);
 	      if (isEdgeBlock(resp, json)) throw this.edgeBlocked();
 
 	      if (resp.status === 429) {
@@ -974,21 +1005,21 @@ SOFTWARE.
 	      if (!resp.ok) {
 	        const code = json && json.code;
 	        if (resp.status === 401) {
-	          throw new WipecordError('Your authorization token is invalid or expired. Press "fill" to grab a fresh one.', { fatal: true, status: 401 });
+	          throw new WipecordError(SESSION_EXPIRED, { fatal: true, status: 401 });
 	        }
 	        if (resp.status === 403 || resp.status === 404 || code === 50001 || code === 50024) {
-	          log.warn(`Skipping this channel, the API responded with status ${resp.status}:`, escapeHTML(text));
+	          log.warn(requestError(resp.status, code, 'read conversation history'), 'Skipping this target.');
 	          this.#report?.end('error');
 	          return null;
 	        }
-	        throw new WipecordError(`Error fetching channel history, API responded with status ${resp.status}! ${text}`, { status: resp.status, code });
+	        throw new WipecordError(requestError(resp.status, code, 'read conversation history'), { status: resp.status, code });
 	      }
 
 	      this.updatePace('search', resp);
 	      this.relax('search');
 
 	      if (!Array.isArray(json)) {
-	        throw new WipecordError('Discord returned an invalid channel history response. Stopping instead of guessing what to delete.');
+	        throw new WipecordError('Discord returned an unexpected history response. This target cannot continue safely. Refresh Discord and update Wipecord before retrying; report the problem if it persists.');
 	      }
 	      const rawMessages = json;
 	      this.state.historyScanned += rawMessages.length;
@@ -1006,7 +1037,7 @@ SOFTWARE.
 	      return data;
 	    }
 
-	    throw new WipecordError(`Giving up on fetching channel history after ${MAX_SEARCH_ATTEMPTS} attempts.`);
+	    throw new WipecordError(exhaustedRetries('read conversation history', MAX_SEARCH_ATTEMPTS));
 	  }
 
 	  async search() {
@@ -1033,15 +1064,15 @@ SOFTWARE.
 	      let resp;
 	      try {
 	        resp = await this.request(url + query);
-	      } catch (err) {
-	        // Network error or timeout. Worth retrying, the API never saw it.
-	        log.warn('Search request failed:', escapeHTML(err && err.message || err));
+	      } catch {
+	        // Keep the existing bounded network/timeout retry policy.
+	        log.warn(connectionError('search messages'));
 	        this.penalize('search', MAX_SEARCH_DELAY);
 	        await this.cooldown(this.effectiveDelay('search'));
 	        continue;
 	      }
 
-	      const { json, text } = await readBody(resp);
+	      const { json } = await readBody(resp);
 
 	      if (isEdgeBlock(resp, json)) throw this.edgeBlocked();
 
@@ -1074,16 +1105,16 @@ SOFTWARE.
 	        const code = json && json.code;
 
 	        if (resp.status === 401) {
-	          throw new WipecordError('Your authorization token is invalid or expired. Press "fill" to grab a fresh one.', { fatal: true, status: 401 });
+	          throw new WipecordError(SESSION_EXPIRED, { fatal: true, status: 401 });
 	        }
 	        // The channel is gone, or was never ours to read. End this job quietly
 	        // so a batch over an old archive is not killed by one dead server.
 	        if (resp.status === 403 || resp.status === 404 || code === 50001 || code === 50024) {
-	          log.warn(`Skipping this channel, the API responded with status ${resp.status}:`, escapeHTML(text));
+	          log.warn(requestError(resp.status, code, 'search messages'), 'Skipping this target.');
 	          this.#report?.end('error');
 	          return null;
 	        }
-	        throw new WipecordError(`Error searching messages, API responded with status ${resp.status}! ${text}`, { status: resp.status, code });
+	        throw new WipecordError(requestError(resp.status, code, 'search messages'), { status: resp.status, code });
 	      }
 
 	      this.updatePace('search', resp);
@@ -1095,7 +1126,7 @@ SOFTWARE.
 	      return data;
 	    }
 
-	    throw new WipecordError(`Giving up on searching after ${MAX_SEARCH_ATTEMPTS} attempts.`);
+	    throw new WipecordError(exhaustedRetries('search messages', MAX_SEARCH_ATTEMPTS));
 	  }
 
 	  filterResponse(data) {
@@ -1173,7 +1204,7 @@ SOFTWARE.
 	        }
 	        else if (result === FAILED) {
 	          if (++failures >= this.options.maxAttempt) break;
-	          log.verb(`Retrying... (${failures}/${this.options.maxAttempt})`);
+	          log.verb(`Retrying this message automatically (next attempt: ${failures + 1}/${this.options.maxAttempt}). You can stop the run at any time.`);
 	        }
 	        else break;
 	      }
@@ -1209,18 +1240,18 @@ SOFTWARE.
 	        headers: { 'Content-Type': 'application/json' },
 	        body: JSON.stringify({ archived: false }),
 	      });
-	    } catch (err) {
-	      log.error('Unarchive request threw an error:', escapeHTML(err && err.message || err));
+	    } catch {
+	      log.error(connectionError('reopen the archived thread'));
 	      this.stats.deleteNextAt = Date.now() + this.effectiveDelay('delete');
 	      return FAILED;
 	    }
 
-	    const { json, text } = await readBody(resp);
+	    const { json } = await readBody(resp);
 
 	    if (isEdgeBlock(resp, json)) throw this.edgeBlocked();
 	    if (resp.status === 429) return this.deferDeleteForRateLimit(resp, json);
 	    if (resp.status === 401) {
-	      throw new WipecordError('Your authorization token is invalid or expired. Press "fill" to grab a fresh one.', { fatal: true, status: 401 });
+	      throw new WipecordError(SESSION_EXPIRED, { fatal: true, status: 401 });
 	    }
 
 	    this.updatePace('delete', resp);
@@ -1233,14 +1264,11 @@ SOFTWARE.
 
 	    const code = json && json.code;
 	    if (resp.status === 403 || resp.status === 404 || code === 50001 || code === 50013 || code === 160005) {
-	      const reason = code === 160005
-	        ? 'it is locked'
-	        : 'you do not have permission to reopen it';
-	      log.warn(`Could not reopen the archived thread because ${reason}. Skipping this message.`);
+	      log.warn(requestError(resp.status, code, 'reopen the archived thread'), 'Skipping this message.');
 	      return SKIPPED;
 	    }
 
-	    log.error(`Error reopening the archived thread, API responded with status ${resp.status}!`, escapeHTML(text));
+	    log.error(requestError(resp.status, code, 'reopen the archived thread'));
 	    return FAILED;
 	  }
 
@@ -1261,15 +1289,15 @@ SOFTWARE.
 	    let resp;
 	    try {
 	      resp = await this.request(`${API$1}/channels/${message.channel_id}/messages/${message.id}`, { method: 'DELETE' });
-	    } catch (err) {
+	    } catch {
 	      // No response at all (network error, timeout). Nothing updated the pacing
 	      // clock, so re-arm it by hand or the retries fire back to back.
-	      log.error('Delete request threw an error:', escapeHTML(err && err.message || err));
+	      log.error(connectionError('delete this message'));
 	      this.stats.deleteNextAt = Date.now() + this.effectiveDelay('delete');
 	      return FAILED;
 	    }
 
-	    const { json, text } = await readBody(resp);
+	    const { json } = await readBody(resp);
 
 	    if (isEdgeBlock(resp, json)) throw this.edgeBlocked();
 
@@ -1293,13 +1321,13 @@ SOFTWARE.
 	    }
 
 	    if (resp.status === 401) {
-	      throw new WipecordError('Your authorization token is invalid or expired. Press "fill" to grab a fresh one.', { fatal: true, status: 401 });
+	      throw new WipecordError(SESSION_EXPIRED, { fatal: true, status: 401 });
 	    }
 
 	    // Documented as "Unknown Message", but a 403 carrying it means Discord's
 	    // anti-abuse systems blocked the request. Hammering it makes it worse.
 	    if (resp.status === 403 && code === 10008) {
-	      throw new WipecordError('Discord blocked this request. Stopping — wait a while before trying again.', { fatal: true, status: 403, code });
+	      throw new WipecordError(TEMPORARY_BLOCK, { fatal: true, status: 403, code });
 	    }
 
 	    this.updatePace('delete', resp);
@@ -1311,12 +1339,11 @@ SOFTWARE.
 
 	    const reason = PERMANENT_DELETE_ERRORS[code];
 	    if (reason || resp.status === 403) {
-	      log.warn(`Skipping a message because ${reason || 'the API refused it'}.`, `<sup>{ID:${redact(message.id)}}</sup>`);
+	      log.warn(requestError(resp.status, code, 'delete this message'), 'Skipping this message.', `<sup>{ID:${redact(message.id)}}</sup>`);
 	      return SKIPPED;
 	    }
 
-	    log.error(`Error deleting message, API responded with status ${resp.status}!`, escapeHTML(text));
-	    log.verb('Related object:', redact(JSON.stringify(message)));
+	    log.error(requestError(resp.status, code, 'delete this message'));
 	    return FAILED;
 	  }
 
@@ -1339,8 +1366,7 @@ SOFTWARE.
 
 	  edgeBlocked() {
 	    return new WipecordError(
-	      'Blocked by Cloudflare — too many requests reached Discord\'s edge. ' +
-	      'Stop for a while (this can last up to 24h) and use larger delays next time.',
+	      TEMPORARY_BLOCK,
 	      { fatal: true, status: 429 }
 	    );
 	  }
@@ -1876,8 +1902,8 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	    const values = {};
 	    for (const key of keys) values[key] = storage[key];
 	    return values; // read before the frame is detached, contentWindow dies with it
-	  } catch (err) {
-	    log.verb('Could not read local storage:', err);
+	  } catch {
+	    log.verb('Could not read the saved Discord session. Trying the Discord client instead.');
 	    return {};
 	  } finally {
 	    iframe.remove();
@@ -1916,8 +1942,8 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	        } catch { /* individual module getters can throw */ }
 	      }
 	    }]);
-	  } catch (err) {
-	    log.verb('Automatic session lookup failed:', err);
+	  } catch {
+	    log.verb('Automatic Discord client lookup failed. Refresh Discord and update Wipecord if session detection still fails.');
 	  } finally {
 	    chunks.pop(); // don't leave our fake chunk behind
 	  }
@@ -1991,8 +2017,8 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	      headers: { 'Authorization': authToken },
 	      signal: AbortSignal.timeout(REQUEST_TIMEOUT),
 	    });
-	  } catch (err) {
-	    log.error('Could not load your servers:', err && err.message || err);
+	  } catch {
+	    log.error(connectionError('load your servers'), 'Click all again after checking your connection; the server list is not retried automatically.');
 	    return [];
 	  }
 
@@ -2001,17 +2027,16 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 
 
 	  if ((data && data.code === 40333) || (resp.status === 429 && !data)) {
-	    log.error('Blocked by Cloudflare — stop for a while before making more Discord requests.');
+	    log.error(TEMPORARY_BLOCK);
 	    return [];
 	  }
 	  if (!resp.ok) {
 	    if (resp.status === 429) {
 	      const retryAfter = Number(data && data.retry_after);
-	      const suffix = Number.isFinite(retryAfter) && retryAfter > 0 ? ` Try again in ${retryAfter.toFixed(1)}s.` : '';
-	      log.warn(`Discord rate limited the server list request.${suffix}`);
+	      const suffix = Number.isFinite(retryAfter) && retryAfter > 0 ? ` Wait at least ${retryAfter.toFixed(1)} seconds before clicking all again.` : ' Wait before clicking all again.';
+	      log.warn(`Discord requested a pause while loading your servers.${suffix} The server list is not retried automatically.`);
 	    }
-	    else if (resp.status === 401) log.error('Your Discord session is invalid or expired. Sign in again, then retry.');
-	    else log.error(`Could not load your servers; Discord responded with status ${resp.status}.`);
+	    else log.error(requestError(resp.status, data && data.code, 'load your servers'));
 	    return [];
 	  }
 
@@ -2037,11 +2062,8 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	function fillToken() {
 	  try {
 	    return getToken();
-	  } catch (err) {
-	    log.verb(err);
-	    log.error('Could not automatically detect Authorization Token!');
-	    log.info('Please make sure Wipecord is up to date');
-	    log.debug('Alternatively, you can try entering a Token manually in the "Advanced Settings" section.');
+	  } catch {
+	    log.error('Could not detect your Discord session. Open a conversation while signed in, refresh Discord, and make sure Wipecord is up to date before retrying. Never share your authorization token.');
 	  }
 	  return '';
 	}
@@ -2402,8 +2424,8 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	      if (!lock) return log.error('Wipecord is already running in another tab. Stop it before starting here.');
 	      await performStartAction();
 	    });
-	  } catch (error) {
-	    log.error('Could not coordinate the deletion run:', escapeHTML(error?.message || error));
+	  } catch {
+	    log.error('Wipecord could not coordinate this run between tabs. Review any existing run summary, then refresh Discord and update your browser before retrying.');
 	  } finally {
 	    startPending = false;
 	  }
@@ -2491,7 +2513,7 @@ body.wipecord-pick-message.after [id^="message-content-"]:hover::after {
 	    if (jobs.length > 1) await wipecordCore.runBatch(jobs);
 	    else await wipecordCore.run();
 	  } catch (err) {
-	    log.error('CoreException', escapeHTML(err && err.message || err));
+	    log.error('Run ended with an error:', err?.name === 'WipecordError' ? escapeHTML(err.message) : 'An unexpected error occurred. Refresh Discord and update Wipecord before retrying. If it persists, report the problem without account or message data.');
 	  } finally {
 	    // run() unlocks the UI itself; this only covers a throw that escaped it.
 	    if (wipecordCore.state.running) wipecordCore.stop();

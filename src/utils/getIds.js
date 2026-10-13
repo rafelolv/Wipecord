@@ -1,4 +1,5 @@
 import { log } from './log';
+import { TEMPORARY_BLOCK, requestError, connectionError } from './errors.js';
 import { isSnowflake } from './helpers';
 
 /** Discord encrypts the stored token in the desktop app; that value is unusable here. */
@@ -20,8 +21,8 @@ function readLocalStorage(keys) {
     const values = {};
     for (const key of keys) values[key] = storage[key];
     return values; // read before the frame is detached, contentWindow dies with it
-  } catch (err) {
-    log.verb('Could not read local storage:', err);
+  } catch {
+    log.verb('Could not read the saved Discord session. Trying the Discord client instead.');
     return {};
   } finally {
     iframe.remove();
@@ -60,8 +61,8 @@ function fromWebpack(pick) {
         } catch { /* individual module getters can throw */ }
       }
     }]);
-  } catch (err) {
-    log.verb('Automatic session lookup failed:', err);
+  } catch {
+    log.verb('Automatic Discord client lookup failed. Refresh Discord and update Wipecord if session detection still fails.');
   } finally {
     chunks.pop(); // don't leave our fake chunk behind
   }
@@ -135,8 +136,8 @@ export async function fetchGuildIds(authToken) {
       headers: { 'Authorization': authToken },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT),
     });
-  } catch (err) {
-    log.error('Could not load your servers:', err && err.message || err);
+  } catch {
+    log.error(connectionError('load your servers'), 'Click all again after checking your connection; the server list is not retried automatically.');
     return [];
   }
 
@@ -145,17 +146,16 @@ export async function fetchGuildIds(authToken) {
 
 
   if ((data && data.code === 40333) || (resp.status === 429 && !data)) {
-    log.error('Blocked by Cloudflare — stop for a while before making more Discord requests.');
+    log.error(TEMPORARY_BLOCK);
     return [];
   }
   if (!resp.ok) {
     if (resp.status === 429) {
       const retryAfter = Number(data && data.retry_after);
-      const suffix = Number.isFinite(retryAfter) && retryAfter > 0 ? ` Try again in ${retryAfter.toFixed(1)}s.` : '';
-      log.warn(`Discord rate limited the server list request.${suffix}`);
+      const suffix = Number.isFinite(retryAfter) && retryAfter > 0 ? ` Wait at least ${retryAfter.toFixed(1)} seconds before clicking all again.` : ' Wait before clicking all again.';
+      log.warn(`Discord requested a pause while loading your servers.${suffix} The server list is not retried automatically.`);
     }
-    else if (resp.status === 401) log.error('Your Discord session is invalid or expired. Sign in again, then retry.');
-    else log.error(`Could not load your servers; Discord responded with status ${resp.status}.`);
+    else log.error(requestError(resp.status, data && data.code, 'load your servers'));
     return [];
   }
 
@@ -181,11 +181,8 @@ export function getChannelId() {
 export function fillToken() {
   try {
     return getToken();
-  } catch (err) {
-    log.verb(err);
-    log.error('Could not automatically detect Authorization Token!');
-    log.info('Please make sure Wipecord is up to date');
-    log.debug('Alternatively, you can try entering a Token manually in the "Advanced Settings" section.');
+  } catch {
+    log.error('Could not detect your Discord session. Open a conversation while signed in, refresh Discord, and make sure Wipecord is up to date before retrying. Never share your authorization token.');
   }
   return '';
 }

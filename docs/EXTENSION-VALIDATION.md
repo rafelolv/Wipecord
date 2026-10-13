@@ -7,7 +7,8 @@ All messages, session values and responses are synthetic. Fetch is mocked in the
 ## Scenarios
 
 - All-server and manually entered server lists show a persistent scope warning. Returning to the current target clears it; selecting all preserves author/filters and never starts requests for deletion or prompts. The userscript fixture checks warning colors in both themes and layout with the warning active.
-- Hostile error markup remains literal text without creating executable elements; log formatting, default redaction and clear/empty-state behavior survive DOM-only rendering.
+- Request failures show safe guidance without echoing hostile exception payloads or creating executable elements; log formatting, default redaction and clear/empty-state behavior survive DOM-only rendering.
+- Simulated expired sessions, denied access, missing targets, service errors and temporary blocks show the appropriate next step, release the controls and never reach confirmation or deletion. Numeric diagnostics remain available without response payloads.
 - Delayed header mounting leaves the loading screen and unrelated message toolbars untouched. Hidden headers are ignored, and the single logo button follows a visible replacement header without requests or errors.
 - Native MAIN-world execution and unchanged panel mounting, privacy defaults and default request delays.
 - Installation/page load and popup display produce no API requests, confirmation or deletion.

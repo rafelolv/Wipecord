@@ -93,11 +93,11 @@ try {
         window.fetch=async()=>{throw Error(payload);};
         try{await document.getElementById('getGuilds').onclick();}finally{window.fetch=original;}
         const log=document.getElementById('logArea');
-        if(!log.textContent.includes(payload)||log.querySelector('img,svg,script,iframe')||window.htmlInjected)throw Error('Log payload became active HTML');
+        if(log.textContent.includes(payload)||!log.textContent.includes('Check your connection')||log.querySelector('img,svg,script,iframe')||window.htmlInjected)throw Error('Network error exposed payload or lost safe guidance');
         document.getElementById('clear').click();
         if(!log.querySelector('.empty-state'))throw Error('Clear did not restore the empty state');
       })()`);
-      checks.push(`${browser}: hostile error markup remains literal text and clearing restores the empty state`);
+      checks.push(`${browser}: network errors provide safe guidance without exposing hostile payloads; clearing restores the empty state`);
 
       await page.evaluate(`(async()=>{
         const $=id=>document.getElementById(id), original=window.fetch;
@@ -166,6 +166,24 @@ try {
       assert.equal(await second.evaluate('document.querySelectorAll("#wipecord").length'), 1);
       await second.evaluate(prepare);
       checks.push(`${browser}: both duplicate load orders, one panel and cancelled confirmation`);
+
+      await page.evaluate(`(async()=>{
+        const $=id=>document.getElementById(id), original=window.fetch, priorPrompts=prompts.slice();
+        const wait=async requested=>{for(let i=0;i<150;i++){if(requested()&&!$('start').disabled&&$('summaryText').textContent.includes('Ended with errors'))return;await new Promise(resolve=>setTimeout(resolve,20));}throw Error('Error run did not end');};
+        try {
+          for(const [status,code,guidance] of [[401,0,'Sign in to Discord again'],[403,50001,'permission'],[404,10003,'Check the target'],[503,0,'server error'],[429,40333,'will not retry this block automatically']]) {
+            $('clear').click();let calls=0;
+            const before=[deleted.length,prompts.length];
+            window.fetch=async()=>{calls++;return new Response(JSON.stringify({code,message:'synthetic-private-body'}),{status});};
+            $('start').click();await wait(()=>calls>0);
+            const text=$('logArea').textContent;
+            if(!text.includes(guidance)||text.includes('synthetic-private-body'))throw Error('Error guidance was missing or exposed response data');
+            if(calls!==1||deleted.length!==before[0]||prompts.length!==before[1])throw Error('Error changed retry or deletion safeguards');
+            if(!$('stop').disabled||$('start').disabled)throw Error('Error left controls locked');
+          }
+        } finally {window.fetch=original;prompts.splice(0,prompts.length,...priorPrompts);$('clear').click();}
+      })()`);
+      checks.push(`${browser}: session, access, missing target, service and temporary-block guidance; no payload exposure or destructive requests`);
 
       await page.evaluate('window.hold="GET";window.release=null;');
       await start(page);
