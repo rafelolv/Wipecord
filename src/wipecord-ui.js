@@ -15,6 +15,7 @@ import { buildPurgePlan } from './wipecord-plan.js';
 import Drag from './utils/drag';
 import createElm from './utils/createElm';
 import renderLog from './utils/renderLog.js';
+import confirmation from './utils/confirmation.js';
 import insertCss from './utils/insertCss';
 import messagePicker from './utils/messagePicker';
 import { getAuthorId, getGuildId, getGuildIds, fetchGuildIds, getChannelId, fillToken } from './utils/getIds';
@@ -101,6 +102,7 @@ function initUI() {
 
   function toggleWindow() {
     if (ui.wipecordWindow.style.display !== 'none') {
+      wipecordCore.onCancelConfirmation?.();
       ui.wipecordWindow.style.display = 'none';
       ui.wipecordBtn.style.color = 'var(--interactive-icon-default, var(--interactive-normal))';
     }
@@ -116,6 +118,24 @@ function initUI() {
   ui.progressMain = $('#progressBar');
   ui.progressIcon = ui.wipecordBtn.querySelector('progress');
   ui.percent = $('#progressPercent');
+
+  const prompt = confirmation(ui.wipecordWindow, () => wipecordCore.stop());
+  wipecordCore.onCancelConfirmation = prompt.cancel;
+  wipecordCore.onConfirm = details => {
+    const options = wipecordCore.options;
+    // Snapshot only the target/filter whitelist; never pass tokens or core state.
+    const fields = [
+      ['Server', options.guildId === '@me' ? 'Direct messages / group DMs' : options.guildId, options.guildId !== '@me'],
+      ['Channel', options.channelId || 'All server channels', !!options.channelId],
+      ['Author', options.authorId || 'All matching authors', !!options.authorId],
+      ['Containing text', options.content || 'Any text', !!options.content],
+      ['Pattern', options.pattern || 'None', !!options.pattern],
+      ['After', options.minId || 'No lower bound', !!options.minId],
+      ['Before', options.maxId || 'No upper bound', !!options.maxId],
+      ['Message filters', `${options.hasLink ? 'Links only; ' : ''}${options.hasFile ? 'Files only; ' : ''}${options.includePinned ? 'Pinned included' : 'Pinned excluded'}${options.guildId !== '@me' ? (options.includeNsfw ? '; NSFW included' : '; NSFW excluded') : ''}`, false],
+    ];
+    return prompt.open({ ...details, fields });
+  };
 
   // register event listeners
   $('#hide').onclick = toggleWindow;

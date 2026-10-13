@@ -29,6 +29,16 @@ The settings sidebar contains **Where to clean**, **Filter messages**, **Date & 
 
 The **Activity** area shows the log and progress. While running, a prominent status shows processed messages and **Target N of M**; smaller text shows elapsed time and provisional search estimates. Progress bars stay indeterminate while cleanup is active: a server search estimate is not a fixed maximum, and reaching it does not mean pagination or final checks have finished. Only the final summary announces completion. Private history totals remain unknown until scanning finishes. Green log entries confirm successful actions, yellow entries flag warnings or pauses, and red entries identify errors; cancellation and stopping remain neutral. Use **☰** to hide or restore settings, **Delete messages** to begin with a confirmation, and **Stop** to end a run. Disabled actions stay visible. **Clear log** clears the display; it does not stop an active cleanup. Streamer mode starts enabled. The panel supports light/dark themes, narrow screens, dragging and resizing.
 
+## Confirmation
+
+**Delete messages** opens a Wipecord confirmation window with the current target, filter snapshot, message preview and irreversible-deletion warning. Server search totals are estimates, not a fixed deletion limit. A batch explicitly warns that remaining targets continue without another confirmation.
+
+The initial focus is **Cancel**. Nothing is deleted until you explicitly choose **Confirm deletion**. Cancel, Escape, the close button, clicking outside the dialog or hiding the panel cancels a pending confirmation. **Stop run** inside the dialog stops the cleanup and preserves the stopped outcome. If you hide the panel before a confirmation can be displayed, the pending cleanup cannot authorize deletion from a hidden window.
+
+Streamer mode also masks target IDs, private filters, authors and preview text inside the confirmation. Hold masked text to reveal it, or cancel and turn Streamer mode off before restarting if you want to review unmasked details. A long preview is truncated for display; the complete selected filters still apply. Preview and scope fields are cleared when the dialog closes. Tokens are never included in the confirmation.
+
+If the confirmation cannot open, Wipecord cancels safely; it does not switch to a browser-native prompt. The UI uses a custom asynchronous adapter; the standalone core retains its native prompt for compatibility/testing without a UI adapter.
+
 ## Run summary
 
 When a run finishes, **Activity** highlights the confirmed deleted count, with the outcome above and the remaining counts and duration below: deleted, ignored, failed and already gone. Ignored messages include those excluded by filters or refused permanently; already gone means the API reported that a message no longer existed. Counts cover messages encountered, not the entire account history. Messages outside the lower history boundary may never be processed or counted. Batch totals span all jobs and avoid double-counting messages encountered again during sweeps.

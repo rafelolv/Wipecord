@@ -147,3 +147,25 @@
 }
 #wipecord .empty-state strong { font-weight: 500; color: var(--wipe-text); }
 #wipecord .settings-section .settings-section { margin-top: 8px; border-bottom: 0; border-top: 1px solid var(--wipe-line); }
+
+#wipecord dialog.confirmation { width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; margin: auto; border: 1px solid var(--wipe-line); border-radius: 10px; background: var(--wipe-bg); color: var(--wipe-text); box-shadow: 0 20px 60px #0008; font: 13px/1.6 system-ui, sans-serif; }
+#wipecord dialog.confirmation[open] { display: flex; flex-direction: column; }
+#wipecord dialog.confirmation:not([open]) { display: none; }
+#wipecord dialog.confirmation::backdrop { background: #000b; }
+#wipecord .confirmation-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; border-bottom: 1px solid var(--wipe-line); flex-shrink: 0; }
+#wipecord .confirmation-eyebrow { margin-bottom: 3px; color: var(--wipe-accent); font-size: 11px; }
+#wipecord .confirmation-header h4 { font-size: 18px; }
+#wipecord .confirmation-body { padding: 18px 22px; overflow: auto; min-height: 0; }
+#wipecord #confirmSummary { white-space: pre-line; }
+#wipecord #confirmationWarning { margin: 12px 0; color: var(--wipe-danger); font-weight: 600; }
+#wipecord .confirmation-batch { margin: 12px 0; padding: 10px 0; color: var(--wipe-warning); border-top: 1px solid var(--wipe-line); border-bottom: 1px solid var(--wipe-line); }
+#wipecord #confirmBatch[hidden], #wipecord #confirmTruncated[hidden] { display: none; }
+#wipecord #confirmScope p { margin-bottom: 5px; overflow-wrap: anywhere; }
+#wipecord #confirmScope strong { color: var(--wipe-muted); font-weight: 500; }
+#wipecord .confirmation-privacy, #wipecord #confirmTruncated { margin-bottom: 8px; color: var(--wipe-muted); font-size: 11px; }
+#wipecord .confirmation pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.7 ui-monospace, monospace; }
+#wipecord .confirmation-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 22px; border-top: 1px solid var(--wipe-line); flex-shrink: 0; }
+#wipecord .confirmation-actions > div { display: flex; gap: 8px; flex-wrap: wrap; }
+#wipecord #acceptDeletion { background: var(--wipe-accent); color: var(--wipe-accent-ink); border-color: var(--wipe-accent); }
+#wipecord #stopConfirmation { color: var(--wipe-danger); }
+@media (max-width: 640px) { #wipecord .confirmation-header, #wipecord .confirmation-body, #wipecord .confirmation-actions { padding: 14px 16px; } }

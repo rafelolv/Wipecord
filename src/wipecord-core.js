@@ -210,6 +210,8 @@ class WipecordCore {
   onStart = undefined;
   onProgress = undefined;
   onStop = undefined;
+  onConfirm = undefined;
+  onCancelConfirmation = undefined;
 
   /** Whether a run or batch is currently in flight. */
   get busy() { return this.#busy; }
@@ -476,6 +478,7 @@ class WipecordCore {
   stop() {
     if (this.#busy) this.#report?.end('stopped');
     this.state.running = false;
+    if (this.onCancelConfirmation) this.onCancelConfirmation();
     // The loop's finally block unlocks the UI once it actually unwinds; doing it
     // here as well would re-enable Start while a request is still in flight.
     if (!this.#busy && this.onStop) this.onStop(this.state, this.stats);
@@ -525,11 +528,14 @@ class WipecordCore {
       : '';
     const summary = this.state.historyMode
       ? `Do you want to scan this entire chat history and delete every matching message?\n${this.state.grandTotal} matching message(s) found so far; the final total is unknown until older history is scanned.`
-      : `Do you want to delete ~${this.state.grandTotal} messages? (Estimated time: ${msToHMS(this.stats.etr)})\n` +
-        '(The actual number of messages may be less, depending if you\'re using filters to skip some messages)';
-    const answer = await ask(summary + batchNotice + '\n\n---- Preview ----\n' + preview);
+      : `Delete every message matching the selected target and filters?\nDiscord currently estimates ~${this.state.grandTotal} matching message(s); this is not a fixed limit.\nEstimated deletion time for current results: ${msToHMS(this.stats.etr)}.`;
+    const answer = this.onConfirm
+      ? await this.onConfirm({ summary, batchNotice, preview })
+      : await ask(summary + batchNotice + '\n\n---- Preview ----\n' + preview);
+    // Stop can resolve a pending asynchronous prompt; preserve its outcome.
+    if (!this.state.running) return false;
 
-    if (!answer) {
+    if (answer !== true) {
       this.#report?.end('cancelled');
       log.info('Confirmation cancelled by you.');
       return false;

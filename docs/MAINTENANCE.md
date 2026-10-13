@@ -14,6 +14,8 @@ For UI changes, run `npm run test:ui:browser` with Chrome/Chromium installed (`C
 
 `npm start` serves a separate `[DEV]` installation at `http://localhost:10001/wipecord.user.js`. Edit `src/`, then regenerate the root artifact with `npm run build`. Production installs use https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js.
 
+Confirmation UI is in `src/utils/confirmation.js` and the compiled panel template. The UI installs an asynchronous core adapter; accept only explicit boolean `true`. Cancel/Escape/close/panel hide must resolve false, and Stop must resolve the pending prompt while retaining the stopped report outcome. Fail closed if the dialog cannot open, never fall back from the UI to a native prompt, focus Cancel initially, preserve modal keyboard behavior and clear private preview/scope nodes on close. Snapshot only the target/filter whitelist; never pass authorization tokens or serialize core options. The standalone core's native prompt remains a compatibility/test fallback only when no adapter is installed.
+
 ## Versions
 
 The Chromium and Firefox extensions use the same package version as the userscript. `npm run check` builds both local folders and deterministic ZIPs, and verifies byte-identical packaged engines. `npm run build:extensions` rebuilds all artifacts without running the full check. Edit popup adapters in `src/extension/` and templates in `src/ui/extension/`; do not edit generated package folders. Shared changes must rebuild both browser packages. See [extension architecture and installation](EXTENSION.md).

@@ -20,7 +20,8 @@ window.addEventListener('unhandledrejection',e=>window.fixtureErrors.push(String
 localStorage.setItem('user_id_cache',JSON.stringify('11111111111111111'));
 localStorage.setItem('token',JSON.stringify('fixture-token'));
 window.alert=()=>{};
-window.confirm=message=>{window.fixturePrompts.push(message);return false;};
+window.alert=()=>{};window.confirm=()=>{throw Error('Native confirmation must not be used');};
+new MutationObserver(()=>{const dialog=document.getElementById('confirmDeletion');if(!dialog)return;if(!dialog.open){dialog.dataset.observed='';return;}if(dialog.dataset.observed)return;dialog.dataset.observed='yes';window.fixturePrompts.push(dialog.textContent); if(!window.manualConfirmation)setTimeout(()=>document.getElementById('cancelDeletion').click(),10);}).observe(document,{subtree:true,attributes:true,attributeFilter:['open']});
 window.fetch=async(url,options={})=>{
  window.fixtureRequests.push({url:String(url),method:options.method||'GET'});
  if(options.method==='DELETE')throw Error('Unexpected deletion in cancelled fixture');
@@ -145,6 +146,30 @@ try {
   await page('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', windowsVirtualKeyCode: 13 });
   await page('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
   assert.notEqual(await evaluate('document.getElementById("wipecord").style.display'), 'none', 'Enter opens the panel');
+  for (const key of ['Escape', 'Enter']) {
+    await evaluate('window.manualConfirmation=true;document.getElementById("getAuthor").click();document.getElementById("getChannel").click();document.getElementById("start").click()');
+    for (let i = 0; i < 100 && !await evaluate('document.getElementById("confirmDeletion").open'); i++) await delay(50);
+    assert.equal(await evaluate('document.activeElement.id'), 'cancelDeletion');
+    await page('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, ...(key === 'Enter' ? { text: '\r' } : {}), windowsVirtualKeyCode: key === 'Escape' ? 27 : 13 });
+    await page('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: key === 'Escape' ? 27 : 13 });
+    for (let i = 0; i < 100 && await evaluate('document.getElementById("start").disabled'); i++) await delay(50);
+    assert.equal(await evaluate('document.getElementById("confirmDeletion").open || window.fixtureRequests.some(r=>r.method === "DELETE")'), false, `${key} must cancel, never delete`);
+  }
+  await evaluate('window.manualConfirmation=false');
+  await evaluate(`(()=>{
+    window.manualConfirmation=true;window.confirmInjected=false;window.dialogOriginalFetch=window.fetch;
+    const payload='<img src=x onerror="window.confirmInjected=true">';document.getElementById('search').value=payload;
+    window.fetch=async()=>new Response(JSON.stringify({total_results:1,messages:[[{id:'44444444444444444',channel_id:'${channel}',type:0,hit:true,content:payload,timestamp:'2026-10-13T12:00:00Z',author:{id:'11111111111111111',username:'fixture'}}]]}),{status:200});
+    document.getElementById('start').click();
+  })()`);
+  for (let i = 0; i < 100 && !await evaluate('document.getElementById("confirmDeletion").open'); i++) await delay(50);
+  assert.equal(await evaluate('document.getElementById("confirmPreview").textContent.includes("<img") && !document.querySelector("#confirmDeletion img, #confirmDeletion script, #confirmDeletion iframe") && !window.confirmInjected'), true, 'Preview and filter markup remain inert text');
+  await evaluate('document.getElementById("cancelDeletion").click();window.fetch=window.dialogOriginalFetch;document.getElementById("search").value="";window.manualConfirmation=false');
+  for (let i = 0; i < 100 && await evaluate('document.getElementById("start").disabled'); i++) await delay(50);
+  await evaluate('window.savedShowModal=document.getElementById("confirmDeletion").showModal;document.getElementById("confirmDeletion").showModal=()=>{throw Error("synthetic dialog failure")};document.getElementById("start").click()');
+  for (let i = 0; i < 100 && !await evaluate('document.getElementById("logArea").textContent.includes("Could not open the cleanup confirmation") && !document.getElementById("start").disabled'); i++) await delay(50);
+  assert.equal(await evaluate('!document.getElementById("confirmDeletion").open && !window.fixtureRequests.some(r=>r.method==="DELETE") && !document.getElementById("start").disabled'), true, 'Failed dialog must cancel without native fallback or deletion');
+  await evaluate('document.getElementById("confirmDeletion").showModal=window.savedShowModal');
   const bounds = await evaluate('(()=>{const r=document.getElementById("wipecord").getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height};})()');
   await page('Input.dispatchMouseEvent', { type: 'mousePressed', x: bounds.left + 180, y: bounds.top + 30, button: 'left', buttons: 1, clickCount: 1 });
   await page('Input.dispatchMouseEvent', { type: 'mouseMoved', x: bounds.left + 150, y: bounds.top + 46, buttons: 1 });
@@ -167,8 +192,16 @@ try {
     await delay(200);
     const screenshot = await page('Page.captureScreenshot', { format: 'png' });
     writeFileSync(join(directory, `${name}.png`), Buffer.from(screenshot.data, 'base64'));
+    await evaluate('window.manualConfirmation=true;document.getElementById("getChannel").click();document.getElementById("start").click()');
+    for (let i = 0; i < 100 && !await evaluate('document.getElementById("confirmDeletion").open'); i++) await delay(50);
+    const modal = await evaluate('(()=>{const r=document.getElementById("confirmDeletion").getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:innerWidth,height:innerHeight};})()');
+    assert.ok(modal.left >= 0 && modal.top >= 0 && modal.right <= modal.width && modal.bottom <= modal.height, `${name}: confirmation fits viewport`);
+    const modalImage = await page('Page.captureScreenshot', { format: 'png' });
+    writeFileSync(join(directory, `${name}-confirmation.png`), Buffer.from(modalImage.data, 'base64'));
+    await evaluate('document.getElementById("cancelDeletion").click();window.manualConfirmation=false');
+    for (let i = 0; i < 100 && await evaluate('document.getElementById("start").disabled'); i++) await delay(50);
   }
-  console.log(`${results.length} interaction checks, keyboard controls, dragging, resizing and five viewport/theme checks passed.`);
+  console.log(`${results.length} interaction checks, keyboard controls, dragging, resizing, inert confirmation markup and five panel/dialog viewport/theme checks passed.`);
   console.log(`Visual previews: ${directory}`);
   await call('Browser.close');
 } finally {

@@ -18,7 +18,8 @@ window.addEventListener('error',e=>window.errors.push(e.message));
 window.addEventListener('unhandledrejection',e=>window.errors.push(String(e.reason)));
 localStorage.setItem('user_id_cache',JSON.stringify('${author}'));
 localStorage.setItem('token',JSON.stringify('synthetic-test-token'));
-window.alert=()=>{};window.confirm=text=>{window.prompts.push(text);return window.accept;};
+window.alert=()=>{};window.confirm=()=>{throw Error('Native confirmation must not be used');};
+new MutationObserver(()=>{const dialog=document.getElementById('confirmDeletion');if(!dialog)return;if(!dialog.open){dialog.dataset.observed='';return;}if(dialog.dataset.observed)return;dialog.dataset.observed='yes';window.prompts.push(dialog.textContent); if(!window.manualConfirmation)setTimeout(()=>document.getElementById(window.accept?'acceptDeletion':'cancelDeletion').click(),10);}).observe(document,{subtree:true,attributes:true,attributeFilter:['open']});
 window.rows=()=>{
  const row=(id,patch={})=>({id,channel_id:'${channel}',timestamp:'2026-10-11T12:00:00Z',content:'keep https://example.test',type:0,pinned:false,author:{id:'${author}',username:'fixture'},attachments:[{filename:'fixture.txt'}],embeds:[],flags:0,...patch});
  return [row('44444444444444449',{pinned:true}),row('44444444444444448',{author:{id:'99999999999999999'}}),row('44444444444444447',{content:'other https://example.test'}),row('44444444444444446',{content:'keep without a link'}),row('44444444444444445',{attachments:[]}),row('44444444444444444'),row('44444444444444443',{content:'keep https://wrong.test'}),row('44444444444444442',{type:1}),row('44444444444444441')];
@@ -167,6 +168,29 @@ try {
       await second.evaluate(prepare);
       checks.push(`${browser}: both duplicate load orders, one panel and cancelled confirmation`);
 
+      await page.evaluate('window.manualConfirmation=true;window.savedPrompts=prompts.slice();document.getElementById("searchDelay").value="100";');
+      try {
+        for (const action of ['cancel', 'escape', 'close', 'panel', 'stop']) {
+          await start(page);
+          await waitFor(() => page.evaluate('document.getElementById("confirmDeletion").open'), 'Custom confirmation did not open');
+          assert.equal(await page.evaluate('document.activeElement.id'), 'cancelDeletion');
+          assert.equal(await page.evaluate('deleted.length'), 0);
+          assert.equal(await page.evaluate('getComputedStyle(document.getElementById("confirmPreview")).color'), 'rgba(0, 0, 0, 0)');
+          if (action === 'cancel') await page.screenshot(join(directory, `${browser}-confirmation.png`));
+          await page.evaluate(`(()=>{
+            const $=id=>document.getElementById(id);
+            if('${action}'==='escape')$('confirmDeletion').dispatchEvent(new Event('cancel',{cancelable:true}));
+            else $('${{ cancel: 'cancelDeletion', close: 'closeConfirmation', panel: 'hide', stop: 'stopConfirmation' }[action] || 'cancelDeletion'}').click();
+          })()`);
+          await waitFor(() => page.evaluate('!document.getElementById("start").disabled && !document.getElementById("confirmDeletion").open'), 'Cancellation left the run locked');
+          assert.equal(await page.evaluate('deleted.length'), 0);
+          assert.equal(await page.evaluate('document.getElementById("confirmPreview").textContent'), '');
+          assert.equal(await page.evaluate('document.getElementById("summaryOutcome").textContent'), action === 'stop' ? 'Stopped by you' : 'Confirmation cancelled');
+          if (action === 'panel') await page.evaluate('document.getElementById("wipecord-btn").click()');
+        }
+      } finally { await page.evaluate('window.manualConfirmation=false;prompts.splice(0,prompts.length,...window.savedPrompts);document.getElementById("searchDelay").value="2000";'); }
+      checks.push(`${browser}: custom modal defaults to Cancel, redacts preview and cancels safely via Cancel, Escape, close, panel hide or Stop`);
+
       await page.evaluate(`(async()=>{
         const $=id=>document.getElementById(id), original=window.fetch, priorPrompts=prompts.slice();
         const wait=async requested=>{for(let i=0;i<150;i++){if(requested()&&!$('start').disabled&&$('summaryText').textContent.includes('Ended with errors'))return;await new Promise(resolve=>setTimeout(resolve,20));}throw Error('Error run did not end');};
@@ -308,6 +332,29 @@ try {
         assert.equal(await page.evaluate('document.getElementById("summaryOutcome").textContent'), 'Completed');
       } finally { await page.evaluate('window.fetch=window.auditOriginalFetch'); }
       checks.push(`${browser}: reaching seven estimated matches stays active without a percentage or full bar; four later matches produce an eleven-deletion final summary`);
+
+      await page.evaluate(`(()=>{
+        window.batchOriginalFetch=window.fetch;window.batchRemoved=new Set();window.manualConfirmation=true;window.batchPromptCount=prompts.length;
+        const $=id=>document.getElementById(id);$('guildId').value='22222222222222222,55555555555555555';$('channelId').value='';
+        window.fetch=async(url,init={})=>{
+          if(init.method==='DELETE'){window.batchRemoved.add(String(url).split('/').pop());return new Response(null,{status:204});}
+          const id=String(url).split('/guilds/')[1].split('/')[0];
+          return new Response(JSON.stringify(window.batchRemoved.has(id)?{total_results:0,messages:[]}:{total_results:1,messages:[[{id,channel_id:'${channel}',hit:true,type:0,content:'keep https://example.test',timestamp:'2026-10-13T12:00:00Z',author:{id:'${author}',username:'fixture'},attachments:[{}],embeds:[]}]]}),{status:200});
+        };
+      })()`);
+      try {
+        await start(page);
+        await waitFor(() => page.evaluate('document.getElementById("confirmDeletion").open'), 'Batch confirmation did not open');
+        assert.equal(await page.evaluate('document.getElementById("confirmBatch").textContent.includes("remaining jobs will continue without another confirmation")'), true);
+        assert.equal(await page.evaluate('document.getElementById("confirmDeletion").textContent.includes("synthetic-test-token")'), false);
+        assert.equal(await page.evaluate('window.batchRemoved.size'), 0);
+        await page.evaluate('document.getElementById("acceptDeletion").click()');
+        await waitFor(() => page.evaluate('!document.getElementById("start").disabled'), 'Confirmed batch did not finish');
+        assert.equal(await page.evaluate('window.batchRemoved.size'), 2);
+        assert.equal(await page.evaluate('prompts.length-window.batchPromptCount'), 1);
+        assert.equal(await page.evaluate('document.getElementById("summaryDeleted").textContent'), '2');
+      } finally { await page.evaluate('window.fetch=window.batchOriginalFetch;window.manualConfirmation=false;'); }
+      checks.push(`${browser}: custom batch confirmation blocks deletion until acceptance, warns about remaining targets and prompts once for two jobs`);
 
       const unsupported = await session.createPage(origin + '/unmatched');
       assert.equal(await unsupported.evaluate('!!document.getElementById("wipecord")'), false);

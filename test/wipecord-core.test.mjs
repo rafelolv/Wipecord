@@ -197,6 +197,37 @@ test('malformed search responses end with an error without confirmation or delet
   } finally { window.confirm = originalConfirm; restoreConsole(); }
 });
 
+test('asynchronous confirmation blocks deletion and accepts only explicit true; Stop retains its outcome', async () => {
+  const restoreConsole = muteConsole();
+  try {
+    for (const answer of [true, false, 'truthy', 'stop']) {
+      const core = errorTestCore();
+      let searches = 0, deleted = 0, settle;
+      core.search = async () => ++searches === 1
+        ? { total_results: 1, messages: [[historyMessage('90000000000000000', '11111111111111111', 'synthetic preview', { hit: true })]] }
+        : { total_results: 0, messages: [] };
+      core.deleteMessage = async () => { deleted++; return 'DELETED'; };
+      core.onConfirm = details => {
+        assert.match(details.preview, /synthetic preview/);
+        assert.deepEqual(Object.keys(details).sort(), ['batchNotice', 'preview', 'summary']);
+        return new Promise(resolve => { settle = resolve; });
+      };
+      core.onCancelConfirmation = () => settle(false);
+      const running = core.run();
+      for (let i = 0; i < 100 && !settle; i++) await new Promise(resolve => setTimeout(resolve, 0));
+      assert.equal(typeof settle, 'function');
+      assert.equal(deleted, 0);
+      assert.equal(core.busy, true);
+      if (answer === 'stop') core.stop();
+      else settle(answer);
+      await running;
+      assert.equal(deleted, answer === true ? 1 : 0);
+      assert.equal(core.report.reason, answer === true ? 'completed' : answer === 'stop' ? 'stopped' : 'cancelled');
+      assert.equal(core.busy, false);
+    }
+  } finally { restoreConsole(); }
+});
+
 test('rejects malformed patterns, invalid calendar dates and reversed effective bounds', () => {
   for (const options of [
     { pattern: '[' }, { minId: '2026-02-30T12:00' }, { minId: '2026-10-11T24:00' }, { minId: 'nonsense' },

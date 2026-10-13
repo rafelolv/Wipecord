@@ -42,4 +42,15 @@
       <div class="tbar footer"><label class="check"><input id="autoScroll" type="checkbox" checked>Auto scroll</label><div class="resize-handle" aria-hidden="true"></div></div>
     </div>
   </div>
+  <dialog id="confirmDeletion" class="confirmation" aria-labelledby="confirmationTitle" aria-describedby="confirmSummary confirmationWarning">
+    <div class="confirmation-header"><div><p class="confirmation-eyebrow">Review cleanup</p><h4 id="confirmationTitle">Delete matching messages?</h4></div><button id="closeConfirmation" type="button" class="icon-button" aria-label="Cancel confirmation">×</button></div>
+    <div class="confirmation-body scroll">
+      <p id="confirmSummary"></p>
+      <p id="confirmationWarning">Deleted messages cannot be restored.</p>
+      <p id="confirmBatch" class="confirmation-batch" hidden></p>
+      <details open><summary>Target and filters</summary><div id="confirmScope"></div></details>
+      <details open><summary>Message preview</summary><p id="confirmPrivacy" class="confirmation-privacy">Streamer mode also masks this preview. Hold the masked text to reveal it.</p><pre><x id="confirmPreview"></x></pre><p id="confirmTruncated" hidden>Preview shortened. The selected filters still apply to the entire target.</p></details>
+    </div>
+    <div class="confirmation-actions"><button id="stopConfirmation" type="button" class="quiet-button">Stop run</button><div><button id="cancelDeletion" type="button" autofocus>Cancel</button><button id="acceptDeletion" type="button">Confirm deletion</button></div></div>
+  </dialog>
 </div>

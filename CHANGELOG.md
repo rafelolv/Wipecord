@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.0 — 2026-10-13
+
+- Replace the browser-native deletion confirmation in the live UI with a Wipecord-styled modal showing the target/filter snapshot, message preview, irreversible-deletion warning and batch continuation notice.
+- Use an asynchronous adapter to the shared core. Keep deletion blocked until explicit boolean acceptance; preserve one confirmation for a batch and the origin-wide run lock while awaiting a decision. The standalone core retains its native compatibility/test fallback when no UI adapter is installed.
+- Focus Cancel initially. Cancel, Escape, close, backdrop or panel hide cancels a pending prompt; Stop run resolves it while preserving the stopped report outcome. If the panel is hidden or the modal cannot open, fail closed without a native UI fallback or deletion.
+- Build scope and preview with text/DOM APIs. Mask private fields and preview under Streamer mode, omit authorization tokens, truncate oversized preview display and clear private DOM nodes on close. Preserve the anonymous report schema.
+- Support dark/light themes and narrow/short screens with scrollable content and accessible action buttons. Clarify that server search estimates are not a fixed deletion limit.
+- Document the confirmation safety rules in AGENTS.md and maintenance/user guides; rebuild byte-identical shared engines into Chromium and Firefox packages.
+
+Validation: `npm run check` passed lint, 31 mocked unit tests, metadata/license/syntax, matching runtime hashes and deterministic packaging. Mozilla validation reported zero errors, warnings and notices. The Chrome userscript fixture passed 28 interaction checks, native Escape/Enter cancellation, inert preview/filter markup, failed-modal cancellation without fallback, keyboard controls, dragging/resizing and five panel/dialog viewport/theme checks. Native Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all seventeen scenario groups, including modal cancellation/redaction, explicit acceptance, one confirmation for two batch jobs and existing deletion safeguards. Dark/light and narrow-dialog previews were visually reviewed. All responses and messages were simulated; no real messages were deleted. Live Discord, Edge, minimum browser versions and signed/store updates remain unvalidated.
+
 ## 1.3.8 — 2026-10-13
 
 - Remove live server-search percentages and full progress bars derived from an uncertain search estimate. Keep both panel and toolbar progress indeterminate throughout the active run, including pagination, settling retries and final sweeps.
