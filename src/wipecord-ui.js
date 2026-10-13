@@ -320,6 +320,8 @@ function setupWipecordCore() {
 
     ui.wipecordBtn.classList.add('running');
     ui.progressMain.style.display = 'block';
+    ui.progressMain.removeAttribute('value');
+    ui.progressIcon.removeAttribute('value');
     ui.percent.style.display = 'block';
     const { index, total } = wipecordCore.targetProgress;
     $('#progressPrimary').textContent = 'Preparing cleanup…';
@@ -329,43 +331,28 @@ function setupWipecordCore() {
 
   wipecordCore.onProgress = (state, stats) => {
     // console.log(PREFIX, 'onProgress', state, stats);
-    let max = state.grandTotal;
     const value = state.delCount + state.failCount;
-    max = Math.max(max, value, 0); // clamp max
-
-    // status bar
-    const percent = value >= 0 && max ? Math.round(value / max * 100) + '%' : '';
+    const estimate = Math.max(state.grandTotal, value, 0);
     const elapsed = msToHMS(Date.now() - stats.startTime.getTime());
-    const remaining = msToHMS(stats.etr);
     // Show when we are pacing ourselves above the configured delay, instead of
     // rewriting the user's slider behind their back.
     const throttled = stats.deleteBackoff > 0 ? ` (extra delay: ${(stats.deleteBackoff / 1000).toFixed(1)}s)` : '';
 
     const { index, total } = wipecordCore.targetProgress;
     $('#progressTarget').textContent = `Target ${index} of ${total}`;
+    // A search estimate is not a completion boundary. Stay indeterminate
+    // through pagination, retries and final sweeps; the report owns completion.
+    ui.progressIcon.removeAttribute('value');
+    ui.progressMain.removeAttribute('value');
     if (state.historyMode) {
-      $('#progressPrimary').textContent = `${value} processed`;
+      $('#progressPrimary').textContent = `${value} processed · Scanning history`;
       $('#progressDetails').textContent = `History: ${state.historyScanned} checked · Elapsed ${elapsed} · Total unknown${throttled}`;
-      ui.progressIcon.removeAttribute('value');
-      ui.progressMain.removeAttribute('value');
       return;
     }
-    $('#progressPrimary').textContent = `${value} processed · ${percent || 'Searching'}`;
-    $('#progressDetails').textContent = `Search estimate: ${max} · Elapsed ${elapsed} · Remaining ~${remaining}${throttled}`;
-
-    ui.progressIcon.value = value;
-    ui.progressMain.value = value;
-
-    // indeterminate progress bar
-    if (max) {
-      ui.progressIcon.setAttribute('max', max);
-      ui.progressMain.setAttribute('max', max);
-    } else {
-      ui.progressIcon.removeAttribute('value');
-      ui.progressMain.removeAttribute('value');
-      $('#progressPrimary').textContent = 'Searching for matching messages…';
-      $('#progressDetails').textContent = `Elapsed ${elapsed} · Total unknown${throttled}`;
-    }
+    $('#progressPrimary').textContent = `${value} processed · Still checking search results`;
+    $('#progressDetails').textContent = estimate
+      ? `Search estimate: ~${estimate} (not a final total) · Elapsed ${elapsed}${throttled}`
+      : `Elapsed ${elapsed} · Total unknown${throttled}`;
   };
 
   wipecordCore.onStop = (state, stats) => {

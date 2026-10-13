@@ -6,6 +6,7 @@ All messages, session values and responses are synthetic. Fetch is mocked in the
 
 ## Scenarios
 
+- When a server estimates seven matches, the UI remains active and indeterminate after processing seven while the next search is pending. No percentage or full progress bar implies completion; four subsequent matches produce an eleven-deletion final summary.
 - Two confirmed server cleanups in one page session recover from an initially empty second search when new messages become available. Search requests bypass HTTP cache, retries retain targets/filters and each run still requires confirmation. Stop during the settling pause prevents another request; malformed successful HTTP responses produce an error without deletion. Unit checks also verify the retry bound for genuinely empty searches.
 - All-server and manually entered server lists show a persistent scope warning. Returning to the current target clears it; selecting all preserves author/filters and never starts requests for deletion or prompts. The userscript fixture checks warning colors in both themes and layout with the warning active.
 - Request failures show safe guidance without echoing hostile exception payloads or creating executable elements; log formatting, default redaction and clear/empty-state behavior survive DOM-only rendering.

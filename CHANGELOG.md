@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.8 — 2026-10-13
+
+- Remove live server-search percentages and full progress bars derived from an uncertain search estimate. Keep both panel and toolbar progress indeterminate throughout the active run, including pagination, settling retries and final sweeps.
+- Show processed counts with explicit ongoing-search/history status. Label server totals as provisional estimates and remove the misleading zero remaining-time display; the final summary alone announces completion or another terminal outcome.
+- Add a native regression where seven estimated matches are processed while the next search is pending, then four more are found. Check ongoing status, indeterminate bars, accessible Stop and an eleven-deletion final summary.
+- Rebuild the userscript and both extension packages at version 1.3.8 without changing the deletion engine, filters, confirmations, request pacing or report schema.
+
+Validation: `npm run check` passed lint, 30 mocked unit tests, metadata/license/syntax, matching runtime hashes and deterministic packaging. Mozilla validation reported zero errors, warnings and notices. The userscript Chrome fixture passed 28 interaction checks, keyboard controls, dragging/resizing and five viewport/theme checks. Native Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all fifteen scenario groups, including the seven-estimated/eleven-actual progress regression. The active-search Brave preview was visually reviewed. All responses and messages were simulated; no real messages were deleted. Live Discord, Edge, minimum browser versions and signed/store updates remain unvalidated.
+
 ## 1.3.7 — 2026-10-13
 
 - Request server searches with `cache: no-store` so the browser does not reuse HTTP-cached search responses.

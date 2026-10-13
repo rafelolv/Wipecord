@@ -283,6 +283,32 @@ try {
       })()`);
       checks.push(`${browser}: fresh uncached search retries recover new messages without reload, preserve confirmation/filters, Stop cancels retry and malformed responses fail safely`);
 
+      await page.evaluate(`(()=>{
+        window.auditOriginalFetch=window.fetch;window.auditRemoved=new Set();window.releaseAuditSearch=null;
+        const row=index=>({id:String(44444444444444453n-BigInt(index)),channel_id:'${channel}',hit:true,type:0,content:'keep https://example.test',author:{id:'${author}',username:'fixture'},attachments:[{}],embeds:[],timestamp:'2026-10-13T12:00:00Z'});
+        window.fetch=async(url,init={})=>{
+          if(init.method==='DELETE'){window.auditRemoved.add(String(url).split('/').pop());return new Response(null,{status:204});}
+          if(window.auditRemoved.size===0)return new Response(JSON.stringify({total_results:7,messages:Array.from({length:7},(_,i)=>[row(i)])}),{status:200});
+          if(window.auditRemoved.size===7)return new Promise(resolve=>{window.releaseAuditSearch=()=>resolve(new Response(JSON.stringify({total_results:4,messages:Array.from({length:4},(_,i)=>[row(i+7)])}),{status:200}));});
+          return new Response(JSON.stringify({total_results:0,messages:[]}),{status:200});
+        };
+      })()`);
+      try {
+        await start(page);
+        await waitFor(() => page.evaluate('typeof window.releaseAuditSearch === "function"'), 'Estimated total did not reach the pending search');
+        assert.equal(await page.evaluate('document.getElementById("progressPrimary").textContent.includes("7 processed") && document.getElementById("progressPrimary").textContent.includes("Still checking")'), true);
+        assert.equal(await page.evaluate('document.getElementById("progressPercent").textContent.includes("%")'), false);
+        assert.equal(await page.evaluate('!document.getElementById("progressBar").hasAttribute("value") && !document.querySelector("#wipecord-btn progress").hasAttribute("value")'), true);
+        assert.equal(await page.evaluate('document.getElementById("runSummary").hidden && !document.getElementById("stop").disabled'), true);
+        await page.screenshot(join(directory, `${browser}-checking-search.png`));
+        await page.evaluate('window.releaseAuditSearch()');
+        await waitFor(() => page.evaluate('!document.getElementById("start").disabled'), 'Remaining four messages did not finish');
+        assert.equal(await page.evaluate('window.auditRemoved.size'), 11);
+        assert.equal(await page.evaluate('document.getElementById("summaryDeleted").textContent'), '11');
+        assert.equal(await page.evaluate('document.getElementById("summaryOutcome").textContent'), 'Completed');
+      } finally { await page.evaluate('window.fetch=window.auditOriginalFetch'); }
+      checks.push(`${browser}: reaching seven estimated matches stays active without a percentage or full bar; four later matches produce an eleven-deletion final summary`);
+
       const unsupported = await session.createPage(origin + '/unmatched');
       assert.equal(await unsupported.evaluate('!!document.getElementById("wipecord")'), false);
       await unsupported.activate();
