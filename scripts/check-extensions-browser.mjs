@@ -251,6 +251,38 @@ try {
       assert.equal(await page.evaluate('errors.length'), 0, 'No page errors');
       checks.push(`${browser}: Stop during DELETE prevents the next deletion; no browser exceptions`);
 
+      await page.evaluate(`(async()=>{
+        const $=id=>document.getElementById(id), original=window.fetch;
+        const wait=async predicate=>{for(let i=0;i<1000;i++){if(predicate())return;await new Promise(resolve=>setTimeout(resolve,25));}throw Error('Search recovery timeout');};
+        $('guildId').value='22222222222222222';$('channelId').value='${channel}';$('searchDelay').value='100';$('deleteDelay').value='50';
+        let phase=0,searches=0,removed=false;const mutations=[],queries=[];window.accept=true;
+        const initialPrompts=prompts.length;
+        window.fetch=async(url,init={})=>{
+          if(init.method==='DELETE'){mutations.push(String(url));removed=true;return new Response(null,{status:204});}
+          if(!String(url).includes('/messages/search'))throw Error('Unexpected recovery request');
+          if(init.cache!=='no-store')throw Error('Search reused browser cache');
+          const query=new URL(url).searchParams;
+          if(query.get('author_id')!=='${author}'||query.get('channel_id')!=='${channel}'||query.get('content')!=='keep')throw Error('Search retry changed filters');
+          queries.push(query.toString());searches++;
+          if(removed||(phase===1&&searches===1))return new Response(JSON.stringify({total_results:0,messages:[]}),{status:200});
+          return new Response(JSON.stringify({total_results:1,messages:[[{id:phase===0?'44444444444444444':'55555555555555555',channel_id:'${channel}',type:0,hit:true,content:'keep https://example.test',timestamp:'2026-10-13T12:00:00Z',author:{id:'${author}',username:'fixture'},attachments:[{}],embeds:[]}]]}),{status:200});
+        };
+        try{
+          $('start').click();await wait(()=>mutations.length===1&&!$('start').disabled);
+          phase=1;searches=0;removed=false;queries.length=0;
+          $('start').click();await wait(()=>mutations.length===2&&!$('start').disabled);
+          if(prompts.length!==initialPrompts+2||queries[0]!==queries[1]||$('summaryDeleted').textContent!=='1')throw Error('Second cleanup lost confirmation, filters or counts');
+          let emptyRequests=0;window.fetch=async()=>{emptyRequests++;return new Response(JSON.stringify({total_results:0,messages:[]}),{status:200});};
+          const beforePrompts=prompts.length;$('start').click();await wait(()=>emptyRequests===1&&$('logArea').textContent.includes('Checking again'));
+          $('stop').click();await wait(()=>!$('start').disabled);
+          if(emptyRequests!==1||prompts.length!==beforePrompts)throw Error('Stop during retry allowed another request');
+          let invalidRequests=0;window.fetch=async()=>{invalidRequests++;return new Response('not-json',{status:200});};
+          $('start').click();await wait(()=>invalidRequests===1&&!$('start').disabled);
+          if(!$('summaryText').textContent.includes('Ended with errors')||prompts.length!==beforePrompts)throw Error('Invalid search response looked completed');
+        }finally{window.fetch=original;}
+      })()`);
+      checks.push(`${browser}: fresh uncached search retries recover new messages without reload, preserve confirmation/filters, Stop cancels retry and malformed responses fail safely`);
+
       const unsupported = await session.createPage(origin + '/unmatched');
       assert.equal(await unsupported.evaluate('!!document.getElementById("wipecord")'), false);
       await unsupported.activate();

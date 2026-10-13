@@ -241,9 +241,11 @@ large or old histories are slow by nature; scanning years of a busy group DM can
 <details>
 <summary><b>It stopped and messages are still there</b></summary>
 
-For server targets, run it again: Discord's search index can lag behind reality, and a message it doesn't return
-cannot be deleted. Wipecord already re-sweeps server searches once at the end. DMs and group DMs bypass that index
-and walk the channel history directly, so check the log for an inaccessible conversation or an active filter.
+Server searches bypass the browser's HTTP cache. An initially empty search is checked up to three more times, with pauses; default search delays add about 12 seconds of settling time, plus request time or rate-limit waits. Stop remains available during those pauses.
+
+Messages that Discord has not made available to search still cannot be deleted. If the limited checks find nothing but you can see matching messages, wait and start another run with the same filters. A page reload should not be needed to reset Wipecord's cursor. Searches that confirm a deletion can also re-sweep for missed results. DMs and group DMs walk channel history directly and do not use the extra initial search checks.
+
+Malformed or unexpected search responses end the affected target with an error instead of appearing as an empty successful search.
 
 Check the log for skipped messages too — locked threads, channels you have left, messages posted by someone else, or
 threads you lack permission to reopen are reported individually with the reason.

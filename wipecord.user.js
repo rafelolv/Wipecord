@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Wipecord
 // @description Bulk-delete your own messages in a Discord channel, DM or server
-// @version     1.3.6
+// @version     1.3.7
 // @author      Rafael (rafelolv)
 // @homepageURL https://github.com/rafelolv/Wipecord
 // @supportURL  https://github.com/rafelolv/Wipecord/issues
@@ -10,7 +10,7 @@
 // @match       https://*.discord.com/login
 // @license     MIT
 // @namespace   https://github.com/rafelolv/Wipecord
-// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.6
+// @icon        https://raw.githubusercontent.com/rafelolv/Wipecord/main/images/icon.svg?v=1.3.7
 // @downloadURL https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
 // @grant       none
 // @updateURL   https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js
@@ -43,7 +43,7 @@ SOFTWARE.
 	'use strict';
 
 	/* rollup-plugin-baked-env */
-	const VERSION = "1.3.6";
+	const VERSION = "1.3.7";
 
 	var themeCss = (`
 /* Self-contained colors keep the panel readable when Discord changes its tokens. */
@@ -788,7 +788,8 @@ SOFTWARE.
 	          // A direct history walk ends on the first empty page. Search results
 	          // get extra checks because Discord's index can briefly hide hits.
 	          const remaining = Number(data.total_results) || 0;
-	          if (this.state.historyMode || remaining === 0 || this.state.emptyPages >= this.options.emptyPageRetries) {
+	          const initiallyEmptySearch = !this.state.historyMode && this.state.grandTotal === 0;
+	          if (this.state.historyMode || (remaining === 0 && !initiallyEmptySearch) || this.state.emptyPages >= this.options.emptyPageRetries) {
 	            if (!this.state.historyMode && this.state.confirmedDelCount > deletedBeforePass && sweeps < MAX_SWEEPS) {
 	              sweeps++;
 	              log.verb(`Checking again for matching messages Discord search may have missed... (${sweeps}/${MAX_SWEEPS})`);
@@ -807,7 +808,9 @@ SOFTWARE.
 	          this.state.emptyPages++;
 	          const settle = this.state.emptyPages * Math.max(this.options.searchDelay, 2000);
 	          log.warn(
-	            `Discord returned an empty page but still reports ${remaining} message(s).`,
+	            initiallyEmptySearch
+	              ? 'No matching messages appeared yet. Checking again in case Discord search has not updated.'
+	              : `Discord returned an empty page but still reports ${remaining} message(s).`,
 	            `Waiting ${(settle / 1000).toFixed(1)}s for Discord search to update...`,
 	            `(${this.state.emptyPages}/${this.options.emptyPageRetries})`
 	          );
@@ -1089,7 +1092,7 @@ SOFTWARE.
 
 	      let resp;
 	      try {
-	        resp = await this.request(url + query);
+	        resp = await this.request(url + query, { cache: 'no-store' });
 	      } catch {
 	        // Keep the existing bounded network/timeout retry policy.
 	        log.warn(connectionError('search messages'));
@@ -1146,7 +1149,15 @@ SOFTWARE.
 	      this.updatePace('search', resp);
 	      this.relax('search');
 
-	      const data = json || {};
+	      const validMessage = message => message && typeof message === 'object'
+	        && typeof message.id === 'string' && isSnowflake(message.id)
+	        && typeof message.channel_id === 'string' && isSnowflake(message.channel_id);
+	      const validGroups = Array.isArray(json?.messages) && json.messages.every(group =>
+	        Array.isArray(group) ? group.length > 0 && group.every(validMessage) : validMessage(group));
+	      if (!json || !Number.isSafeInteger(json.total_results) || json.total_results < 0 || !validGroups) {
+	        throw new WipecordError('Discord returned an unexpected search response. This target cannot continue safely. Refresh Discord and update Wipecord before retrying; report the problem if it persists.');
+	      }
+	      const data = json;
 	      this.state._searchResponse = data;
 	      if (this.options.debug) console.log(PREFIX$1, 'search', data);
 	      return data;

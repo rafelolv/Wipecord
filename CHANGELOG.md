@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.7 — 2026-10-13
+
+- Request server searches with `cache: no-store` so the browser does not reuse HTTP-cached search responses.
+- Recheck initially empty server searches up to three times with paced, interruptible settling pauses. Keep the same target/filter query and confirmation requirement when matches become available. Genuinely empty searches still finish after the retry bound; DM/group-DM history behavior remains unchanged.
+- Reject malformed JSON, unexpected search envelopes and invalid message/channel identifiers before processing a successful HTTP response. End the affected target with an actionable error instead of silently treating the response as zero matches.
+- Add regression coverage for two cleanups in one page session, new messages becoming searchable after an initial empty result, bounded retries, Stop during the pause, retained confirmation/filter constraints and malformed-response safety. Rebuild the userscript and both extensions from the same source.
+
+Validation: `npm run check` passed lint, 30 mocked unit tests, metadata/license/syntax checks, matching shared-runtime hashes and deterministic packaging. Mozilla validation reported zero errors, warnings and notices. The Chrome userscript fixture passed 28 interaction checks, keyboard controls, dragging/resizing and five viewport/theme checks. Native Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all fourteen scenario groups, including no-reload server search recovery, cache bypass, preserved confirmation/filters, retry cancellation and malformed-response handling. All messages and responses were simulated; no real messages were deleted. The maintainer's original live zero-result response was not captured, so its precise cause remains unconfirmed. Discord's server-side search availability beyond the bounded retry window, live API compatibility, Edge, minimum browser versions and signed/store updates remain unvalidated.
+
 ## 1.3.6 — 2026-10-13
 
 - Promote running progress above the activity log, with processed counts and target position in larger text and timing/search estimates below. Keep private-history totals explicitly unknown and expose only aggregate batch position.

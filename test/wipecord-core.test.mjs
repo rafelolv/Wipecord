@@ -125,6 +125,78 @@ test('exhausted connection retries stop with guidance and server-list errors req
   } finally { globalThis.fetch = originalFetch; restoreConsole(); }
 });
 
+test('a second cleanup without reload recovers from initially empty search results', async () => {
+  const restoreConsole = muteConsole(), originalConfirm = window.confirm;
+  let confirmations = 0;
+  window.confirm = () => { confirmations++; return true; };
+  try {
+    const core = errorTestCore();
+    core.options = { ...core.options, authorId: '11111111111111111', content: 'synthetic' };
+    let phase = 0, searches = 0, deleted = false;
+    const mutations = [], waits = [], queries = [];
+    core.cooldown = async ms => { if (ms > 0) waits.push(ms); };
+    core.request = async (url, init = {}) => {
+      if (init.method === 'DELETE') { mutations.push(String(url)); deleted = true; return new Response(null, { status: 204 }); }
+      assert.equal(init.cache, 'no-store');
+      const query = new URL(url).searchParams;
+      assert.equal(query.get('author_id'), '11111111111111111');
+      assert.equal(query.get('content'), 'synthetic');
+      queries.push(query.toString());
+      searches++;
+      if (deleted || (phase === 1 && searches === 1)) return jsonResponse(200, { total_results: 0, messages: [] });
+      return jsonResponse(200, { total_results: 1, messages: [[historyMessage(phase === 0 ? '80000000000000000' : '90000000000000000', '11111111111111111', 'synthetic', { hit: true })]] });
+    };
+    await core.run();
+    assert.equal(core.report.counts.deleted, 1);
+    phase = 1; searches = 0; deleted = false; queries.length = 0;
+    core.resetState();
+    await core.run();
+    assert.equal(mutations.length, 2);
+    assert.equal(confirmations, 2);
+    assert.equal(core.report.counts.deleted, 1);
+    assert.equal(core.report.reason, 'completed');
+    assert.equal(queries[0], queries[1], 'Retry must preserve the complete search query');
+    assert.ok(waits.includes(2000));
+  } finally { window.confirm = originalConfirm; restoreConsole(); }
+});
+
+test('initially empty search retries are bounded and Stop during the pause prevents further requests', async () => {
+  const restoreConsole = muteConsole(), originalConfirm = window.confirm;
+  window.confirm = () => { throw Error('An empty search must not request confirmation'); };
+  try {
+    for (const stop of [false, true]) {
+      const core = errorTestCore();
+      let requests = 0;
+      core.request = async () => { requests++; return jsonResponse(200, { total_results: 0, messages: [] }); };
+      core.cooldown = async ms => { if (stop && ms > 0) core.stop(); };
+      await core.run();
+      assert.equal(requests, stop ? 1 : 4);
+      assert.equal(core.report.reason, stop ? 'stopped' : 'completed');
+      assert.equal(core.report.counts.deleted, 0);
+      assert.equal(core.busy, false);
+    }
+  } finally { window.confirm = originalConfirm; restoreConsole(); }
+});
+
+test('malformed search responses end with an error without confirmation or deletion', async () => {
+  const restoreConsole = muteConsole(), originalConfirm = window.confirm;
+  window.confirm = () => { throw Error('Invalid responses must not request confirmation'); };
+  try {
+    const bodies = ['not-json', {}, [], { total_results: -1, messages: [] }, { total_results: '0', messages: [] }, { total_results: 1, messages: [null] }, { total_results: 1, messages: [[{ id: 'bad', channel_id: '44444444444444444' }]] }];
+    for (const body of bodies) {
+      const core = errorTestCore();
+      let requests = 0;
+      core.request = async () => { requests++; return typeof body === 'string' ? new Response(body, { status: 200 }) : jsonResponse(200, body); };
+      await assert.rejects(core.run(), /unexpected search response/);
+      assert.equal(requests, 1);
+      assert.equal(core.report.reason, 'error');
+      assert.equal(core.report.runErrors, 1);
+      assert.equal(core.report.counts.deleted, 0);
+      assert.equal(core.busy, false);
+    }
+  } finally { window.confirm = originalConfirm; restoreConsole(); }
+});
+
 test('rejects malformed patterns, invalid calendar dates and reversed effective bounds', () => {
   for (const options of [
     { pattern: '[' }, { minId: '2026-02-30T12:00' }, { minId: '2026-10-11T24:00' }, { minId: 'nonsense' },
@@ -454,6 +526,7 @@ test('runs each planned server as a separate whole-server search', async () => {
 
   try {
     const core = new WipecordCore();
+    core.cooldown = async () => {};
     core.options = {
       ...core.options,
       authToken: 'test-token',
@@ -474,10 +547,7 @@ test('runs each planned server as a separate whole-server search', async () => {
       pathname: url.pathname,
       channelId: url.searchParams.get('channel_id'),
     };
-  }), [
-    { method: 'GET', pathname: `/api/v9/guilds/${guildIds[0]}/messages/search`, channelId: null },
-    { method: 'GET', pathname: `/api/v9/guilds/${guildIds[1]}/messages/search`, channelId: null },
-  ]);
+  }), guildIds.flatMap(id => Array.from({ length: 4 }, () => ({ method: 'GET', pathname: `/api/v9/guilds/${id}/messages/search`, channelId: null }))));
 });
 
 test('warns that one confirmation covers the remaining batch jobs', async () => {

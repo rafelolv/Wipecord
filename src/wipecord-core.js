@@ -14,6 +14,7 @@ import {
   ask,
   toSnowflake,
   displayName,
+  isSnowflake,
 } from './utils/helpers.js';
 
 /** Absolute URLs also work in extension contexts that cannot resolve relative fetch URLs. */
@@ -399,7 +400,8 @@ class WipecordCore {
           // A direct history walk ends on the first empty page. Search results
           // get extra checks because Discord's index can briefly hide hits.
           const remaining = Number(data.total_results) || 0;
-          if (this.state.historyMode || remaining === 0 || this.state.emptyPages >= this.options.emptyPageRetries) {
+          const initiallyEmptySearch = !this.state.historyMode && this.state.grandTotal === 0;
+          if (this.state.historyMode || (remaining === 0 && !initiallyEmptySearch) || this.state.emptyPages >= this.options.emptyPageRetries) {
             if (!this.state.historyMode && this.state.confirmedDelCount > deletedBeforePass && sweeps < MAX_SWEEPS) {
               sweeps++;
               log.verb(`Checking again for matching messages Discord search may have missed... (${sweeps}/${MAX_SWEEPS})`);
@@ -418,7 +420,9 @@ class WipecordCore {
           this.state.emptyPages++;
           const settle = this.state.emptyPages * Math.max(this.options.searchDelay, 2000);
           log.warn(
-            `Discord returned an empty page but still reports ${remaining} message(s).`,
+            initiallyEmptySearch
+              ? 'No matching messages appeared yet. Checking again in case Discord search has not updated.'
+              : `Discord returned an empty page but still reports ${remaining} message(s).`,
             `Waiting ${(settle / 1000).toFixed(1)}s for Discord search to update...`,
             `(${this.state.emptyPages}/${this.options.emptyPageRetries})`
           );
@@ -700,7 +704,7 @@ class WipecordCore {
 
       let resp;
       try {
-        resp = await this.request(url + query);
+        resp = await this.request(url + query, { cache: 'no-store' });
       } catch {
         // Keep the existing bounded network/timeout retry policy.
         log.warn(connectionError('search messages'));
@@ -757,7 +761,15 @@ class WipecordCore {
       this.updatePace('search', resp);
       this.relax('search');
 
-      const data = json || {};
+      const validMessage = message => message && typeof message === 'object'
+        && typeof message.id === 'string' && isSnowflake(message.id)
+        && typeof message.channel_id === 'string' && isSnowflake(message.channel_id);
+      const validGroups = Array.isArray(json?.messages) && json.messages.every(group =>
+        Array.isArray(group) ? group.length > 0 && group.every(validMessage) : validMessage(group));
+      if (!json || !Number.isSafeInteger(json.total_results) || json.total_results < 0 || !validGroups) {
+        throw new WipecordError('Discord returned an unexpected search response. This target cannot continue safely. Refresh Discord and update Wipecord before retrying; report the problem if it persists.');
+      }
+      const data = json;
       this.state._searchResponse = data;
       if (this.options.debug) console.log(PREFIX, 'search', data);
       return data;
