@@ -145,7 +145,11 @@ function initUI() {
     const labels = { completed: 'Completed', cancelled: 'Confirmation cancelled', stopped: 'Stopped by you', error: 'Ended with errors' };
     const { counts, reason, durationMs } = finalReport;
     const outcome = reason === 'completed' && counts.failed > 0 ? 'Finished with failed messages' : labels[reason];
-    $('#summaryText').textContent = `${outcome} · ${counts.deleted} deleted · ${counts.ignored} ignored · ${counts.failed} failed · ${counts.alreadyGone} already gone · ${msToHMS(durationMs)}`;
+    $('#runSummary').dataset.outcome = counts.failed > 0 || reason === 'error' ? 'error' : reason;
+    $('#summaryOutcome').textContent = outcome;
+    $('#summaryDeleted').textContent = String(counts.deleted);
+    $('#summaryBreakdown').textContent = `${counts.ignored} ignored · ${counts.failed} failed · ${counts.alreadyGone} already gone`;
+    $('#summaryDuration').textContent = `Elapsed ${msToHMS(durationMs)}`;
   };
   const emptyState = [...ui.logArea.childNodes].map(node => node.cloneNode(true));
   $('button#clear').onclick = () => {
@@ -162,9 +166,11 @@ function initUI() {
     $('#guildId').classList.toggle('broad-scope', broad);
     $('#getGuilds').classList.toggle('broad-scope', broad);
     $('#serverScopeWarning').hidden = !broad;
-    $('#serverScopeWarning').textContent = $('input#channelId').value.trim()
-      ? 'Broad server selection. Channel IDs, author and filters still limit the cleanup. Review the targets before starting.'
-      : 'All channels in the selected servers will be searched. Only messages matching the selected author and filters are eligible. Nothing is deleted until you start and confirm.';
+    const limited = !!$('input#channelId').value.trim();
+    $('#serverScopeTitle').textContent = limited ? 'Multiple servers selected' : 'All server channels selected';
+    $('#serverScopeDetails').textContent = limited
+      ? 'Channel IDs, author and filters still apply. Review before starting.'
+      : 'Author and filters still apply. Deletion requires Start and confirmation.';
   };
   $('#guildId').addEventListener('input', () => { allServersSelected = false; updateServerScope(); });
   $('#channelId').addEventListener('input', updateServerScope);
@@ -315,6 +321,10 @@ function setupWipecordCore() {
     ui.wipecordBtn.classList.add('running');
     ui.progressMain.style.display = 'block';
     ui.percent.style.display = 'block';
+    const { index, total } = wipecordCore.targetProgress;
+    $('#progressPrimary').textContent = 'Preparing cleanup…';
+    $('#progressTarget').textContent = `Target ${index} of ${total}`;
+    $('#progressDetails').textContent = 'Waiting for matching messages. You can stop at any time.';
   };
 
   wipecordCore.onProgress = (state, stats) => {
@@ -331,13 +341,17 @@ function setupWipecordCore() {
     // rewriting the user's slider behind their back.
     const throttled = stats.deleteBackoff > 0 ? ` (extra delay: ${(stats.deleteBackoff / 1000).toFixed(1)}s)` : '';
 
+    const { index, total } = wipecordCore.targetProgress;
+    $('#progressTarget').textContent = `Target ${index} of ${total}`;
     if (state.historyMode) {
-      ui.percent.textContent = `Scanning history: ${state.historyScanned} checked, ${value} processed${throttled}`;
+      $('#progressPrimary').textContent = `${value} processed`;
+      $('#progressDetails').textContent = `History: ${state.historyScanned} checked · Elapsed ${elapsed} · Total unknown${throttled}`;
       ui.progressIcon.removeAttribute('value');
       ui.progressMain.removeAttribute('value');
       return;
     }
-    ui.percent.textContent = `${percent} (${value}/${max}) Elapsed: ${elapsed} Remaining: ${remaining}${throttled}`;
+    $('#progressPrimary').textContent = `${value} processed · ${percent || 'Searching'}`;
+    $('#progressDetails').textContent = `Search estimate: ${max} · Elapsed ${elapsed} · Remaining ~${remaining}${throttled}`;
 
     ui.progressIcon.value = value;
     ui.progressMain.value = value;
@@ -349,7 +363,8 @@ function setupWipecordCore() {
     } else {
       ui.progressIcon.removeAttribute('value');
       ui.progressMain.removeAttribute('value');
-      ui.percent.textContent = '...';
+      $('#progressPrimary').textContent = 'Searching for matching messages…';
+      $('#progressDetails').textContent = `Elapsed ${elapsed} · Total unknown${throttled}`;
     }
   };
 

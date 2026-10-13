@@ -9,8 +9,8 @@
   --wipe-muted: #a3a3a3;
   --wipe-accent: #58d68d;
   --wipe-accent-ink: #071b0e;
-  --wipe-danger: #f5f5f5;
-  --wipe-warning: #bfbfbf;
+  --wipe-danger: #ff8585;
+  --wipe-warning: #e9c46a;
   --wipe-scope-warning: #ff8585;
   color-scheme: dark;
 }
@@ -24,8 +24,8 @@
   --wipe-muted: #616161;
   --wipe-accent: #187d3b;
   --wipe-accent-ink: #ffffff;
-  --wipe-danger: #151515;
-  --wipe-warning: #616161;
+  --wipe-danger: #b42323;
+  --wipe-warning: #866000;
   --wipe-scope-warning: #b42323;
   color-scheme: light;
 }
@@ -71,6 +71,8 @@
 }
 #wipecord #getGuilds.broad-scope:hover { border-color: var(--wipe-scope-warning); }
 #wipecord .scope-warning { margin-top: 8px; color: var(--wipe-scope-warning); font-size: 12px; line-height: 1.6; }
+#wipecord .scope-warning strong { display: block; font-size: 12px; font-weight: 600; }
+#wipecord .scope-warning p { margin-top: 3px; color: var(--wipe-muted); font-size: 11px; }
 #wipecord .scope-warning[hidden] { display: none; }
 #wipecord input[type="checkbox"] { width: 15px; height: 15px; margin: 0; flex-shrink: 0; accent-color: var(--wipe-accent); }
 #wipecord input[type="range"] { min-width: 0; width: 100%; accent-color: var(--wipe-accent); cursor: pointer; }
@@ -95,8 +97,8 @@
 #wipecord .log-debug { color: var(--wipe-muted); }
 #wipecord .log-info { color: var(--wipe-text); }
 #wipecord .log-verb { color: var(--wipe-muted); }
-#wipecord .log-warn { color: var(--wipe-text); border-left: 2px solid var(--wipe-muted); padding-left: 10px; }
-#wipecord .log-error { color: var(--wipe-text); border-left: 3px solid var(--wipe-text); padding-left: 10px; font-weight: 600; }
+#wipecord .log-warn { color: var(--wipe-warning); border-left: 2px solid var(--wipe-warning); padding-left: 10px; }
+#wipecord .log-error { color: var(--wipe-danger); border-left: 3px solid var(--wipe-danger); padding-left: 10px; font-weight: 600; }
 #wipecord .log-success { color: var(--wipe-accent); }
 @media (prefers-reduced-motion: reduce) {
   #wipecord button { transition: none; }

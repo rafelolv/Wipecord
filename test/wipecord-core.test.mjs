@@ -181,6 +181,8 @@ test('batch summaries accumulate all jobs and separate skipped, missing and fail
   window.confirm = () => true;
   try {
     const core = new WipecordCore();
+    const positions = [];
+    core.onProgress = () => positions.push(core.targetProgress);
     core.options = { ...core.options, searchDelay: 0, deleteDelay: 0, jobDelay: 0 };
     const seen = new Set();
     core.search = async () => {
@@ -194,6 +196,8 @@ test('batch summaries accumulate all jobs and separate skipped, missing and fail
     assert.deepEqual(core.report.counts, { deleted: 2, ignored: 4, failed: 2, alreadyGone: 2 });
     assert.equal(core.report.reason, 'completed');
     assert.equal(core.busy, false);
+    assert.deepEqual([...new Set(positions.map(position => position.index))], [1, 2]);
+    assert.ok(positions.every(position => position.total === 2 && Object.keys(position).length === 2));
     const targetCounts = info.filter(line => line.includes('deletion(s) confirmed in this target'));
     assert.equal(targetCounts.length, 2);
     assert.ok(targetCounts.every(line => line.startsWith('1 deletion(s) confirmed')));

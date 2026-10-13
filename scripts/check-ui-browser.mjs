@@ -123,6 +123,7 @@ try {
     window.fixtureHold=true;$('start').click();
     await wait(()=>!!window.fixtureRelease);
     check($('start').disabled&&!$('stop').disabled,'Running state enables Stop');
+    check(getComputedStyle($('progressPercent')).display!=='none'&&$('progressTarget').textContent==='Target 1 of 1','Running status prominently shows target position');
     $('clear').click();
     check($('logArea').textContent.includes('still running'),'Clearing a running log keeps its status');
     $('stop').click();window.fixtureRelease();window.fixtureHold=false;

@@ -212,6 +212,8 @@ class WipecordCore {
 
   /** Whether a run or batch is currently in flight. */
   get busy() { return this.#busy; }
+  /** Aggregate position only; no targets or private data are exposed. */
+  get targetProgress() { return { index: this.#batchIndex || 1, total: this.#batchTotal || 1 }; }
   get report() { return this.#report?.snapshot(); }
   resetState() {
     this.state = {
@@ -338,6 +340,7 @@ class WipecordCore {
     );
 
     if (!isJob && this.onStart) this.onStart(this.state, this.stats); // a batch owns its own lifecycle
+    if (isJob && this.onProgress) this.onProgress(this.state, this.stats);
 
     // When a walk finishes having actually removed something we sweep the
     // channel again, because Discord's search index can hide messages that were
@@ -844,6 +847,7 @@ class WipecordCore {
       }
 
       this.#report?.record(message.id, result === DELETED ? 'deleted' : result === ALREADY_GONE ? 'alreadyGone' : result === SKIPPED ? 'ignored' : 'failed');
+      if (result === DELETED) log.success('Message deleted.');
       if (result === DELETED || result === ALREADY_GONE) {
         this.state.delCount++;
         // Only a message we actually removed proves the run is progressing.

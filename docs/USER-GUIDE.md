@@ -25,13 +25,13 @@ The userscript is the primary installation. For the alternative browser packages
 
 ## Panel layout
 
-The settings sidebar contains **Where to clean**, **Filter messages**, **Date & message range**, **Advanced settings**, and **Wipe Archive**. Only target settings are expanded initially. Message-ID bounds are inside **Date & message range → Use message IDs instead**.
+The settings sidebar contains **Where to clean**, **Filter messages**, **Date & message range**, **Advanced settings**, and **Wipe Archive**. Only target settings are expanded initially. Message-ID bounds are inside **Date & message range → Use message IDs instead**. Regular-expression patterns are inside **Advanced settings**.
 
-The **Activity** area shows the log and progress. Use **☰** to hide or restore settings, **Delete messages** to begin with a confirmation, and **Stop** to end a run. Disabled actions stay visible. **Clear log** clears the display; it does not stop an active cleanup. Streamer mode starts enabled. The panel supports light/dark themes, narrow screens, dragging and resizing.
+The **Activity** area shows the log and progress. While running, a prominent status shows processed messages and **Target N of M**; smaller text shows timing and search estimates. Private history totals remain unknown until scanning finishes. Green log entries confirm successful actions, yellow entries flag warnings or pauses, and red entries identify errors; cancellation and stopping remain neutral. Use **☰** to hide or restore settings, **Delete messages** to begin with a confirmation, and **Stop** to end a run. Disabled actions stay visible. **Clear log** clears the display; it does not stop an active cleanup. Streamer mode starts enabled. The panel supports light/dark themes, narrow screens, dragging and resizing.
 
 ## Run summary
 
-When a run finishes, **Activity** shows its outcome, duration and counts: deleted, ignored, failed and already gone. Ignored messages include those excluded by filters or refused permanently; already gone means the API reported that a message no longer existed. Counts cover messages encountered, not the entire account history. Messages outside the lower history boundary may never be processed or counted. Batch totals span all jobs and avoid double-counting messages encountered again during sweeps.
+When a run finishes, **Activity** highlights the confirmed deleted count, with the outcome above and the remaining counts and duration below: deleted, ignored, failed and already gone. Ignored messages include those excluded by filters or refused permanently; already gone means the API reported that a message no longer existed. Counts cover messages encountered, not the entire account history. Messages outside the lower history boundary may never be processed or counted. Batch totals span all jobs and avoid double-counting messages encountered again during sweeps.
 
 **Export summary** downloads a JSON report containing only application/version, timestamps, duration, outcome, aggregate counts and the number of job/run errors. It contains no tokens, target IDs, usernames, message contents, archive labels or raw API/error payloads. The summary remains available when clearing the activity log, until another run starts or the page reloads.
 

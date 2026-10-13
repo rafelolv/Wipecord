@@ -218,6 +218,10 @@ try {
       assert.equal(await page.evaluate('!!document.querySelector("#logArea b x") && getComputedStyle(document.querySelector("#logArea b x")).color === "rgba(0, 0, 0, 0)"'), true, 'Log formatting and default redaction must survive DOM rendering');
       assert.equal(await page.evaluate('prompts.length'), 1);
       assert.ok(await page.evaluate('document.getElementById("summaryText").textContent.includes("1 deleted") && document.getElementById("summaryText").textContent.includes("7 ignored")'));
+      assert.equal(await page.evaluate('document.getElementById("summaryDeleted").textContent'), '1');
+      assert.equal(await page.evaluate('document.getElementById("summaryOutcome").textContent'), 'Completed');
+      assert.equal(await page.evaluate('!!document.querySelector("#logArea .log-success")'), true);
+      await page.screenshot(join(directory, `${browser}-completed-panel.png`));
       const exported = await page.evaluate(`(async()=>{
         let payload;const create=URL.createObjectURL;const click=HTMLAnchorElement.prototype.click;
         URL.createObjectURL=blob=>{payload=blob;return create(blob);};HTMLAnchorElement.prototype.click=()=>{};

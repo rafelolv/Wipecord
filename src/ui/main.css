@@ -119,8 +119,31 @@
 
 #wipecord .header .brand-mark { width: 30px; height: 30px; }
 #wipecord .idle-dot { display: inline-block; width: 6px; height: 6px; margin-right: 8px; vertical-align: middle; border-radius: 50%; background: var(--wipe-muted); }
-#wipecord #runSummary { margin: 0 16px 8px; padding: 8px 0; border-bottom: 1px solid var(--wipe-line); font-size: 12px; }
+#wipecord #runSummary { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; margin: 0 22px 12px; padding: 12px 0; border-top: 1px solid var(--wipe-line); border-bottom: 1px solid var(--wipe-line); }
 #wipecord #runSummary[hidden] { display: none; }
-#wipecord #summaryText { margin: 0 0 4px; }
+#wipecord #summaryText { min-width: 0; font-size: 12px; }
+#wipecord #summaryOutcome { color: var(--wipe-muted); font-weight: 600; }
+#wipecord #runSummary[data-outcome="error"] #summaryOutcome { color: var(--wipe-danger); }
+#wipecord .summary-total { margin: 4px 0; color: var(--wipe-text); }
+#wipecord #summaryDeleted { font-size: 30px; font-weight: 600; color: var(--wipe-accent); line-height: 1.2; }
+#wipecord #summaryBreakdown, #wipecord #summaryDuration { color: var(--wipe-muted); font-size: 11px; overflow-wrap: anywhere; }
+#wipecord #summaryDuration { margin-top: 3px; }
+#wipecord #exportReport { font-size: 11px; }
+#wipecord #progressPercent { flex: 0 0 auto; margin: 0 22px 12px; }
+#wipecord .progress-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+#wipecord #progressPrimary { font: 600 16px/1.4 system-ui, sans-serif; color: var(--wipe-text); }
+#wipecord #progressTarget { color: var(--wipe-accent); font: 11px/1.5 system-ui, sans-serif; }
+#wipecord #progressDetails { margin-top: 5px; color: var(--wipe-muted); font: 11px/1.6 system-ui, sans-serif; }
+@media (max-width: 640px) {
+  #wipecord .main { flex-basis: 370px; min-height: 300px; }
+  #wipecord #runSummary { margin: 0 16px 8px; padding: 8px 0; }
+  #wipecord #summaryDeleted { font-size: 24px; }
+  #wipecord .run-progress { margin: 0 16px 8px; }
+  #wipecord #progressPrimary { font-size: 14px; }
+  #wipecord #exportReport { padding: 5px; }
+}
+@media (max-height: 560px) and (max-width: 640px) {
+  #wipecord .main { flex-basis: 290px; min-height: 290px; }
+}
 #wipecord .empty-state strong { font-weight: 500; color: var(--wipe-text); }
 #wipecord .settings-section .settings-section { margin-top: 8px; border-bottom: 0; border-top: 1px solid var(--wipe-line); }

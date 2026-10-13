@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.6 — 2026-10-13
+
+- Promote running progress above the activity log, with processed counts and target position in larger text and timing/search estimates below. Keep private-history totals explicitly unknown and expose only aggregate batch position.
+- Highlight confirmed deleted counts in the final summary, with outcome, ignored/failed/already-gone counts and duration on separate lines. Keep anonymous exports unchanged.
+- Use green success logs, yellow warnings and red errors with theme-specific colors; log a confirmed deletion only after a successful response. Keep cancellation/stopping neutral.
+- Shorten the all-server warning into a red heading and smaller explanation, retaining author/filter scope and the requirement to start and confirm.
+- Move regular-expression patterns into collapsed Advanced settings. Keep target controls, basic filters and nested message-ID bounds intact; adjust narrow-screen space for the structured summary and progress.
+- Rebuild the userscript and both extension packages at the same version. Keep these visual changes in a separate commit so they can be reverted without removing the earlier error improvements.
+
+Validation: `npm run check` passed lint, 27 mocked unit tests, metadata/license/syntax, matching runtime hashes and deterministic packages. Mozilla validation reported zero errors, warnings and notices. The userscript Chrome fixture passed 28 interaction checks, keyboard controls, dragging/resizing and five viewport/theme checks. Desktop, compact and short-screen previews and a completed Brave summary were visually reviewed. Native Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all thirteen scenario groups, including exact summary/export counts, formatted/redacted logs, error guidance, duplicate prevention, preserved filters, cancellation and stopping. The combined runner was interrupted before Firefox completed; the separate Firefox rerun passed. All API responses were simulated and no real messages were deleted. Live Discord, Edge, minimum browser versions and signed/store updates remain unvalidated.
+
 ## 1.3.5 — 2026-10-13
 
 - Give request failures a plain-English explanation and next step for expired sessions, access/permission denial, unavailable targets, invalid requests, locked/system messages, service errors, timeouts and temporary blocks.
