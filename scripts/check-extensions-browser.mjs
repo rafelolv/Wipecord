@@ -85,7 +85,7 @@ try {
       assert.equal(await page.evaluate('requests.length+prompts.length'), 0, 'Page load must not start a run');
       assert.equal(await page.evaluate('document.getElementById("wipecord").style.display'), 'none');
       await page.evaluate(prepare);
-      assert.equal(await page.evaluate('document.getElementById("redact").checked && !document.getElementById("includePinned").checked && document.getElementById("searchDelay").value === "2000" && document.getElementById("deleteDelay").value === "1000"'), true);
+      assert.equal(await page.evaluate('document.getElementById("redact").checked === false && !document.getElementById("includePinned").checked && document.getElementById("searchDelay").value === "2000" && document.getElementById("deleteDelay").value === "1000"'), true);
 
       await page.evaluate(`(async()=>{
         const original=window.fetch;
@@ -168,15 +168,18 @@ try {
       await second.evaluate(prepare);
       checks.push(`${browser}: both duplicate load orders, one panel and cancelled confirmation`);
 
-      await page.evaluate('window.manualConfirmation=true;window.savedPrompts=prompts.slice();document.getElementById("searchDelay").value="100";');
+      await page.evaluate('document.getElementById("redact").checked=true;document.getElementById("redact").dispatchEvent(new Event("change"));window.manualConfirmation=true;window.savedPrompts=prompts.slice();document.getElementById("searchDelay").value="100";');
       try {
         for (const action of ['cancel', 'escape', 'close', 'panel', 'stop']) {
           await start(page);
           await waitFor(() => page.evaluate('document.getElementById("confirmDeletion").open'), 'Custom confirmation did not open');
           assert.equal(await page.evaluate('document.activeElement.id'), 'cancelDeletion');
+          assert.equal(await page.evaluate('document.getElementById("confirmSample").open'), false);
+          assert.ok(await page.evaluate('document.getElementById("confirmSampleNotice").textContent.includes("not the complete cleanup list")'));
           assert.equal(await page.evaluate('deleted.length'), 0);
           assert.equal(await page.evaluate('getComputedStyle(document.getElementById("confirmPreview")).color'), 'rgba(0, 0, 0, 0)');
           if (action === 'cancel') await page.screenshot(join(directory, `${browser}-confirmation.png`));
+          await page.evaluate('document.getElementById("confirmSample").open=true');
           await page.evaluate(`(()=>{
             const $=id=>document.getElementById(id);
             if('${action}'==='escape')$('confirmDeletion').dispatchEvent(new Event('cancel',{cancelable:true}));

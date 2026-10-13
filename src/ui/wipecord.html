@@ -1,4 +1,4 @@
-<div id="wipecord" class="browser container redact" role="dialog" aria-labelledby="wipecord-title" style="display:none;">
+<div id="wipecord" class="browser container" role="dialog" aria-labelledby="wipecord-title" style="display:none;">
   <div class="header">
     <svg class="brand-mark" aria-hidden="true" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
   <title>Wipecord — erase messages</title>
@@ -30,7 +30,7 @@
       <div class="activity-heading"><div><h4>Activity</h4></div><button id="clear" type="button" class="quiet-button">Clear log</button></div>
       <div class="tbar action-bar">
         <div class="action-buttons"><button id="toggleSidebar" type="button" class="icon-button" aria-label="Hide settings" aria-expanded="true" title="Toggle settings">☰</button><button id="start" type="button" class="primary-action" title="Review the target before deleting">Delete messages</button><button id="stop" type="button" title="Stop the deletion process" disabled>Stop</button></div>
-        <label class="check privacy-control" title="Hide IDs and message contents on your screen"><input id="redact" type="checkbox" checked>Streamer mode</label>
+        <label class="check privacy-control" title="Hide IDs and message contents on your screen"><input id="redact" type="checkbox">Streamer mode</label>
       </div>
       <p class="safety-note"><span aria-hidden="true">!</span>Deleted messages cannot be restored.</p>
       <div id="progressPercent" class="run-progress" role="status" style="display:none;"><div class="progress-heading"><strong id="progressPrimary"></strong><span id="progressTarget"></span></div><p id="progressDetails"></p></div>
@@ -49,7 +49,7 @@
       <p id="confirmationWarning">Deleted messages cannot be restored.</p>
       <p id="confirmBatch" class="confirmation-batch" hidden></p>
       <details open><summary>Target and filters</summary><div id="confirmScope"></div></details>
-      <details open><summary>Message preview</summary><p id="confirmPrivacy" class="confirmation-privacy">Streamer mode also masks this preview. Hold the masked text to reveal it.</p><pre><x id="confirmPreview"></x></pre><p id="confirmTruncated" hidden>Preview shortened. The selected filters still apply to the entire target.</p></details>
+      <details id="confirmSample"><summary>Message preview · up to 3 examples</summary><p id="confirmSampleNotice" class="confirmation-privacy"></p><p id="confirmPrivacy" class="confirmation-privacy">Streamer mode also masks this preview. Hold the masked text to reveal it.</p><pre><x id="confirmPreview"></x></pre></details>
     </div>
     <div class="confirmation-actions"><button id="stopConfirmation" type="button" class="quiet-button">Stop run</button><div><button id="cancelDeletion" type="button" autofocus>Cancel</button><button id="acceptDeletion" type="button">Confirm deletion</button></div></div>
   </dialog>

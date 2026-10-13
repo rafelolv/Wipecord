@@ -84,7 +84,7 @@ try {
     check(!!$('wipecord-btn'),'Toolbar mounts');
     $('wipecord-btn').click();
     check(getComputedStyle($('wipecord')).display!=='none','Toolbar opens panel');
-    check($('redact').checked&&$('wipecord').classList.contains('redact'),'Privacy enabled by default');
+    check(!$('redact').checked&&!$('wipecord').classList.contains('redact'),'Streamer mode disabled by default');
     check($('token').type==='password','Token field stays masked');
     check(!$('includePinned').checked&&$('searchDelay').value==='2000'&&$('deleteDelay').value==='1000','Deletion defaults preserved');
     check($('stop').disabled&&getComputedStyle($('stop')).display!=='none','Disabled Stop stays visible');
@@ -111,6 +111,7 @@ try {
     $('redact').checked=false;$('redact').dispatchEvent(new Event('change'));
     check(!$('wipecord').classList.contains('redact'),'Privacy toggle follows checkbox');
     $('redact').checked=true;$('redact').dispatchEvent(new Event('change'));
+    check($('wipecord').classList.contains('redact'),'Streamer mode can be enabled explicitly');
     $('guildId').value='invalid';$('start').click();
     await wait(()=>$('logArea').textContent.includes('Server ID'));
     check(window.fixtureRequests.length===0&&$('logArea').textContent.includes('Server ID'),'Invalid target makes no API request');

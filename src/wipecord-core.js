@@ -521,7 +521,13 @@ class WipecordCore {
     if (!this.options.askForConfirmation) return true;
 
     log.verb('Waiting for your confirmation...');
-    const preview = this.state._messagesToDelete.map(m => `${displayName(m.author)}: ${messagePreview(m)}`).join('\n');
+    const messages = this.state._messagesToDelete;
+    const sample = messages.slice(0, 3);
+    const preview = sample.map(m => {
+      const text = `${displayName(m.author)}: ${messagePreview(m)}`;
+      return text.length > 400 ? text.slice(0, 400) + '…' : text;
+    }).join('\n\n');
+    const sampleNotice = `${sample.length} example(s) from ${messages.length} eligible message(s) on this page. This is not the complete cleanup list. Long examples are shortened; all selected filters still apply.`;
 
     const batchNotice = this.#batchTotal > 1
       ? `\n\nThis is job ${this.#batchIndex} of ${this.#batchTotal}. The remaining jobs will continue without another confirmation.`
@@ -530,8 +536,8 @@ class WipecordCore {
       ? `Do you want to scan this entire chat history and delete every matching message?\n${this.state.grandTotal} matching message(s) found so far; the final total is unknown until older history is scanned.`
       : `Delete every message matching the selected target and filters?\nDiscord currently estimates ~${this.state.grandTotal} matching message(s); this is not a fixed limit.\nEstimated deletion time for current results: ${msToHMS(this.stats.etr)}.`;
     const answer = this.onConfirm
-      ? await this.onConfirm({ summary, batchNotice, preview })
-      : await ask(summary + batchNotice + '\n\n---- Preview ----\n' + preview);
+      ? await this.onConfirm({ summary, batchNotice, preview, sampleNotice })
+      : await ask(summary + batchNotice + '\n\n---- Message sample ----\n' + sampleNotice + '\n' + preview);
     // Stop can resolve a pending asynchronous prompt; preserve its outcome.
     if (!this.state.running) return false;
 

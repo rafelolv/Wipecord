@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.1 — 2026-10-13
+
+- Start Streamer mode disabled. Keep its explicit toggle, private-field masking and permanently concealed authorization-token input.
+- Collapse the optional confirmation message preview on every opening, including after expanding a previous confirmation.
+- Sample at most three messages before formatting and shorten each example to 400 characters plus an ellipsis. Show the eligible current-page count and explain that the sample is not the complete cleanup list. Keep provisional server estimates and unknown private-history totals separate from the sample.
+- Preserve confirmation, cancellation, stopping, target filters, pagination, request pacing and the anonymous report schema. Rebuild the shared userscript and both extension packages at 1.4.1.
+
+
+Validation: `npm run check` passed lint, 32 mocked unit tests, metadata/license/syntax, matching runtime hashes and deterministic packaging. Mozilla validation reported zero errors, warnings and notices. The Chrome userscript fixture passed 29 interaction checks, native keyboard cancellation, inert markup and five panel/dialog viewport/theme checks. Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all seventeen extension scenario groups. Checks cover Streamer mode disabled initially, explicit masking, collapsed preview on successive openings, safe cancellation/stopping and existing deletion filters. The bounded-sample unit fixture uses 100 eligible messages with an estimated total of 1,800 and verifies that unsampled messages are never formatted. The collapsed desktop dialog was visually reviewed. All responses and messages were simulated; no real messages were deleted. Live Discord, Edge, minimum browser versions and signed/store updates remain unvalidated.
+
 ## 1.4.0 — 2026-10-13
 
 - Replace the browser-native deletion confirmation in the live UI with a Wipecord-styled modal showing the target/filter snapshot, message preview, irreversible-deletion warning and batch continuation notice.

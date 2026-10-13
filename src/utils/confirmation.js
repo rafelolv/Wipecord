@@ -8,7 +8,7 @@ export default function confirmation(panel, stopRun) {
   let pending;
 
   const cancel = () => pending?.(false);
-  function open({ summary, batchNotice, preview, fields }) {
+  function open({ summary, batchNotice, preview, sampleNotice, fields }) {
     if (pending || panel.style.display === 'none') return Promise.resolve(false);
     if (typeof dialog.showModal !== 'function') {
       log.error('This browser cannot display the cleanup confirmation. No deletion was authorized. Update your browser before retrying.');
@@ -22,8 +22,9 @@ export default function confirmation(panel, stopRun) {
     notice.textContent = batchNotice.trim();
     notice.hidden = !batchNotice;
     const previewNode = panel.querySelector('#confirmPreview');
-    previewNode.textContent = preview.slice(0, 6000);
-    panel.querySelector('#confirmTruncated').hidden = preview.length <= 6000;
+    previewNode.textContent = preview;
+    panel.querySelector('#confirmSample').open = false;
+    panel.querySelector('#confirmSampleNotice').textContent = sampleNotice;
     const scope = panel.querySelector('#confirmScope');
     scope.replaceChildren();
     for (const [label, value, privateValue] of fields) {

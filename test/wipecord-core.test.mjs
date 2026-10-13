@@ -209,7 +209,7 @@ test('asynchronous confirmation blocks deletion and accepts only explicit true; 
       core.deleteMessage = async () => { deleted++; return 'DELETED'; };
       core.onConfirm = details => {
         assert.match(details.preview, /synthetic preview/);
-        assert.deepEqual(Object.keys(details).sort(), ['batchNotice', 'preview', 'summary']);
+        assert.deepEqual(Object.keys(details).sort(), ['batchNotice', 'preview', 'sampleNotice', 'summary']);
         return new Promise(resolve => { settle = resolve; });
       };
       core.onCancelConfirmation = () => settle(false);
@@ -820,4 +820,32 @@ test('requires an author before reading any private-channel history', async () =
   }
 
   assert.equal(requests, 0);
+});
+
+
+test('confirmation uses a bounded sample rather than formatting the complete cleanup list', async () => {
+  const restoreConsole = muteConsole();
+  try {
+    const core = errorTestCore();
+    core.state.grandTotal = 1800;
+    core.state._messagesToDelete = Array.from({ length: 100 }, (_, index) =>
+      historyMessage(String(90000000000000000n + BigInt(index)), '11111111111111111', `${index}:` + 'x'.repeat(1800)));
+    Object.defineProperty(core.state._messagesToDelete[3], 'author', { get() { throw new Error('Must not format unsampled messages'); } });
+    core.onConfirm = details => {
+      assert.match(details.summary, /~1800/);
+      assert.match(details.sampleNotice, /3 example\(s\) from 100 eligible/);
+      assert.equal(details.preview.split('\n\n').length, 3);
+      assert.ok(details.preview.length <= 1207);
+      assert.match(details.preview, /…/);
+      return false;
+    };
+    assert.equal(await core.confirm(), false);
+    core.state.historyMode = true;
+    core.onConfirm = details => {
+      assert.match(details.summary, /final total is unknown/);
+      assert.match(details.sampleNotice, /not the complete cleanup list/);
+      return false;
+    };
+    assert.equal(await core.confirm(), false);
+  } finally { restoreConsole(); }
 });

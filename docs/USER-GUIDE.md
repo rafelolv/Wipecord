@@ -27,7 +27,7 @@ The userscript is the primary installation. For the alternative browser packages
 
 The settings sidebar contains **Where to clean**, **Filter messages**, **Date & message range**, **Advanced settings**, and **Wipe Archive**. Only target settings are expanded initially. Message-ID bounds are inside **Date & message range → Use message IDs instead**. Regular-expression patterns are inside **Advanced settings**.
 
-The **Activity** area shows the log and progress. While running, a prominent status shows processed messages and **Target N of M**; smaller text shows elapsed time and provisional search estimates. Progress bars stay indeterminate while cleanup is active: a server search estimate is not a fixed maximum, and reaching it does not mean pagination or final checks have finished. Only the final summary announces completion. Private history totals remain unknown until scanning finishes. Green log entries confirm successful actions, yellow entries flag warnings or pauses, and red entries identify errors; cancellation and stopping remain neutral. Use **☰** to hide or restore settings, **Delete messages** to begin with a confirmation, and **Stop** to end a run. Disabled actions stay visible. **Clear log** clears the display; it does not stop an active cleanup. Streamer mode starts enabled. The panel supports light/dark themes, narrow screens, dragging and resizing.
+The **Activity** area shows the log and progress. While running, a prominent status shows processed messages and **Target N of M**; smaller text shows elapsed time and provisional search estimates. Progress bars stay indeterminate while cleanup is active: a server search estimate is not a fixed maximum, and reaching it does not mean pagination or final checks have finished. Only the final summary announces completion. Private history totals remain unknown until scanning finishes. Green log entries confirm successful actions, yellow entries flag warnings or pauses, and red entries identify errors; cancellation and stopping remain neutral. Use **☰** to hide or restore settings, **Delete messages** to begin with a confirmation, and **Stop** to end a run. Disabled actions stay visible. **Clear log** clears the display; it does not stop an active cleanup. Streamer mode starts disabled; enable it before sharing your screen. The panel supports light/dark themes, narrow screens, dragging and resizing.
 
 ## Confirmation
 
@@ -35,7 +35,7 @@ The **Activity** area shows the log and progress. While running, a prominent sta
 
 The initial focus is **Cancel**. Nothing is deleted until you explicitly choose **Confirm deletion**. Cancel, Escape, the close button, clicking outside the dialog or hiding the panel cancels a pending confirmation. **Stop run** inside the dialog stops the cleanup and preserves the stopped outcome. If you hide the panel before a confirmation can be displayed, the pending cleanup cannot authorize deletion from a hidden window.
 
-Streamer mode also masks target IDs, private filters, authors and preview text inside the confirmation. Hold masked text to reveal it, or cancel and turn Streamer mode off before restarting if you want to review unmasked details. A long preview is truncated for display; the complete selected filters still apply. Preview and scope fields are cleared when the dialog closes. Tokens are never included in the confirmation.
+Streamer mode also masks target IDs, private filters, authors and preview text inside the confirmation. Hold masked text to reveal it, or cancel and change Streamer mode before restarting. Message preview starts collapsed on every confirmation and contains at most three shortened examples from the current page, never the complete cleanup list. The dialog shows the eligible count for that page alongside the sample. The main summary shows Discord's provisional server estimate, or explains that the final private-history total is unknown; neither is a guaranteed deletion count. The complete selected filters still apply. Preview and scope fields are cleared when the dialog closes. Tokens are never included in the confirmation.
 
 If the confirmation cannot open, Wipecord cancels safely; it does not switch to a browser-native prompt. The UI uses a custom asynchronous adapter; the standalone core retains its native prompt for compatibility/testing without a UI adapter.
 
@@ -170,7 +170,7 @@ click **fill** again.
 > [!CAUTION]
 > **Never share this token with anyone.** It grants complete access to your account, bypassing your password and
 > 2FA. If you ever paste it somewhere by accident, log out of Discord in that browser immediately, which invalidates
-> it. Keep **Streamer mode** on (it is by default) when screenshotting or screen-sharing — it masks the token, IDs
+> it. Keep **Streamer mode** on (enable it yourself) when screenshotting or screen-sharing — it masks the token, IDs
 > and message contents in the panel.
 
 ---
