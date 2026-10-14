@@ -1,119 +1,82 @@
 <div align="center">
   <img src="images/icon.svg?v=1.5.0" width="80" height="80" alt="Wipecord logo">
   <h1>Wipecord</h1>
-  <p>Clean up your Discord messages.</p>
+  <p>Clean up your own Discord messages.</p>
   <p>
-    <a href="https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js"><strong>Install Wipecord</strong></a>
+    <a href="#install"><strong>Get started</strong></a>
     · <a href="docs/USER-GUIDE.md">User guide</a>
     · <a href="https://github.com/rafelolv/Wipecord/issues">Get help</a>
   </p>
 </div>
 
-Wipecord adds a button with its white **W** and green tip to Discord's top-right toolbar in your browser. Choose a conversation or server, filter your messages, and review the target before deleting.
-
-**DMs & group chats** · **Server channels** · **Text & date filters** · **Stop controls**
+Wipecord helps you delete your own messages from **DMs, group chats and servers** in Discord's browser app. Choose a target, add filters if you need them, and review the confirmation before deleting.
 
 > [!WARNING]
-> Deletion is permanent. Start with a small selection and review the confirmation. Automating a user account can lead to [account termination](https://support.discord.com/hc/en-us/articles/115002192352-Automated-user-accounts-self-bots-).
+> Deleted messages cannot be restored. Start with a small selection. Automating a user account can lead to [account termination](https://support.discord.com/hc/en-us/articles/115002192352-Automated-user-accounts-self-bots-).
 
 ## Install
 
-1. Install a userscript manager, such as [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/).
-2. **[Install Wipecord](https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js)** and confirm in your manager.
+### Userscript — recommended
+
+A userscript runs Wipecord through a browser add-on called a userscript manager. This is the main option for Chrome, Brave, Edge and Firefox.
+
+1. Install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/).
+2. **[Install Wipecord](https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js)** and accept the installation in your manager.
 3. Open [Discord in your browser](https://discord.com/channels/@me) and reload the page.
 
-Use the browser web app. Disable any other message-deletion scripts before running Wipecord. If the install link opens plain text, follow [manual installation](docs/USER-GUIDE.md#manual-installation).
+Keep only one Wipecord installation enabled and disable other message-deletion scripts. If the install link opens plain text, use the [manual installation guide](docs/USER-GUIDE.md#manual-installation).
 
-Download a fixed version from [GitHub releases](https://github.com/rafelolv/Wipecord/releases/latest).
+### Firefox extension
 
-**Firefox:** [Wipecord on Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/wipecord/) offers the same interface and engine without a userscript manager. See the [extension guide](docs/EXTENSION.md).
-
-**Chrome, Brave and Edge:** Keep using the userscript. Wipecord is not published on the Chrome Web Store. Google charges a [$5 one-time developer registration fee](https://blog.chromium.org/2020/03/new-developer-dashboard-and.html) to publish there. What a generous way to support people sharing free, useful tools. Embarrassing, Google.
-
-Unpacked Chromium packages remain available in [GitHub releases](https://github.com/rafelolv/Wipecord/releases/latest) for manual installation.
-
-## Quick start
-
-1. Open the channel, DM, or group chat you want to clean.
-2. Click the **Wipecord logo** in Discord's top-right toolbar, next to the search box.
-3. Click **me** beside **Author ID**, then **current** beside **Channel ID**.
-4. Add a text or date filter if you want to narrow the selection.
-5. Click **Delete messages**, review the confirmation, and accept only if the target is correct.
-
-Watch the progress in the panel. **Stop** stops the run; messages already deleted stay deleted.
-
-### Choose your scope
-
-Keep **Author ID** set to your own ID using **me**.
-
-| Clean up | What to select |
-| --- | --- |
-| One channel, DM, or group chat | Open it, then click **current** beside **Channel ID**. |
-| One whole server | Click **current** beside **Server ID** and leave **Channel ID** empty. |
-| Several servers | Enter their IDs in **Server ID**, separated by commas, and leave **Channel ID** empty. |
-
-For all servers, archive imports, and advanced filters, see the [user guide](docs/USER-GUIDE.md).
-
-## Logo files
-
-[SVG](images/icon.svg) · [128 px PNG](images/icon-128.png) · [512 px PNG](images/icon-512.png) — the same W mark is used in the panel, Discord button and browser extensions.
-
-## A few useful tips
-
-- Keep the default delays. If Discord rate-limits the run, let Wipecord wait or increase the delays.
-- Keep **Streamer mode** enabled when sharing your screen. Never share your authorization token.
-- Pinned messages are excluded unless you enable **Include pinned**.
-- Want a backup first? [Request your Discord data](https://support.discord.com/hc/en-us/articles/360004027692).
-
-**Something wrong?** Start with [troubleshooting](docs/USER-GUIDE.md#troubleshooting), or [open an issue](https://github.com/rafelolv/Wipecord/issues) with your browser, manager, and what happened. Leave out tokens and private messages.
+**[Install Wipecord from Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/wipecord/)** to use the same interface without a userscript manager. Reload Discord after installing.
 
 <details>
-<summary><strong>Panel help — settings reference</strong></summary>
+<summary>Other downloads and Chrome Web Store availability</summary>
 
-### Author ID
+Download a fixed version of the userscript or a local browser extension from [GitHub releases](https://github.com/rafelolv/Wipecord/releases/latest). For local installation and updates, follow the [extension guide](docs/EXTENSION.md). GitHub ZIPs are unsigned local packages; Firefox store review and signing are separate.
 
-[Choose whose messages to delete →](docs/USER-GUIDE.md#author-id)
-
-### Server ID
-
-[Select one or more servers →](docs/USER-GUIDE.md#server-id)
-
-### Channel ID
-
-[Select channels or a private conversation →](docs/USER-GUIDE.md#channel-id)
-
-### Wipe a Discord data archive
-
-[Import your archive's conversation list →](docs/USER-GUIDE.md#wipe-a-discord-data-archive)
-
-### Filter
-
-[Filter by text, links, files, or pinned messages →](docs/USER-GUIDE.md#filter)
-
-### Pattern
-
-[Use a regular expression →](docs/USER-GUIDE.md#pattern)
-
-### Messages interval
-
-[Choose a range using message IDs →](docs/USER-GUIDE.md#messages-interval)
-
-### Date interval
-
-[Choose a date and time range →](docs/USER-GUIDE.md#date-interval)
-
-### Delays
-
-[Adjust search and deletion pacing →](docs/USER-GUIDE.md#delays)
-
-### Authorization Token
-
-[Fill your token and keep it private →](docs/USER-GUIDE.md#authorization-token)
+Chrome, Brave and Edge users should keep using the userscript. Wipecord is not published on the Chrome Web Store. Google charges a [$5 one-time developer registration fee](https://blog.chromium.org/2020/03/new-developer-dashboard-and.html) to publish there. What a generous way to support people sharing free, useful tools. Embarrassing, Google.
 
 </details>
 
+## Quick start
+
+1. Open the conversation or channel you want to clean.
+2. Click the **W logo** in Discord's top-right toolbar, next to the search box.
+3. Click **me** beside **Author ID**, then **current** beside **Channel ID**.
+4. To narrow the cleanup, open **Filter messages** or **Date & message range**.
+5. Click **Delete messages**, review the target and filters, then confirm.
+
+Watch the activity panel until the final summary appears. **Stop** ends the cleanup; a deletion already in progress may still finish.
+
+### Choose what to clean
+
+Keep **Author ID** set to your own ID with **me**.
+
+| You want to clean… | What to select |
+| --- | --- |
+| One channel, DM or group chat | Open it, then click **current** beside **Channel ID**. |
+| One whole server | Click **current** beside **Server ID** and clear **Channel ID**. |
+
+For multiple servers, archive imports and advanced filters, use the [user guide](docs/USER-GUIDE.md).
+
+## Useful tips
+
+- **Keep the default delays.** If Discord asks Wipecord to pause, let it wait and continue automatically.
+- **Pinned messages stay by default.** Enable **Include pinned messages** only if you want to remove them too.
+- **Enable Streamer mode before sharing your screen.** It starts disabled. Never share your authorization token.
+- **Save a backup if you need one.** [Request your Discord data](https://support.discord.com/hc/en-us/articles/360004027692) before deleting.
+
+## Help
+
+Start with [troubleshooting](docs/USER-GUIDE.md#troubleshooting). If you still need help, [open an issue](https://github.com/rafelolv/Wipecord/issues) with your browser, installation type, Wipecord version and what happened. Leave out tokens and private messages.
+
+## Logo files
+
+[SVG](images/icon.svg) · [128 px PNG](images/icon-128.png) · [512 px PNG](images/icon-512.png)
+
 <details>
-<summary><strong>Development</strong></summary>
+<summary>Development</summary>
 
 Use Node.js 24 LTS. From a local checkout:
 
@@ -122,9 +85,9 @@ npm ci
 npm run check
 ```
 
-Edit `src/` and regenerate `wipecord.user.js` with `npm run build`. See [contributing](CONTRIBUTING.md), [maintenance](docs/MAINTENANCE.md), and [releases](docs/RELEASING.md).
+Edit `src/` and regenerate `wipecord.user.js` with `npm run build`. See [contributing](CONTRIBUTING.md), [maintenance](docs/MAINTENANCE.md) and [releasing](docs/RELEASING.md).
 
-Automated checks cover the core, build, and panel interactions in a local Chrome fixture. The maintainer reported successful extension use. Automated browser checks use simulated API responses; see [validation details and limits](docs/EXTENSION-VALIDATION.md).
+Browser tests use simulated responses. See [validation results and limits](docs/EXTENSION-VALIDATION.md).
 
 </details>
 
