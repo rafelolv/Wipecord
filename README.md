@@ -31,11 +31,13 @@ Keep only one Wipecord installation enabled and disable other message-deletion s
 **[Install Wipecord from Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/wipecord/)** to use the same interface without a userscript manager. Reload Discord after installing.
 
 <details>
-<summary>Other downloads and Chrome Web Store availability</summary>
+<summary>Other downloads and browser store plans</summary>
 
 Download a fixed version of the userscript or a local browser extension from [GitHub releases](https://github.com/rafelolv/Wipecord/releases/latest). For local installation and updates, follow the [extension guide](docs/EXTENSION.md). GitHub ZIPs are unsigned local packages; Firefox store review and signing are separate.
 
-Chrome, Brave and Edge users should keep using the userscript. Wipecord is not published on the Chrome Web Store. Google charges a [$5 one-time developer registration fee](https://blog.chromium.org/2020/03/new-developer-dashboard-and.html) to publish there. What a generous way to support people sharing free, useful tools. Embarrassing, Google.
+Wipecord will not be published on the Chrome Web Store. I disagree with Google charging a [$5 developer registration fee](https://blog.chromium.org/2020/03/new-developer-dashboard-and.html) to distribute free extensions. I will not support that policy, even if someone offers to pay the fee for me.
+
+I plan to publish Wipecord on Microsoft Edge Add-ons soon. Until then, Chrome, Brave and Edge users should keep using the userscript; local Chromium packages remain a manual alternative.
 
 </details>
 

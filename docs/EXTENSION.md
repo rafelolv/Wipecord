@@ -2,7 +2,7 @@
 
 The userscript is Wipecord's primary installation. The extension is an alternative that runs the same interface and deletion engine without Tampermonkey or another manager. Chrome, Brave and Edge use the Chromium package; Firefox uses its own package. These are desktop browser packages, not Discord desktop integrations.
 
-The Firefox listing is [Wipecord on Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/wipecord/). Chrome, Brave and Edge users should keep using the [userscript](https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js); Wipecord is not published on the Chrome Web Store. Local Chromium packages remain available as a manual alternative.
+The Firefox listing is [Wipecord on Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/wipecord/). Publication on Microsoft Edge Add-ons is planned soon. Until then, Chrome, Brave and Edge users should keep using the [userscript](https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js) or install a local Chromium package manually. Wipecord will not be published on the Chrome Web Store.
 
 ## Logo and store assets
 
@@ -54,11 +54,13 @@ Compatible Wipecord installations share a DOM claim: the first installation owns
 
 Local installations do not fetch new executable code. Download or rebuild a newer package. Stop any running operation, replace the Chromium folder and click **Reload** on its extension card; load the new Firefox package as a temporary add-on. Reload all Discord tabs afterward, since existing tabs can retain an earlier runtime. The popup lists package and running-core versions to help identify this situation.
 
-Wipecord's current store distribution is planned through the [Firefox Add-ons listing](https://addons.mozilla.org/en-US/firefox/addon/wipecord/). Chromium users should use the userscript or install the unpacked package manually; Chrome Web Store publication is not planned.
+Firefox store distribution uses the [Firefox Add-ons listing](https://addons.mozilla.org/en-US/firefox/addon/wipecord/). Microsoft Edge Add-ons publication is planned soon; no Edge store installation link is available yet.
+
+The maintainer opposes Google's $5 registration fee for distributing free extensions and will not publish Wipecord on the Chrome Web Store, even if someone offers to cover the fee. Chromium users should use the userscript or install the unpacked package manually while awaiting Edge store publication.
 
 Store versions need a developer account, reviewed listing, screenshots, accurate permission/data disclosures and an incremented version. Submit the Firefox ZIP to AMO for review/signing; distribute the resulting **signed XPI**, not the local ZIP, for permanent Firefox installation. Store clients update whole reviewed packages. There is no custom update server or remotely loaded JavaScript in Wipecord.
 
-No store submission or signing is performed by the build. Store acceptance has not been verified. Automated browser checks use simulated responses; see the validation log. Follow [Chrome publication](https://developer.chrome.com/docs/webstore/publish) and [Mozilla signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/) when publication is authorized.
+No store submission or signing is performed by the build. Store acceptance has not been verified. Automated browser checks use simulated responses; see the validation log. Follow [Mozilla signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/) when Firefox publication is authorized.
 
 ## Architecture, permissions and privacy
 
