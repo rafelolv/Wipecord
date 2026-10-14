@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5.1 — 2026-10-14
+
+- Give expandable section headings breathing room inside the hover highlight while preserving their alignment with the form fields.
+- Keep the highlight rounded and unclipped for target settings, filters, date ranges, advanced settings, archive import and confirmation sections.
+- Rebuild the userscript and both extension packages at 1.5.1 without changing deletion behavior.
+
+- Validation: `npm run check` passed lint, 32 mocked unit tests, artifact checks and matching deterministic extension packages; Mozilla reported zero errors, warnings and notices.
+- Userscript browser checks: the Chrome fixture passed 31 interactions and five viewport/theme layouts. A temporary hover probe reproduced a zero-pixel text inset before the fix and an eight-pixel inset afterward for Filters, Dates, Advanced and Archive; before/after captures were visually reviewed.
+- Extension browser checks: Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all seventeen integration scenario groups with temporary profiles and simulated responses.
+- Limits: no real messages were deleted. Live Discord, Edge, minimum browser versions and signed/store updates remain unvalidated.
+
 ## 1.5.0 — 2026-10-14
 
 - Apply the approved quieter black, white and green layout: compact header, centered W logo, neutral section dividers, plain primary action and text-only activity placeholder.

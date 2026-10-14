@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Wipecord
 // @description Bulk-delete your own messages in a Discord channel, DM or server
-// @version     1.5.0
+// @version     1.5.1
 // @author      Rafael (rafelolv)
 // @homepageURL https://github.com/rafelolv/Wipecord
 // @supportURL  https://github.com/rafelolv/Wipecord/issues
@@ -43,7 +43,7 @@ SOFTWARE.
 	'use strict';
 
 	/* rollup-plugin-baked-env */
-	const VERSION = "1.5.0";
+	const VERSION = "1.5.1";
 
 	var themeCss = (`
 /* Self-contained colors keep the panel readable when Discord changes its tokens. */
@@ -121,10 +121,10 @@ SOFTWARE.
 #wipecord .sidebar { flex: 0 0 350px; width: 350px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--wipe-line); background: var(--wipe-bg); }
 #wipecord .settings-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 22px; }
 #wipecord h4 { font-size: 18px; font-weight: 600; letter-spacing: -.3px; }
-#wipecord .settings-section { flex-shrink: 0; margin: 0; border: 0; border-bottom: 1px solid var(--wipe-line); border-radius: 0; overflow: hidden; }
-#wipecord summary { position: relative; display: block; padding: 16px 22px 16px 0; color: var(--wipe-text); font-size: 14px; font-weight: 600; cursor: pointer; list-style: none; }
+#wipecord .settings-section { flex-shrink: 0; margin: 0; border: 0; border-bottom: 1px solid var(--wipe-line); border-radius: 0; overflow: visible; }
+#wipecord summary { position: relative; display: block; margin: 0 -8px; padding: 16px 30px 16px 8px; border-radius: 5px; color: var(--wipe-text); font-size: 14px; font-weight: 600; cursor: pointer; list-style: none; }
 #wipecord summary::-webkit-details-marker { display: none; }
-#wipecord summary::after { content: ""; position: absolute; top: 22px; right: 4px; width: 6px; height: 6px; border-right: 1.5px solid var(--wipe-muted); border-bottom: 1.5px solid var(--wipe-muted); transform: rotate(-45deg); }
+#wipecord summary::after { content: ""; position: absolute; top: 22px; right: 12px; width: 6px; height: 6px; border-right: 1.5px solid var(--wipe-muted); border-bottom: 1.5px solid var(--wipe-muted); transform: rotate(-45deg); }
 #wipecord details[open] > summary::after { transform: rotate(45deg); }
 #wipecord .settings-scroll > .settings-section:first-child > summary { font-size: 16px; }
 #wipecord summary:hover { background: var(--wipe-hover); }

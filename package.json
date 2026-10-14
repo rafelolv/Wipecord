@@ -1,7 +1,7 @@
 {
   "name": "wipecord",
   "nameFull": "Wipecord",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Bulk-delete your own messages in a Discord channel, DM or server",
   "userScript": {
     "namespace": "https://github.com/rafelolv/Wipecord",
