@@ -3,7 +3,7 @@
   <h1>Wipecord</h1>
   <p>Clean up your own Discord messages.</p>
   <p>
-    <a href="#install"><strong>Get started</strong></a>
+    <a href="https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js"><strong>Install Wipecord</strong></a>
     · <a href="docs/USER-GUIDE.md">User guide</a>
     · <a href="https://github.com/rafelolv/Wipecord/issues">Get help</a>
   </p>
