@@ -9,7 +9,7 @@
   </p>
 </div>
 
-Wipecord adds a button with its white **W** and green tip to Discord's top-right toolbar in your browser. A second, small W shortcut appears below Direct Messages in the server rail when that layout is available. Both buttons open the same panel. Choose a conversation or server, filter your messages, and review the target before deleting.
+Wipecord adds a button with its white **W** and green tip to Discord's top-right toolbar in your browser. Choose a conversation or server, filter your messages, and review the target before deleting.
 
 **DMs & group chats** · **Server channels** · **Text & date filters** · **Stop controls**
 

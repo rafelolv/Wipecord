@@ -5,11 +5,11 @@ import { parseFragment } from 'parse5';
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 const artifact = readFileSync(pkg.main, 'utf8');
-// All runtime placements must use the same vector paths as store/package assets.
+// Both runtime placements must use the same vector paths as store/package assets.
 const brand = parseFragment(readFileSync('images/icon.svg', 'utf8')).childNodes.find(node => node.tagName === 'svg');
 for (const path of brand.childNodes.filter(node => node.tagName === 'path')) {
   const geometry = path.attrs.find(attribute => attribute.name === 'd').value;
-  assert.ok(artifact.split(JSON.stringify(geometry)).length >= 4, 'Panel and both Discord shortcuts must embed the canonical logo');
+  assert.ok(artifact.split(JSON.stringify(geometry)).length >= 3, 'Panel and Discord button must embed the canonical logo');
 }
 assert.ok(!artifact.includes('wipecord-logo'), 'Logo slots must be compiled before distribution');
 const license = readFileSync('LICENSE', 'utf8').trim();

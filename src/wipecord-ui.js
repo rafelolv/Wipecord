@@ -6,7 +6,6 @@ import themeCss from './ui/theme.css';
 import mainCss from './ui/main.css';
 import dragCss from './ui/drag.css';
 import buttonHtml from './ui/wipecord-button.html';
-import shortcutHtml from './ui/wipecord-shortcut.html';
 import wipecordTemplate from './ui/wipecord.html';
 
 import WipecordCore from './wipecord-core';
@@ -35,8 +34,6 @@ const wipecordCore = new WipecordCore();
 const ui = {
   wipecordWindow: null,
   wipecordBtn: null,
-  sidebarShortcut: null,
-  sidebarButton: null,
   logArea: null,
   autoScroll: null,
 
@@ -69,36 +66,11 @@ function stableToolbar() {
   return stable ? toolbar : null;
 }
 
-/** Only use the narrow server rail and a single, identifiable Home item. */
-function findSidebarHome() {
-  for (const rail of document.querySelectorAll('#app-mount nav [data-list-id="guildsnav"]')) {
-    const bounds = rail.getBoundingClientRect();
-    if (rail.closest('[aria-hidden="true"]') || getComputedStyle(rail).visibility === 'hidden') continue;
-    if (!bounds.width || bounds.width > 104 || bounds.right <= 0 || bounds.left >= innerWidth || !rail.getClientRects().length) continue;
-    const home = rail.querySelector('[data-list-item-id="guildsnav___home"]');
-    const item = home?.closest('[class*="listItem_"]');
-    if (!item || !rail.contains(item) || !item.getClientRects().length) continue;
-    const size = item.getBoundingClientRect();
-    if (size.width > 104 || size.height > 80 || item.querySelectorAll('[data-list-item-id]').length + Number(item.hasAttribute('data-list-item-id')) !== 1) continue;
-    return item;
-  }
-}
-
-let previousSidebarHome;
-function mountSidebarShortcut(header) {
-  const home = header && findSidebarHome();
-  const stable = home && home === previousSidebarHome;
-  previousSidebarHome = home;
-  if (!stable) return ui.sidebarShortcut.remove();
-  if (home.nextElementSibling !== ui.sidebarShortcut) home.after(ui.sidebarShortcut);
-}
-
 function mountBtn() {
   const toolbar = stableToolbar();
   if (toolbar) {
     if (!toolbar.contains(ui.wipecordBtn)) toolbar.appendChild(ui.wipecordBtn);
   }
-  mountSidebarShortcut(toolbar);
 }
 
 function initUI() {
@@ -122,12 +94,6 @@ function initUI() {
   // Create the Wipecord logo button.
   ui.wipecordBtn = createElm(buttonHtml);
   ui.wipecordBtn.onclick = toggleWindow;
-  ui.sidebarShortcut = createElm(shortcutHtml);
-  ui.sidebarButton = ui.sidebarShortcut.querySelector('button');
-  ui.sidebarButton.onclick = event => {
-    event.stopPropagation();
-    toggleWindow();
-  };
   mountBtn();
   // Discord rebuilds the header bar on channel switches and may leave the old
   // toolbar mounted briefly. Re-resolve the preferred toolbar so the button is
@@ -144,7 +110,6 @@ function initUI() {
       ui.wipecordWindow.style.display = '';
       ui.wipecordBtn.style.color = 'var(--interactive-icon-active, var(--interactive-active))';
     }
-    for (const button of [ui.wipecordBtn, ui.sidebarButton]) button.setAttribute('aria-expanded', String(ui.wipecordWindow.style.display !== 'none'));
   }
 
   // cached elements

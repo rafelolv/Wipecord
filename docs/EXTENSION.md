@@ -25,7 +25,7 @@ The build produces `dist/chromium/`, `dist/firefox/`, `dist/wipecord-chromium-<v
 2. Open `chrome://extensions`, `brave://extensions` or `edge://extensions`.
 3. Enable **Developer mode**, select **Load unpacked**, and choose `dist/chromium/`. If using the Chromium ZIP, extract it first and choose the extracted folder.
 4. Allow the extension's site access on Discord and reload your Discord tab.
-5. Click the Wipecord logo in Discord's top-right toolbar, next to the search box, or the optional W below Direct Messages in the server rail. Choose your target and filters, click **Delete messages**, then review the confirmation.
+5. Click the Wipecord logo in Discord's top-right toolbar, next to the search box. Choose your target and filters, click **Delete messages**, then review the confirmation.
 
 The minimum Chromium version is 111, which introduced declarative MAIN-world scripts. Keep your browser current. Brave and Edge use the same Chromium format, but require their own browser validation. See [Chrome's loading instructions](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked).
 

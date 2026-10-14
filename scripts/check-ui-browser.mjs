@@ -77,7 +77,6 @@ try {
   await page('Emulation.setDeviceMetricsOverride', { width: 1280, height: 960, deviceScaleFactor: 1, mobile: false });
   await page('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/channels/${guild}/${channel}` });
   for (let i = 0; i < 100 && !await evaluate('!!document.querySelector("#wipecord-btn")'); i++) await delay(50);
-  for (let i = 0; i < 100 && !await evaluate('!!document.getElementById("wipecord-sidebar-btn")'); i++) await delay(50);
   await evaluate('document.getElementById("wipecord-btn").click()');
   const idleImage = await page('Page.captureScreenshot', { format: 'png' });
   writeFileSync(join(directory, 'idle.png'), Buffer.from(idleImage.data, 'base64'));
@@ -87,12 +86,7 @@ try {
     const check=(value,message)=>{if(!value)throw Error(message);checks.push(message);};
     const wait=async predicate=>{for(let i=0;i<100;i++){if(predicate())return;await new Promise(r=>setTimeout(r,50));}throw Error('UI timeout');};
     check(!!$('wipecord-btn'),'Toolbar mounts');
-    await wait(()=>!!$('wipecord-sidebar-btn'));
-    check($('wipecord-sidebar-shortcut').previousElementSibling.querySelector('[data-list-item-id="guildsnav___home"]')&&$('wipecord-sidebar-shortcut').nextElementSibling.id==='fixture-server','Sidebar shortcut sits between Home and servers');
-    $('wipecord-sidebar-btn').click();
-    check($('wipecord').style.display!=='none'&&$('wipecord-btn').getAttribute('aria-expanded')==='true'&&window.fixtureRequests.length===0,'Sidebar opens the same panel without requests');
-    $('wipecord-sidebar-btn').click();
-    check($('wipecord').style.display==='none'&&$('wipecord-btn').getAttribute('aria-expanded')==='false','Sidebar can close the same panel');
+    check(!document.querySelector('#server-rail [id^="wipecord"]')&&document.querySelector('#server-rail [data-list-id]').childElementCount===2,'Server rail remains untouched');
     $('wipecord-btn').click();
     check(getComputedStyle($('wipecord')).display!=='none','Toolbar opens panel');
     check(!$('redact').checked&&!$('wipecord').classList.contains('redact'),'Streamer mode disabled by default');
@@ -160,12 +154,6 @@ try {
   await page('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', windowsVirtualKeyCode: 13 });
   await page('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
   assert.notEqual(await evaluate('document.getElementById("wipecord").style.display'), 'none', 'Enter opens the panel');
-  for (const opened of [false, true]) {
-    await evaluate('document.getElementById("wipecord-sidebar-btn").focus()');
-    await page('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', windowsVirtualKeyCode: 13 });
-    await page('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
-    assert.equal(await evaluate('document.getElementById("wipecord").style.display!=="none"'), opened, 'Sidebar shortcut supports native Enter activation');
-  }
   for (const key of ['Escape', 'Enter']) {
     await evaluate('window.manualConfirmation=true;document.getElementById("getAuthor").click();document.getElementById("getChannel").click();document.getElementById("start").click()');
     for (let i = 0; i < 100 && !await evaluate('document.getElementById("confirmDeletion").open'); i++) await delay(50);

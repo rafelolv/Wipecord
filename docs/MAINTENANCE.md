@@ -20,7 +20,7 @@ Confirmation UI is in `src/utils/confirmation.js` and the compiled panel templat
 
 `images/icon.svg` is the canonical W logo. The template compiler expands `<wipecord-logo>` slots into trusted DOM descriptors for the panel header and Discord toolbar button. Packaging uses the same SVG for extension icons and exports `images/icon-128.png` and `images/icon-512.png` for store uploads. Update the vector source, rebuild and commit its PNG exports with the userscript; never redraw individual placements. The header adapts its white shape for the light theme while packaged icons keep a dark background.
 
-The optional server-rail shortcut lives below an identifiable Home/Direct Messages item. Require a stable visible channel header and the same narrow rail anchor on consecutive polls. Insert a dedicated row without changing Discord elements, move or remove it when navigation changes, and skip ambiguous, hidden or unsupported layouts. Both shortcuts toggle the same panel and synchronize `aria-expanded`; neither may initiate cleanup.
+Keep the Discord launcher in the top-right channel toolbar and leave the server rail untouched.
 
 Keep the approved black, white and green layout quiet: one header logo, neutral section dividers, a plain primary button, a text-only empty state and right-aligned Auto scroll. Retain the settings toggle, help links, keyboard access, themes, responsive behavior and all deletion safeguards.
 

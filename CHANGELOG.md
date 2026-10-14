@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.6.1 — 2026-10-14
+
+- Remove the extra W shortcut from the server rail and restore the original top-right Discord toolbar button as the sole external launcher.
+- Remove sidebar mounting logic, styles, template and instructions while preserving the approved panel design and text-only hover feedback.
+- Rebuild the userscript and both extension packages at 1.6.1 without changing deletion behavior.
+
+- Validation: `npm run check` passed lint, 32 mocked unit tests, artifact checks and matching deterministic packages; Mozilla reported zero errors, warnings and notices.
+- Browser checks: Chrome passed 32 userscript interactions and five viewport/theme layouts. Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all seventeen extension scenario groups. The synthetic server rail remained untouched.
+- Limits: all responses were simulated; no real messages were deleted. Live Discord, Edge, minimum browser versions and signed/store updates remain unvalidated.
+
 ## 1.6.0 — 2026-10-14
 
 - Add a small W shortcut below Direct Messages in the Discord server rail, using its own row without covering existing controls.
