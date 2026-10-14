@@ -16,6 +16,14 @@ For UI changes, run `npm run test:ui:browser` with Chrome/Chromium installed (`C
 
 Confirmation UI is in `src/utils/confirmation.js` and the compiled panel template. The UI installs an asynchronous core adapter; accept only explicit boolean `true`. Cancel/Escape/close/panel hide must resolve false, and Stop must resolve the pending prompt while retaining the stopped report outcome. Fail closed if the dialog cannot open, never fall back from the UI to a native prompt, focus Cancel initially, preserve modal keyboard behavior and clear private preview/scope nodes on close. Streamer mode defaults to off. Reset the optional message preview to collapsed on every opening, sample at most three messages before formatting, bound each example, and distinguish current-page eligible counts from provisional search totals. Snapshot only the target/filter whitelist; never pass authorization tokens or serialize core options. The standalone core's native prompt remains a compatibility/test fallback only when no adapter is installed.
 
+## Branding and change notes
+
+`images/icon.svg` is the canonical W logo. The template compiler expands `<wipecord-logo>` slots into trusted DOM descriptors for the panel header and Discord toolbar button. Packaging uses the same SVG for extension icons and exports `images/icon-128.png` and `images/icon-512.png` for store uploads. Update the vector source, rebuild and commit its PNG exports with the userscript; never redraw individual placements. The header adapts its white shape for the light theme while packaged icons keep a dark background.
+
+Keep the approved black, white and green layout quiet: one header logo, neutral section dividers, a plain primary button, a text-only empty state and right-aligned Auto scroll. Retain the settings toggle, help links, keyboard access, themes, responsive behavior and all deletion safeguards.
+
+Write changelog changes and release summaries as concise English bullet points (`- ...`), one user-visible change per item. Put validation and limitations in separate bullets. Existing published notes remain historical records.
+
 ## Versions
 
 The Chromium and Firefox extensions use the same package version as the userscript. `npm run check` builds both local folders and deterministic ZIPs, and verifies byte-identical packaged engines. `npm run build:extensions` rebuilds all artifacts without running the full check. Edit popup adapters in `src/extension/` and templates in `src/ui/extension/`; do not edit generated package folders. Shared changes must rebuild both browser packages. See [extension architecture and installation](EXTENSION.md).

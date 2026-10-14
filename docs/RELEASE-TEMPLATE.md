@@ -1,4 +1,7 @@
-<One or two sentences describing the change and its benefit. Remove all placeholders before publication.>
+## Changes
+
+- <User-visible change and its benefit; use one concise bullet per change.>
+- <Another change, if needed. Remove all placeholders before publication.>
 
 ## Downloads
 
@@ -20,6 +23,7 @@ For the extensions, follow [local installation and updates](https://github.com/r
 
 ## Validation
 
-<Actual automated results and browser checks, with untested scenarios clearly identified.>
+- <Actual automated results and browser checks.>
+- <Untested scenarios and material limitations.>
 
 [Report a problem](https://github.com/rafelolv/Wipecord/issues) with your browser, manager, version and reproduction steps. Omit tokens and private message data.

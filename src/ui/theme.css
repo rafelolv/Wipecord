@@ -1,10 +1,10 @@
 /* Self-contained colors keep the panel readable when Discord changes its tokens. */
 #wipecord {
   --wipe-bg: #090909;
-  --wipe-panel: #111111;
-  --wipe-input: #0b0b0b;
+  --wipe-panel: #151515;
+  --wipe-input: #111111;
   --wipe-hover: #202020;
-  --wipe-line: #2b2b2b;
+  --wipe-line: #282828;
   --wipe-text: #f5f5f5;
   --wipe-muted: #a3a3a3;
   --wipe-accent: #58d68d;

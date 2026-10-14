@@ -4,6 +4,10 @@ The userscript is Wipecord's primary installation. The extension is an alternati
 
 The Firefox listing is [Wipecord on Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/wipecord/). Chrome, Brave and Edge users should keep using the [userscript](https://raw.githubusercontent.com/rafelolv/Wipecord/main/wipecord.user.js); Wipecord is not published on the Chrome Web Store. Local Chromium packages remain available as a manual alternative.
 
+## Logo and store assets
+
+The panel, toolbar button and extension icons share the W mark in [`images/icon.svg`](../images/icon.svg). Use the generated [128 px PNG](../images/icon-128.png) or [512 px PNG](../images/icon-512.png) for store uploads. `npm run check` regenerates these files and packages the same branding for both browsers. Uploading a logo does not publish or sign an extension update.
+
 ## Get the local packages
 
 From a checkout, use Node.js 24 and run:

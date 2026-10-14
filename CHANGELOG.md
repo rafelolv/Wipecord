@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.5.0 — 2026-10-14
+
+- Apply the approved quieter black, white and green layout: compact header, centered W logo, neutral section dividers, plain primary action and text-only activity placeholder.
+- Move Auto scroll to the right edge of the activity footer. Keep the settings toggle in the header and help links visible outside the scrolling settings.
+- Replace the previous logo with the white W and separated green tip throughout the panel, Discord toolbar, README and both browser extension packages.
+- Compile runtime logo placements from one SVG source and generate matching 128 px and 512 px store assets. Explicitly assign extension action icons from the same assets.
+- Document concise bullet points as the format for future changelog entries, release summaries, validation and limitations.
+- Rebuild the userscript and both extension packages at 1.5.0; preserve the deletion engine, filters, confirmations, stopping, privacy settings and request pacing.
+
+- Validation: `npm run check` passed lint, 32 mocked unit tests, metadata/license/syntax checks, matching runtime hashes and deterministic packages.
+- Mozilla validation: zero errors, warnings and notices.
+- Userscript browser checks: Chrome passed 31 interaction checks, keyboard controls, safe confirmation, dragging/resizing and five viewport/theme layouts; Auto scroll and sidebar help remain accessible. Idle, dark/light, narrow/short, confirmation and popup captures were visually reviewed.
+- Extension browser checks: Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all seventeen scenario groups using temporary profiles and simulated API responses. Checks include shared branding, popup icon loading, the footer alignment and existing deletion safeguards.
+- Limits: no real messages were deleted. Live Discord, Edge, minimum supported browser versions and signed/store updates remain unvalidated.
+
 ## 1.4.1 — 2026-10-13
 
 - Start Streamer mode disabled. Keep its explicit toggle, private-field masking and permanently concealed authorization-token input.

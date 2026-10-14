@@ -1,12 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
-  <title>Wipecord — erase messages</title>
-  <rect width="128" height="128" rx="28" fill="#090909"/>
-  <path d="M85 27H37c-7 0-12 5-12 12v27c0 7 5 12 12 12h3v13l17-13h28c7 0 12-5 12-12V39c0-7-5-12-12-12Z" stroke="#F5F5F5" stroke-width="6" stroke-linejoin="round"/>
-  <path d="M40 44h29M40 58h16" stroke="#F5F5F5" stroke-width="6" stroke-linecap="round"/>
-  <path d="M79 44h3M66 58h3" stroke="#58D68D" stroke-width="6" stroke-linecap="round"/>
-  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#090909" stroke="#090909" stroke-width="10" stroke-linejoin="round"/>
-  <path d="m63 90 27-30c3-3 7-3 10 0l14 13c3 3 3 7 0 10L89 111H75L63 100c-3-3-3-7 0-10Z" fill="#58D68D"/>
-  <path d="m63 90 8-9 27 24-9 6H75L63 100c-3-3-3-7 0-10Z" fill="#F5F5F5"/>
-  <path d="m71 81 27 24" stroke="#090909" stroke-width="4"/>
-  <path d="M59 112h50" stroke="#58D68D" stroke-width="4" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" color="#F5F5F5">
+  <title>Wipecord</title>
+  <rect class="logo-background" width="128" height="128" rx="26" fill="#090909"/>
+  <path class="logo-body" d="M13 30H28C32 30 34 32 36 37L48 69L59 44C61 40 63 39 67 39H70C74 39 76 41 78 45L88 69L95 54L119 44L100 93C98 98 95 100 90 100H83C79 100 76 98 74 94L65 74L55 94C53 98 50 100 46 100H39C34 100 31 98 29 93L9 37C7 32 9 30 13 30Z" fill="currentColor"/>
+  <path d="M103 30H119C123 30 125 33 123 37L122 39L97 49L102 34C102 32 102 31 103 30Z" fill="#58D68D"/>
 </svg>

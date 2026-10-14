@@ -36,26 +36,32 @@
   border-radius: 10px;
   background: var(--wipe-bg);
   color: var(--wipe-text);
-  box-shadow: 0 12px 36px #0005;
+  box-shadow: 0 8px 28px #0003;
   font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
   isolation: isolate;
 }
-#wipecord .header { display: flex; align-items: center; gap: 12px; flex-shrink: 0; min-height: 62px; padding: 12px 20px; border-bottom: 1px solid var(--wipe-line); cursor: grab; }
+#wipecord .header { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px; flex-shrink: 0; min-height: 64px; padding: 12px 22px; border-bottom: 1px solid var(--wipe-line); cursor: grab; }
 #wipecord.drag .header { cursor: grabbing; }
 #wipecord .brand-mark { flex-shrink: 0; }
-#wipecord .brand-copy { flex: 1; min-width: 0; }
-#wipecord .brand-copy h3 { font-size: 18px; font-weight: 600; letter-spacing: -.3px; color: var(--wipe-text); }
+#wipecord .brand-copy { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+#wipecord .header-actions { display: flex; justify-content: flex-end; gap: 4px; }
+#wipecord .header .brand-mark { color: var(--wipe-text); }
+#wipecord .header .logo-background { display: none; }
+#wipecord .brand-copy h3 { font-size: 20px; font-weight: 600; letter-spacing: -.4px; color: var(--wipe-text); }
 #wipecord .version { color: var(--wipe-muted); font: 11px ui-monospace, monospace; }
 #wipecord .icon-button { width: 32px; height: 32px; padding: 0; }
+#wipecord #toggleSidebar { border: 0; background: transparent; color: var(--wipe-muted); font-size: 16px; font-weight: 400; }
 #wipecord #hide { border: 0; background: transparent; color: var(--wipe-muted); font-size: 24px; font-weight: 400; }
 #wipecord .window-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-#wipecord .sidebar { flex: 0 0 350px; width: 350px; min-width: 0; overflow-y: auto; padding: 8px 14px; border-right: 1px solid var(--wipe-line); background: var(--wipe-panel); }
-#wipecord h4 { font-size: 16px; font-weight: 600; letter-spacing: -.3px; }
-#wipecord .settings-section { margin: 0; border: 0; border-bottom: 1px solid var(--wipe-line); border-radius: 0; overflow: hidden; }
-#wipecord summary { position: relative; display: block; padding: 16px 22px 16px 0; color: var(--wipe-text); font-size: 13px; font-weight: 600; cursor: pointer; list-style: none; }
+#wipecord .sidebar { flex: 0 0 350px; width: 350px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--wipe-line); background: var(--wipe-bg); }
+#wipecord .settings-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 22px; }
+#wipecord h4 { font-size: 18px; font-weight: 600; letter-spacing: -.3px; }
+#wipecord .settings-section { flex-shrink: 0; margin: 0; border: 0; border-bottom: 1px solid var(--wipe-line); border-radius: 0; overflow: hidden; }
+#wipecord summary { position: relative; display: block; padding: 16px 22px 16px 0; color: var(--wipe-text); font-size: 14px; font-weight: 600; cursor: pointer; list-style: none; }
 #wipecord summary::-webkit-details-marker { display: none; }
-#wipecord summary::after { content: "+"; position: absolute; top: 13px; right: 2px; color: var(--wipe-muted); font-size: 16px; font-weight: 400; }
-#wipecord details[open] > summary::after { content: "−"; }
+#wipecord summary::after { content: ""; position: absolute; top: 22px; right: 4px; width: 6px; height: 6px; border-right: 1.5px solid var(--wipe-muted); border-bottom: 1.5px solid var(--wipe-muted); transform: rotate(-45deg); }
+#wipecord details[open] > summary::after { transform: rotate(45deg); }
+#wipecord .settings-scroll > .settings-section:first-child > summary { font-size: 16px; }
 #wipecord summary:hover { background: var(--wipe-hover); }
 #wipecord .section-body { padding: 0 0 18px; }
 #wipecord .section-body > .sectionDescription:first-child { margin: 0 0 16px; }
@@ -69,30 +75,29 @@
 #wipecord .multiInput button { padding: 6px 8px; min-height: 40px; font-size: 12px; }
 #wipecord .range-row { display: flex; align-items: center; gap: 10px; }
 #wipecord .range-row div { min-width: 60px; color: var(--wipe-accent); text-align: right; font: 11px ui-monospace, monospace; }
-#wipecord .info { display: flex; justify-content: space-between; margin: 20px 3px 0; font-size: 11px; }
+#wipecord .info { display: flex; justify-content: flex-start; gap: 20px; margin: 0; padding: 14px 22px; border-top: 1px solid var(--wipe-line); flex-shrink: 0; font-size: 11px; }
 #wipecord .info a { color: var(--wipe-muted); }
 #wipecord .main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 #wipecord.hide-sidebar .sidebar { display: none; }
-#wipecord .activity-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 20px 22px 18px; flex-shrink: 0; }
+#wipecord .activity-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 22px 22px 18px; flex-shrink: 0; }
 #wipecord .quiet-button { background: transparent; border-color: transparent; color: var(--wipe-muted); }
 #wipecord .action-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 22px 16px; flex-shrink: 0; }
 #wipecord .action-buttons { display: flex; align-items: center; gap: 6px; }
-#wipecord #start { min-height: 38px; padding: 8px 14px; border-color: var(--wipe-accent); background: var(--wipe-accent); color: var(--wipe-accent-ink); font-size: 13px; }
+#wipecord #start { min-height: 40px; padding: 8px 20px; border-color: var(--wipe-accent); background: var(--wipe-accent); color: var(--wipe-accent-ink); font-size: 13px; }
 #wipecord #start:hover:not(:disabled) { filter: brightness(1.08); }
-#wipecord #stop { min-height: 38px; color: var(--wipe-danger); }
+#wipecord #stop { min-height: 40px; color: var(--wipe-danger); }
 #wipecord #stop:not(:disabled) { border-color: var(--wipe-danger); }
 #wipecord .privacy-control { font-size: 12px; }
-#wipecord .safety-note { display: flex; align-items: center; gap: 9px; margin: 0 22px 16px; padding: 0 0 14px; border: 0; border-bottom: 1px solid var(--wipe-line); border-radius: 0; color: var(--wipe-muted); font-size: 12px; line-height: 1.5; flex-shrink: 0; }
-#wipecord .safety-note span { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex-shrink: 0; border: 1px solid var(--wipe-warning); border-radius: 50%; color: var(--wipe-warning); font: bold 10px system-ui, sans-serif; }
+#wipecord .safety-note { margin: 0 22px 16px; color: var(--wipe-muted); font-size: 12px; line-height: 1.5; flex-shrink: 0; }
 #wipecord #progressBar { width: calc(100% - 48px); min-height: 5px; height: 5px; margin: 0 24px 10px; accent-color: var(--wipe-accent); flex-shrink: 0; }
 #wipecord #logArea { position: relative; flex: 1; min-height: 0; overflow: auto; padding: 8px 22px 22px; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.65 ui-monospace, "SFMono-Regular", Consolas, monospace; user-select: text; }
-#wipecord #logArea:has(.empty-state) { display: block; white-space: normal; }
-#wipecord .empty-state { width: 100%; padding: 16px 0; text-align: left; white-space: normal; font-family: system-ui, sans-serif; }
-#wipecord .empty-state h4 { display: inline; font-size: 13px; font-weight: 500; color: var(--wipe-muted); }
-#wipecord .empty-state p { margin-top: 10px; color: var(--wipe-muted); font-size: 12px; line-height: 1.8; }
-#wipecord .footer { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; padding: 12px 24px; border-top: 1px solid var(--wipe-line); flex-shrink: 0; }
+#wipecord #logArea:has(.empty-state) { display: flex; align-items: center; justify-content: center; white-space: normal; }
+#wipecord .empty-state { width: 100%; padding: 16px 0; text-align: center; white-space: normal; font-family: system-ui, sans-serif; }
+#wipecord .empty-state h4 { font-size: 15px; font-weight: 600; color: var(--wipe-muted); }
+#wipecord .empty-state p { margin-top: 8px; color: var(--wipe-muted); font-size: 12px; line-height: 1.6; }
+#wipecord .footer { position: relative; display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-height: 46px; padding: 12px 28px 12px 22px; flex-shrink: 0; }
 #wipecord #progressPercent { flex: 1; min-width: 0; color: var(--wipe-muted); font: 10px/1.6 ui-monospace, monospace; overflow-wrap: anywhere; }
-#wipecord .footer .check { flex-shrink: 0; font-size: 10px; }
+#wipecord .footer .check { flex-shrink: 0; font-size: 12px; }
 #wipecord .resize-handle { position: absolute; right: 8px; bottom: 8px; width: 10px; height: 10px; border-right: 2px solid var(--wipe-line); border-bottom: 2px solid var(--wipe-line); cursor: nwse-resize; }
 @media (max-width: 640px) {
   #wipecord { top: 12px; right: 12px; width: calc(100vw - 24px); height: calc(100dvh - 24px); min-width: 0; min-height: 0; max-height: calc(100dvh - 24px); border-radius: 8px; }
@@ -100,7 +105,9 @@
   #wipecord .brand-copy h3 { font-size: 18px; }
   #wipecord .version { display: none; }
   #wipecord .window-body { flex-direction: column; }
-  #wipecord .sidebar { flex: 1 1 45%; width: 100%; min-height: 0; border-right: 0; border-bottom: 1px solid var(--wipe-line); padding: 16px; }
+  #wipecord .sidebar { flex: 1 1 45%; width: 100%; min-height: 0; border-right: 0; border-bottom: 1px solid var(--wipe-line); }
+  #wipecord .settings-scroll { padding: 8px 16px; }
+  #wipecord .info { padding: 10px 16px; }
   #wipecord .main { flex: 0 0 300px; min-height: 280px; }
   #wipecord .section-body > .sectionDescription:first-child { display: none; }
   #wipecord .activity-heading { padding: 14px 16px 10px; }
@@ -117,8 +124,7 @@
   #wipecord .empty-state p { display: none; }
 }
 
-#wipecord .header .brand-mark { width: 30px; height: 30px; }
-#wipecord .idle-dot { display: inline-block; width: 6px; height: 6px; margin-right: 8px; vertical-align: middle; border-radius: 50%; background: var(--wipe-muted); }
+#wipecord .header .brand-mark { width: 34px; height: 34px; }
 #wipecord #runSummary { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; margin: 0 22px 12px; padding: 12px 0; border-top: 1px solid var(--wipe-line); border-bottom: 1px solid var(--wipe-line); }
 #wipecord #runSummary[hidden] { display: none; }
 #wipecord #summaryText { min-width: 0; font-size: 12px; }

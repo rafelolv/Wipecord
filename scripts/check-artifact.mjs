@@ -1,9 +1,17 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { parseFragment } from 'parse5';
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 const artifact = readFileSync(pkg.main, 'utf8');
+// Both runtime placements must use the same vector paths as store/package assets.
+const brand = parseFragment(readFileSync('images/icon.svg', 'utf8')).childNodes.find(node => node.tagName === 'svg');
+for (const path of brand.childNodes.filter(node => node.tagName === 'path')) {
+  const geometry = path.attrs.find(attribute => attribute.name === 'd').value;
+  assert.ok(artifact.split(JSON.stringify(geometry)).length >= 3, 'Panel and Discord button must embed the canonical logo');
+}
+assert.ok(!artifact.includes('wipecord-logo'), 'Logo slots must be compiled before distribution');
 const license = readFileSync('LICENSE', 'utf8').trim();
 assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
 assert.ok(artifact.includes(license), 'Distributed userscript must include the complete license');

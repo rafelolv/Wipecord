@@ -3,6 +3,8 @@
 Maintained by rafelolv. Read docs/MAINTENANCE.md for the workflow.
 
 - Use English for documentation, comments, user-facing text, metadata and commit messages.
+- Write changelog entries and release change summaries as concise English bullet points (`- ...`), one user-visible change per item. Record validation and limitations as separate bullets; do not rewrite historical release notes.
+- Keep `images/icon.svg` as the canonical W logo. Compile it into runtime templates at build time and generate extension/store PNGs from it; never maintain independent logo paths. Keep Auto scroll right-aligned and the panel free of repeated decorative logos or accent markers.
 - Maintain main. Installation, update and support URLs must point to rafelolv/Wipecord/main or its issues.
 - Edit runtime code only in src/, templates in src/ui/, and build logic in build/ or rollup.config.mjs. Never hand-edit wipecord.user.js: regenerate it and commit the artifact with source changes.
 - Keep the runtime readable and free of external dependencies, remote code, telemetry and remote configuration. Build/test dependencies are permitted. Never store, print or commit authorization tokens or private message data.

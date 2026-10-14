@@ -10,6 +10,7 @@ const json = value => Buffer.from(JSON.stringify(value, null, 2) + '\n');
 const hash = data => createHash('sha256').update(data).digest('hex');
 
 export function manifest(browser) {
+  const icons = Object.fromEntries([16, 32, 48, 128].map(size => [size, `icon-${size}.png`]));
   const result = {
     manifest_version: 3,
     name: 'Wipecord',
@@ -17,8 +18,8 @@ export function manifest(browser) {
     description: 'Use Wipecord in Discord without a userscript manager. Deletions require your confirmation.',
     author: 'Rafael (rafelolv)',
     homepage_url: pkg.homepage,
-    icons: Object.fromEntries([16, 32, 48, 128].map(size => [size, `icon-${size}.png`])),
-    action: { default_title: 'Wipecord status', default_popup: 'popup.html' },
+    icons,
+    action: { default_icon: icons, default_title: 'Wipecord status', default_popup: 'popup.html' },
     content_scripts: [
       { matches: pkg.userScript.match, js: ['wipecord.user.js'], world: 'MAIN', run_at: 'document_idle', all_frames: false },
       { matches: pkg.userScript.match, js: ['status.js'], world: 'ISOLATED', run_at: 'document_idle', all_frames: false },
@@ -35,6 +36,7 @@ export function manifest(browser) {
 const common = { 'wipecord.user.js': artifact, LICENSE: readFileSync('LICENSE'), 'icon.svg': readFileSync('images/icon.svg') };
 for (const name of ['status.js', 'popup.js', 'popup.html', 'popup.css']) common[name] = readFileSync(`src/${name.endsWith('.js') ? 'extension' : 'ui/extension'}/${name}`);
 for (const size of [16, 32, 48, 128]) common[`icon-${size}.png`] = new Resvg(common['icon.svg'], { fitTo: { mode: 'width', value: size } }).render().asPng();
+for (const size of [128, 512]) writeFileSync(`images/icon-${size}.png`, new Resvg(common['icon.svg'], { fitTo: { mode: 'width', value: size } }).render().asPng());
 mkdirSync('dist', { recursive: true });
 const sums = [];
 for (const browser of ['chromium', 'firefox']) {

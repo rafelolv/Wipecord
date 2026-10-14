@@ -146,6 +146,9 @@ try {
       assert.equal(await page.evaluate('requests.length+prompts.length'), 0, 'Popup must not start a run');
       // Firefox BiDi cannot capture extension pages in privileged scope.
       if (browser === 'chromium') await popup.screenshot(join(directory, `${browser}-popup.png`));
+      assert.equal(await page.evaluate('document.querySelectorAll("#wipecord .brand-mark").length === 1 && !document.querySelector("#logArea svg, #logArea img")'), true);
+      assert.equal(await page.evaluate('(()=>{const f=document.querySelector("#wipecord .footer").getBoundingClientRect(),c=document.getElementById("autoScroll").parentElement.getBoundingClientRect();return c.left>f.left+f.width/2&&f.right-c.right<=30;})()'), true);
+      assert.equal(await popup.evaluate('document.querySelector("header img").complete && document.querySelector("header img").naturalWidth > 0'), true);
       await page.screenshot(join(directory, `${browser}-panel.png`));
       checks.push(`${browser}: native MAIN-world mount, privacy defaults, idle load and read-only popup`);
 

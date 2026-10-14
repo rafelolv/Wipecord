@@ -8,16 +8,20 @@ const pkg = JSON.parse(readFileSync('package.json'));
 const runtime = readFileSync(pkg.main);
 const hash = data => createHash('sha256').update(data).digest('hex');
 const archives = {};
+const icon = readFileSync('images/icon.svg');
 for (const browser of ['chromium', 'firefox']) {
   const folder = `dist/${browser}`;
   const manifest = JSON.parse(readFileSync(`${folder}/manifest.json`));
   const info = JSON.parse(readFileSync(`${folder}/build-info.json`));
   assert.equal(manifest.version, pkg.version);
+  assert.deepEqual(readFileSync(`${folder}/icon.svg`), icon, 'Package icon must match the canonical brand asset');
+  assert.deepEqual(readFileSync(`${folder}/icon-128.png`), readFileSync('images/icon-128.png'), 'Store and packaged icons must agree');
   assert.equal(info.version, pkg.version);
   assert.equal(info.userscriptVersion, pkg.version);
   assert.equal(info.userscriptSHA256, hash(runtime));
   assert.deepEqual(readFileSync(`${folder}/wipecord.user.js`), runtime, 'Packaged engine must be byte-identical');
   assert.equal(manifest.manifest_version, 3);
+  assert.deepEqual(manifest.action.default_icon, manifest.icons);
   if (browser === 'firefox') {
     assert.equal(manifest.browser_specific_settings.gecko.strict_min_version, '142.0');
     assert.deepEqual(manifest.browser_specific_settings.gecko.data_collection_permissions, { required: ['none'] });

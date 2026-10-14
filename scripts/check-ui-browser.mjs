@@ -77,6 +77,10 @@ try {
   await page('Emulation.setDeviceMetricsOverride', { width: 1280, height: 960, deviceScaleFactor: 1, mobile: false });
   await page('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/channels/${guild}/${channel}` });
   for (let i = 0; i < 100 && !await evaluate('!!document.querySelector("#wipecord-btn")'); i++) await delay(50);
+  await evaluate('document.getElementById("wipecord-btn").click()');
+  const idleImage = await page('Page.captureScreenshot', { format: 'png' });
+  writeFileSync(join(directory, 'idle.png'), Buffer.from(idleImage.data, 'base64'));
+  await evaluate('document.getElementById("hide").click()');
   const results = await evaluate(`(async()=>{
     const checks=[];const $=id=>document.getElementById(id);
     const check=(value,message)=>{if(!value)throw Error(message);checks.push(message);};
@@ -86,6 +90,8 @@ try {
     check(getComputedStyle($('wipecord')).display!=='none','Toolbar opens panel');
     check(!$('redact').checked&&!$('wipecord').classList.contains('redact'),'Streamer mode disabled by default');
     check($('token').type==='password','Token field stays masked');
+    check(document.querySelectorAll('#wipecord .brand-mark').length===1&&!$('logArea').querySelector('svg,img,.idle-dot'),'Brand appears only in the panel header');
+    check($('wipecord-btn').querySelector('.logo-body').getAttribute('d')===$('wipecord').querySelector('.logo-body').getAttribute('d'),'Panel and toolbar share the W mark');
     check(!$('includePinned').checked&&$('searchDelay').value==='2000'&&$('deleteDelay').value==='1000','Deletion defaults preserved');
     check($('stop').disabled&&getComputedStyle($('stop')).display!=='none','Disabled Stop stays visible');
     $('getAuthor').click();$('getChannel').click();
@@ -190,6 +196,10 @@ try {
     const layout = await evaluate('(()=>{const p=document.getElementById(\'wipecord\'),r=p.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:innerWidth,height:innerHeight,overflow:p.scrollWidth>p.clientWidth};})()');
     assert.ok(layout.left >= 0 && layout.top >= 0 && layout.right <= layout.width && layout.bottom <= layout.height, `${name}: panel fits viewport`);
     assert.equal(layout.overflow, false, `${name}: no horizontal panel overflow`);
+    const footer = await evaluate('(()=>{const f=document.querySelector("#wipecord .footer").getBoundingClientRect(),c=document.getElementById("autoScroll").parentElement.getBoundingClientRect();return {aligned:c.left>f.left+f.width/2&&f.right-c.right<=30};})()');
+    assert.equal(footer.aligned, true, `${name}: Auto scroll stays at the right`);
+    const help = await evaluate('(()=>{const s=document.querySelector("#wipecord .sidebar").getBoundingClientRect(),i=document.querySelector("#wipecord .info").getBoundingClientRect();return i.top>=s.top&&i.bottom<=s.bottom;})()');
+    assert.equal(help, true, `${name}: sidebar help stays visible outside settings scroll`);
     await delay(200);
     const screenshot = await page('Page.captureScreenshot', { format: 'png' });
     writeFileSync(join(directory, `${name}.png`), Buffer.from(screenshot.data, 'base64'));

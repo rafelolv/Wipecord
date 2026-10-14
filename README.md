@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="images/icon.svg?v=1.3.2" width="80" height="80" alt="Wipecord logo">
+  <img src="images/icon.svg?v=1.5.0" width="80" height="80" alt="Wipecord logo">
   <h1>Wipecord</h1>
   <p>Clean up your Discord messages.</p>
   <p>
@@ -9,7 +9,7 @@
   </p>
 </div>
 
-Wipecord adds a button with the Wipecord logo to Discord's top-right toolbar in your browser. Choose a conversation or server, filter your messages, and review the target before deleting.
+Wipecord adds a button with its white **W** and green tip to Discord's top-right toolbar in your browser. Choose a conversation or server, filter your messages, and review the target before deleting.
 
 **DMs & group chats** · **Server channels** · **Text & date filters** · **Stop controls**
 
@@ -53,6 +53,10 @@ Keep **Author ID** set to your own ID using **me**.
 | Several servers | Enter their IDs in **Server ID**, separated by commas, and leave **Channel ID** empty. |
 
 For all servers, archive imports, and advanced filters, see the [user guide](docs/USER-GUIDE.md).
+
+## Logo files
+
+[SVG](images/icon.svg) · [128 px PNG](images/icon-128.png) · [512 px PNG](images/icon-512.png) — the same W mark is used in the panel, Discord button and browser extensions.
 
 ## A few useful tips
 
