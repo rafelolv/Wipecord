@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5.2 — 2026-10-14
+
+- Replace the oversized section hover background with a restrained green title and chevron, keeping topic separators visible.
+- Restore heading alignment without extending the hover area into the surrounding gutters; retain keyboard focus outlines and expandable controls.
+- Rebuild the userscript and both extension packages at 1.5.2 without changing deletion behavior.
+
+- Validation: `npm run check` passed lint, 32 mocked unit tests, artifact checks and deterministic packages with matching engines; Mozilla reported zero errors, warnings and notices.
+- Userscript browser checks: Chrome passed 31 interactions and five viewport/theme layouts. A temporary pointer-hover probe confirmed green text/chevrons with transparent backgrounds on Filters, Dates, Advanced and Archive; the hover capture was visually reviewed.
+- Extension browser checks: Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all seventeen integration scenario groups in temporary profiles using simulated responses.
+- Limits: no real messages were deleted. Live Discord, Edge, minimum browser versions and signed/store updates remain unvalidated.
+
 ## 1.5.1 — 2026-10-14
 
 - Give expandable section headings breathing room inside the hover highlight while preserving their alignment with the form fields.
