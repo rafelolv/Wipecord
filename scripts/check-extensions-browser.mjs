@@ -11,7 +11,7 @@ const directory = mkdtempSync(join(tmpdir(), 'wipecord-extensions-'));
 const artifact = readFileSync('wipecord.user.js', 'utf8');
 const author = '11111111111111111', channel = '33333333333333333';
 const fixture = (first, late) => `<!doctype html><html><head><meta charset="utf-8"></head><body>
-<div id="app-mount">${late ? '<div id="message-tools" class="toolbar_message"></div>' : '<section aria-label="Channel header"><div role="toolbar"></div></section>'}</div>
+<div id="app-mount"><nav id="server-rail" aria-label="Servers sidebar" style="position:fixed;left:8px;top:80px;width:64px"><div data-list-id="guildsnav" style="width:64px"><div class="listItem_fixture" style="width:64px;height:48px"><button type="button" data-list-item-id="guildsnav___home" aria-label="Direct Messages">DM</button></div><div id="fixture-server" style="width:64px;height:48px">Server</div></div></nav>${late ? '<div id="message-tools" class="toolbar_message"></div>' : '<section aria-label="Channel header"><div role="toolbar"></div></section>'}</div>
 <script>
 window.requests=[];window.prompts=[];window.errors=[];window.accept=false;window.deleted=[];
 window.addEventListener('error',e=>window.errors.push(e.message));
@@ -62,7 +62,7 @@ try {
       await loading.navigate(url + '?late-header');
       await waitFor(() => loading.evaluate('!!document.getElementById("wipecord-runtime")'), 'Startup claim missing');
       await delay(1600);
-      assert.equal(await loading.evaluate('!!document.getElementById("wipecord") || !!document.getElementById("wipecord-btn")'), false, 'Loading screens must not initialize the UI');
+      assert.equal(await loading.evaluate('!!document.getElementById("wipecord") || !!document.getElementById("wipecord-btn") || !!document.getElementById("wipecord-sidebar-btn")'), false, 'Loading screens must not initialize the UI');
       assert.equal(await loading.evaluate('document.getElementById("message-tools").childElementCount'), 0, 'Message toolbars must remain untouched');
       await loading.evaluate('document.getElementById("app-mount").insertAdjacentHTML("beforeend", \'<section aria-label="Channel header" style="display:none"><div role="toolbar" id="hidden-toolbar"></div></section><section aria-label="Channel header"><div role="toolbar" id="active-toolbar"></div></section>\')');
       await waitFor(() => loading.evaluate('!!document.querySelector("#active-toolbar #wipecord-btn")'), 'Late header did not mount');
@@ -77,13 +77,34 @@ try {
       await loading.evaluate('document.getElementById("app-mount").insertAdjacentHTML("beforeend", \'<section aria-label="Channel header"><div role="toolbar" id="reloaded-toolbar"></div></section>\')');
       await waitFor(() => loading.evaluate('!!document.querySelector("#reloaded-toolbar #wipecord-btn")'), 'Reloaded header did not mount');
       assert.equal(await loading.evaluate('requests.length + prompts.length + errors.length'), 0);
-      checks.push(`${browser}: delayed initialization after load/reload, untouched message toolbars, hidden-header exclusion and visible header replacement`);
+      await waitFor(() => loading.evaluate('!!document.getElementById("wipecord-sidebar-btn")'), 'Reloaded sidebar shortcut did not mount');
+      await loading.evaluate(`(()=>{
+        const original=document.getElementById('server-rail'),replacement=original.cloneNode(true);
+        replacement.id='replacement-rail';replacement.querySelector('#wipecord-sidebar-shortcut')?.remove();
+        original.style.display='none';original.after(replacement);
+      })()`);
+      await waitFor(() => loading.evaluate('!!document.querySelector("#replacement-rail #wipecord-sidebar-btn")'), 'Shortcut did not follow the visible replacement rail');
+      assert.equal(await loading.evaluate('document.querySelectorAll("#wipecord-sidebar-btn").length'), 1);
+      await loading.evaluate('document.querySelector("#replacement-rail [data-list-id]").style.width="240px"');
+      await waitFor(() => loading.evaluate('!document.getElementById("wipecord-sidebar-btn")'), 'Wide/ambiguous navigation must not receive the shortcut');
+      await loading.evaluate('document.querySelector("#replacement-rail [data-list-id]").style.width="64px";document.querySelector("#replacement-rail [data-list-item-id]").removeAttribute("data-list-item-id")');
+      await delay(1500);
+      assert.equal(await loading.evaluate('!!document.getElementById("wipecord-sidebar-btn")'), false, 'Unknown sidebar structure must remain untouched');
+      assert.equal(await loading.evaluate('!!document.getElementById("wipecord-btn") && document.getElementById("message-tools").childElementCount===0 && requests.length+prompts.length+errors.length===0'), true);
+      checks.push(`${browser}: stable header/sidebar startup and reload, replacement, hidden/wide/unknown navigation exclusion and untouched message controls`);
 
       const page = await session.createPage();
       await page.navigate(url);
       await waitFor(() => page.evaluate('!!document.getElementById("wipecord-btn")'), `${browser}: extension did not mount`).catch(async error => { console.log(browser, session.events, await page.evaluate('JSON.stringify({errors,marker:!!document.getElementById("wipecord-runtime")})')); throw error; });
       assert.equal(await page.evaluate('requests.length+prompts.length'), 0, 'Page load must not start a run');
       assert.equal(await page.evaluate('document.getElementById("wipecord").style.display'), 'none');
+      await waitFor(() => page.evaluate('!!document.getElementById("wipecord-sidebar-btn")'), 'Sidebar shortcut did not mount');
+      await page.evaluate('document.getElementById("wipecord-sidebar-btn").click()');
+      assert.equal(await page.evaluate('document.querySelectorAll("#wipecord").length===1 && document.getElementById("wipecord").style.display!=="none" && document.getElementById("wipecord-btn").getAttribute("aria-expanded")==="true" && requests.length+prompts.length===0'), true);
+      await page.evaluate('document.getElementById("wipecord-sidebar-btn").click()');
+      assert.equal(await page.evaluate('document.getElementById("wipecord").style.display==="none" && document.getElementById("wipecord-sidebar-btn").getAttribute("aria-expanded")==="false"'), true);
+      assert.equal(await page.evaluate('document.getElementById("wipecord-sidebar-shortcut").previousElementSibling.contains(document.querySelector("[data-list-item-id]"))'), true);
+      checks.push(`${browser}: sidebar shortcut opens and closes the same panel without requests or automatic deletion`);
       await page.evaluate(prepare);
       assert.equal(await page.evaluate('document.getElementById("redact").checked === false && !document.getElementById("includePinned").checked && document.getElementById("searchDelay").value === "2000" && document.getElementById("deleteDelay").value === "1000"'), true);
 
@@ -156,6 +177,7 @@ try {
       // prevention is exercised at the real entry point rather than a helper.
       await page.evaluate('new Promise(resolve=>{const script=document.createElement("script");script.src="/wipecord.user.js";script.onload=resolve;document.head.appendChild(script);})');
       assert.equal(await page.evaluate('document.querySelectorAll("#wipecord").length'), 1);
+      assert.equal(await page.evaluate('document.querySelectorAll("#wipecord-sidebar-btn").length'), 1);
       assert.equal(await page.evaluate('document.getElementById("wipecord-runtime").dataset.duplicates'), '1');
       await waitFor(() => popup.evaluate('document.getElementById("detail").textContent.includes("Another installation")'), 'Popup duplicate notice missing');
       await start(page);

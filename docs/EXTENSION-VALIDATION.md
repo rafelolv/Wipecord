@@ -6,6 +6,8 @@ All messages, session values and responses are synthetic. Fetch is mocked in the
 
 ## Scenarios
 
+- The optional server-rail W uses its own row below Home, opens/closes the existing panel without API calls or confirmation, and shares the runtime claim. Startup/reload waits for the header; the shortcut follows a visible replacement rail and disappears for hidden, wide or unknown structures. These are synthetic Discord layouts, not a live-client DOM compatibility guarantee.
+
 - The panel and toolbar use the canonical W mark, the activity empty state contains no repeated logo, Auto scroll stays on the right, and the popup logo loads. The userscript fixture checks footer alignment across dark/light and narrow/short viewports. Packaging verifies the shared SVG and matching store/package icons.
 
 - Streamer mode starts disabled and can be enabled to mask details. The optional confirmation preview resets to collapsed on each opening, with at most three shortened examples and an explicit current-page count rather than a complete-list promise. Custom confirmation defaults to Cancel and masks target/filter/preview details under Streamer mode. Cancel, Escape, close, panel hide and Stop resolve without deletion or a stuck run; Stop keeps the stopped outcome. Browser-native confirmation is forbidden by the fixture. Two batch targets remain blocked until one explicit acceptance, with the remaining-target warning and exactly one confirmation. The userscript runner tests native Escape/Enter keys, inert preview/filter markup and five responsive/theme dialog layouts.

@@ -25,7 +25,7 @@ The userscript is the primary installation. For the alternative browser packages
 
 ## Panel layout
 
-The white **W** with a green tip identifies Wipecord in the Discord toolbar and panel header. Auto scroll sits at the bottom-right of the activity area; the empty activity state uses text only.
+The white **W** with a green tip identifies Wipecord in the Discord toolbar and panel header. An additional small W can appear below Direct Messages in the server rail. It occupies its own row and opens the same panel; it never starts deletion. If Discord hides or changes that sidebar structure, Wipecord omits this optional shortcut and keeps the toolbar button. Auto scroll sits at the bottom-right of the activity area; the empty activity state uses text only.
 
 The settings sidebar contains **Where to clean**, **Filter messages**, **Date & message range**, **Advanced settings**, and **Wipe Archive**. Only target settings are expanded initially. Message-ID bounds are inside **Date & message range → Use message IDs instead**. Regular-expression patterns are inside **Advanced settings**.
 

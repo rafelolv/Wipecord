@@ -12,7 +12,7 @@ const guild = '22222222222222222';
 const channel = '33333333333333333';
 const fixture = `<!doctype html><html><head><meta charset="utf-8"><style>
 body{margin:0;background:#252933;color:#bbc4d2;font:14px system-ui}header{height:48px;padding:8px 24px;border-bottom:1px solid #39414e}section{display:flex;justify-content:space-between;align-items:center}main{padding:24px;opacity:.5}
-</style></head><body><div id="app-mount"><header><section aria-label="Channel header"><span># test-conversation</span><div role="toolbar"></div></section></header><main>Local preview · no Discord account or live messages</main></div>
+</style></head><body><div id="app-mount"><nav id="server-rail" aria-label="Servers sidebar" style="position:fixed;left:8px;top:80px;width:64px"><div data-list-id="guildsnav" style="width:64px"><div class="listItem_fixture" style="width:64px;height:48px"><button type="button" data-list-item-id="guildsnav___home" aria-label="Direct Messages">DM</button></div><div id="fixture-server" style="width:64px;height:48px">Server</div></div></nav><header><section aria-label="Channel header"><span># test-conversation</span><div role="toolbar"></div></section></header><main>Local preview · no Discord account or live messages</main></div>
 <script>
 window.fixtureRequests=[];window.fixturePrompts=[];window.fixtureErrors=[];
 window.addEventListener('error',e=>window.fixtureErrors.push(e.message));
@@ -77,6 +77,7 @@ try {
   await page('Emulation.setDeviceMetricsOverride', { width: 1280, height: 960, deviceScaleFactor: 1, mobile: false });
   await page('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/channels/${guild}/${channel}` });
   for (let i = 0; i < 100 && !await evaluate('!!document.querySelector("#wipecord-btn")'); i++) await delay(50);
+  for (let i = 0; i < 100 && !await evaluate('!!document.getElementById("wipecord-sidebar-btn")'); i++) await delay(50);
   await evaluate('document.getElementById("wipecord-btn").click()');
   const idleImage = await page('Page.captureScreenshot', { format: 'png' });
   writeFileSync(join(directory, 'idle.png'), Buffer.from(idleImage.data, 'base64'));
@@ -86,6 +87,12 @@ try {
     const check=(value,message)=>{if(!value)throw Error(message);checks.push(message);};
     const wait=async predicate=>{for(let i=0;i<100;i++){if(predicate())return;await new Promise(r=>setTimeout(r,50));}throw Error('UI timeout');};
     check(!!$('wipecord-btn'),'Toolbar mounts');
+    await wait(()=>!!$('wipecord-sidebar-btn'));
+    check($('wipecord-sidebar-shortcut').previousElementSibling.querySelector('[data-list-item-id="guildsnav___home"]')&&$('wipecord-sidebar-shortcut').nextElementSibling.id==='fixture-server','Sidebar shortcut sits between Home and servers');
+    $('wipecord-sidebar-btn').click();
+    check($('wipecord').style.display!=='none'&&$('wipecord-btn').getAttribute('aria-expanded')==='true'&&window.fixtureRequests.length===0,'Sidebar opens the same panel without requests');
+    $('wipecord-sidebar-btn').click();
+    check($('wipecord').style.display==='none'&&$('wipecord-btn').getAttribute('aria-expanded')==='false','Sidebar can close the same panel');
     $('wipecord-btn').click();
     check(getComputedStyle($('wipecord')).display!=='none','Toolbar opens panel');
     check(!$('redact').checked&&!$('wipecord').classList.contains('redact'),'Streamer mode disabled by default');
@@ -153,6 +160,12 @@ try {
   await page('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', windowsVirtualKeyCode: 13 });
   await page('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
   assert.notEqual(await evaluate('document.getElementById("wipecord").style.display'), 'none', 'Enter opens the panel');
+  for (const opened of [false, true]) {
+    await evaluate('document.getElementById("wipecord-sidebar-btn").focus()');
+    await page('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', text: '\r', windowsVirtualKeyCode: 13 });
+    await page('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+    assert.equal(await evaluate('document.getElementById("wipecord").style.display!=="none"'), opened, 'Sidebar shortcut supports native Enter activation');
+  }
   for (const key of ['Escape', 'Enter']) {
     await evaluate('window.manualConfirmation=true;document.getElementById("getAuthor").click();document.getElementById("getChannel").click();document.getElementById("start").click()');
     for (let i = 0; i < 100 && !await evaluate('document.getElementById("confirmDeletion").open'); i++) await delay(50);

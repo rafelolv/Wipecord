@@ -1,4 +1,4 @@
-#wipecord-btn {
+#wipecord-btn, #wipecord-sidebar-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -13,8 +13,11 @@
   cursor: pointer;
   flex: 0 0 auto;
 }
-#wipecord-btn:hover { outline: 2px solid #58d68d; }
-#wipecord-btn:focus-visible { outline: 2px solid #58d68d; outline-offset: 3px; }
+#wipecord-btn:hover, #wipecord-sidebar-btn:hover { outline: 2px solid #58d68d; }
+#wipecord-btn:focus-visible, #wipecord-sidebar-btn:focus-visible { outline: 2px solid #58d68d; outline-offset: 3px; }
+#wipecord-sidebar-shortcut { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 40px; margin: 4px 0; flex: 0 0 auto; }
+#wipecord-sidebar-btn { margin: 0; opacity: .75; }
+#wipecord-sidebar-btn:hover, #wipecord-sidebar-btn:focus-visible, #wipecord-sidebar-btn[aria-expanded="true"] { opacity: 1; }
 #wipecord-btn progress { position: absolute; bottom: -5px; left: 0; width: 32px; height: 3px; display: none; accent-color: #58d68d; }
 #wipecord-btn.running { box-shadow: 0 0 0 2px #58d68d; }
 #wipecord-btn.running progress { display: block; }

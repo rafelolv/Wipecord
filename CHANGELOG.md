@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.0 — 2026-10-14
+
+- Add a small W shortcut below Direct Messages in the Discord server rail, using its own row without covering existing controls.
+- Open and close the same Wipecord panel from either shortcut and synchronize their accessible expanded state; neither starts a cleanup.
+- Mount the extra shortcut only after a stable header and recognizable narrow sidebar anchor. Follow sidebar replacement and skip hidden, wide or unknown navigation layouts.
+- Reuse the canonical W logo and existing runtime claim; rebuild the userscript and both browser packages at 1.6.0.
+
+- Validation: `npm run check` passed lint, 32 mocked unit tests, artifact checks and deterministic extension packages; Mozilla reported zero errors, warnings and notices.
+- Userscript browser checks: Chrome passed 34 interactions, native Enter activation of both shortcuts, confirmation keyboard behavior and five viewport/theme layouts. The sidebar placement was visually reviewed on the synthetic fixture.
+- Extension browser checks: Chrome 154.0.8037.97, Firefox 157.0 and Brave Origin Nightly (Chromium 154.0.8037.58, Wayland/GPU enabled) passed all eighteen scenario groups. These cover sidebar placement/replacement/fallback, shared-panel toggling without requests, duplicate installations and existing deletion safeguards.
+- Limits: all messages and responses were simulated; no real messages were deleted. The new server-rail selectors have not been validated against the live Discord DOM. Edge, minimum browser versions and signed/store updates remain unvalidated.
+
 ## 1.5.2 — 2026-10-14
 
 - Replace the oversized section hover background with a restrained green title and chevron, keeping topic separators visible.
