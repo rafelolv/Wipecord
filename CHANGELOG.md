@@ -1,12 +1,14 @@
 # Changelog
 
-## Unreleased
+## 1.6.2 — 2026-10-15
 
 - Automatically submit future GitHub releases to the existing Firefox Add-ons listing using repository secrets, the validated release ZIP, reviewer source and English release notes.
 - Document one-time secret configuration, submission status, Mozilla review and safe recovery from failed publication jobs.
+- Simplify README installation guidance and clarify Chromium distribution and planned Microsoft Edge Add-ons publication.
+- Rebuild the userscript and both extension packages at 1.6.2 without changing deletion behavior or the interface.
 
 - Validation: `npm run check` passed lint, 41 mocked tests, artifact checks and deterministic packages; Mozilla reported zero errors, warnings and notices. AMO tests use simulated responses and dummy credentials; no real store submission was performed.
-- Limits: authenticated submission, signing and store update delivery require verification during the next release after secrets are configured. The userscript and extension runtime remain at 1.6.1.
+- Limits: no new browser checks were performed for this automation and version-only runtime update. AMO submission is verified separately during release; Mozilla review, signing and delivery of store updates are not established by local checks.
 
 ## 1.6.1 — 2026-10-14
 
