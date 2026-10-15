@@ -30,3 +30,35 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           gh release create "$RELEASE_TAG" wipecord.user.js dist/wipecord-*.zip LICENSE SHA256SUMS --verify-tag --title "Wipecord $RELEASE_TAG" --notes-file "docs/releases/$RELEASE_TAG.md"
+  firefox:
+    name: Submit Firefox update to AMO
+    needs: release
+    if: github.repository == 'rafelolv/Wipecord'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    concurrency:
+      group: firefox-amo
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build:extensions
+      - run: node scripts/check-extensions.mjs
+      - name: Download the published Firefox package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          mkdir -p /tmp/wipecord-release
+          gh release download "$RELEASE_TAG" --pattern "wipecord-firefox-${RELEASE_TAG#v}.zip" --dir /tmp/wipecord-release
+      - name: Submit the listed Firefox update and reviewer source
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: node scripts/publish-firefox.mjs

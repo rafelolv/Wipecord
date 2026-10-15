@@ -52,4 +52,4 @@ Review fixes and their dependencies on a working branch before integration. Pres
 
 The repository-local identity is `Rafael <82127878+rafelolv@users.noreply.github.com>`, matching the existing GitHub-authored initial commit. This overrides the machine's unrelated global email for Wipecord only. Commits and repository ownership are separate: `origin` points to `git@github.com:rafelolv/Wipecord.git`.
 
-Commit source, regenerated artifact and documentation together. Push when requested. Releases follow [RELEASING.md](RELEASING.md).
+Commit source, regenerated artifact and documentation together. Push when requested. Releases follow [RELEASING.md](RELEASING.md). Future requested releases also submit Firefox updates through the dependent AMO job; configure its two Actions secrets using [FIREFOX-PUBLISHING.md](FIREFOX-PUBLISHING.md). Publication tooling lives in `scripts/publish-firefox.mjs`, uses the released ZIP unchanged and includes tracked reviewer source. Never put credentials in local files, runtime packages or logs. Local builds and normal CI do not publish.

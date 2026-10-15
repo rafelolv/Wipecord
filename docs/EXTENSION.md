@@ -60,7 +60,7 @@ The maintainer opposes Google's $5 registration fee for distributing free extens
 
 Store versions need a developer account, reviewed listing, screenshots, accurate permission/data disclosures and an incremented version. Submit the Firefox ZIP to AMO for review/signing; distribute the resulting **signed XPI**, not the local ZIP, for permanent Firefox installation. Store clients update whole reviewed packages. There is no custom update server or remotely loaded JavaScript in Wipecord.
 
-No store submission or signing is performed by the build. Store acceptance has not been verified. Automated browser checks use simulated responses; see the validation log. Follow [Mozilla signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/) when Firefox publication is authorized.
+Local builds never submit or sign packages. Requested future GitHub releases automatically submit the Firefox update to AMO after the release job succeeds, once the maintainer configures two Actions secrets. See [Firefox publication setup and recovery](FIREFOX-PUBLISHING.md). Mozilla review/signing is separate from successful submission; store acceptance and update delivery must be verified. Other stores are not automated. Automated browser checks use simulated responses; see the validation log.
 
 ## Architecture, permissions and privacy
 

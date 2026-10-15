@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Automatically submit future GitHub releases to the existing Firefox Add-ons listing using repository secrets, the validated release ZIP, reviewer source and English release notes.
+- Document one-time secret configuration, submission status, Mozilla review and safe recovery from failed publication jobs.
+
+- Validation: `npm run check` passed lint, 41 mocked tests, artifact checks and deterministic packages; Mozilla reported zero errors, warnings and notices. AMO tests use simulated responses and dummy credentials; no real store submission was performed.
+- Limits: authenticated submission, signing and store update delivery require verification during the next release after secrets are configured. The userscript and extension runtime remain at 1.6.1.
+
 ## 1.6.1 — 2026-10-14
 
 - Remove the extra W shortcut from the server rail and restore the original top-right Discord toolbar button as the sole external launcher.

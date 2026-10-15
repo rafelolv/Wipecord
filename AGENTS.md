@@ -30,6 +30,7 @@ Maintained by rafelolv. Read docs/MAINTENANCE.md for the workflow.
 - Wait for a stable visible channel header before initializing UI. Never use unrestricted toolbar selectors or attach the logo to message controls; test delayed startup, reload and header replacement.
 - Run npm run test:extensions:browser with temporary profiles and simulated API responses after integration changes. It uses loopback-only temporary manifests with byte-identical executable files. Record actual browsers, tests and limitations; never delete real messages without specific authorization.
 - Document unsigned local installation, manual updates, store signing and store review separately. Do not publish to stores without explicit authorization.
+- Firefox AMO submission is authorized as part of requested future releases through the dependent Release workflow job. Use only `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` Actions secrets; never store credentials locally or expose them in logs/artifacts. Submit the exact validated release ZIP and tracked reviewer source; refuse existing versions. Ordinary pushes, pull requests and local builds must not publish. See docs/FIREFOX-PUBLISHING.md; other stores still require explicit authorization.
 
 ## Release requests
 
