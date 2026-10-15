@@ -7,6 +7,13 @@ import { setTimeout as delay } from 'node:timers/promises';
 const API = 'https://addons.mozilla.org/api/v5/';
 const GUID = 'wipecord@rafelolv.github.io';
 
+export function firefoxReleaseNotes(notes) {
+  const sections = notes.split(/^## Changes[ \t]*\r?\n/m);
+  const summary = (sections.length > 1 ? sections[1].split(/^## /m)[0] : notes).trim();
+  if (!summary || summary.length > 3000) throw new Error('Firefox release notes must contain a nonempty Changes summary of at most 3000 characters.');
+  return summary;
+}
+
 export function token(issuer, secret) {
   const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
   const iat = Math.floor(Date.now() / 1000);
@@ -20,9 +27,11 @@ export async function publishFirefox({ issuer, secret, version, addon, source, n
   if (!/^\d+\.\d+\.\d+$/.test(version) || !addon?.length || !source?.length || !notes?.trim()) {
     throw new Error('A semantic version, Firefox ZIP, source archive and release notes are required.');
   }
+  // AMO's release_notes field is limited to 3000 characters. Validate before uploading.
+  const releaseNotes = firefoxReleaseNotes(notes);
   const listing = `addons/addon/${encodeURIComponent(GUID)}/`;
   const versionPath = `${listing}versions/${version}/`;
-  async function request(path, method = 'GET', body, allowMissing = false) {
+  async function request(path, method = 'GET', body, allowMissing = false, stage = 'request') {
     let response;
     try {
       response = await fetchAPI(`${API}${path}`, {
@@ -34,7 +43,7 @@ export async function publishFirefox({ issuer, secret, version, addon, source, n
       throw new Error('AMO request failed or timed out. Inspect the Developer Hub before retrying; a submission may have succeeded.');
     }
     if (allowMissing && response.status === 404) return null;
-    if (!response.ok) throw new Error(`AMO returned HTTP ${response.status}. Inspect the Developer Hub and retry only the failed job; never replace a published version.`);
+    if (!response.ok) throw new Error(`AMO returned HTTP ${response.status} during ${stage}. Inspect the Developer Hub before retrying; never replace a published version.`);
     try { return await response.json(); } catch { throw new Error('AMO returned an unreadable response. Inspect the Developer Hub before retrying.'); }
   }
   const existingAddon = await request(listing);
@@ -61,10 +70,10 @@ export async function publishFirefox({ issuer, secret, version, addon, source, n
   submission.set('upload', uuid);
   submission.set('source', new Blob([source], { type: 'application/zip' }), `wipecord-firefox-source-${version}.zip`);
   submission.set('approval_notes', 'Source includes reproduction instructions in docs/FIREFOX-PUBLISHING.md. Use Node.js 24, npm ci and npm run build:extensions. The userscript is bundled byte-for-byte in both browser packages. All executable code is included locally.');
-  const created = await request(`${listing}versions/`, 'POST', submission);
+  const created = await request(`${listing}versions/`, 'POST', submission, false, 'version creation');
   if (created.version !== version || created.channel !== 'listed') throw new Error('Unexpected AMO submission result. Inspect the Developer Hub before retrying.');
   // AMO requires multipart source and translated release notes in separate requests.
-  await request(versionPath, 'PATCH', JSON.stringify({ release_notes: { 'en-US': notes } }));
+  await request(versionPath, 'PATCH', JSON.stringify({ release_notes: { 'en-US': releaseNotes } }), false, 'release notes update (the package was already submitted)');
   return `Firefox ${version} submitted to AMO with source and release notes. Mozilla review/signing may still be pending. Check https://addons.mozilla.org/en-US/developers/addon/wipecord/versions`;
 }
 

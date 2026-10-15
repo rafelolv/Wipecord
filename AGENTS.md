@@ -31,6 +31,7 @@ Maintained by rafelolv. Read docs/MAINTENANCE.md for the workflow.
 - Run npm run test:extensions:browser with temporary profiles and simulated API responses after integration changes. It uses loopback-only temporary manifests with byte-identical executable files. Record actual browsers, tests and limitations; never delete real messages without specific authorization.
 - Document unsigned local installation, manual updates, store signing and store review separately. Do not publish to stores without explicit authorization.
 - Firefox AMO submission is authorized as part of requested future releases through the dependent Release workflow job. Use only `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` Actions secrets; never store credentials locally or expose them in logs/artifacts. Submit the exact validated release ZIP and tracked reviewer source; refuse existing versions. Ordinary pushes, pull requests and local builds must not publish. See docs/FIREFOX-PUBLISHING.md; other stores still require explicit authorization.
+- AMO release notes contain only the English Changes bullets, at most 3000 characters; validate the summary before API access. Keep full downloads, installation and validation details on GitHub. A failed notes update can follow successful package submission: inspect AMO before retrying and never re-upload an existing version to repair metadata.
 
 ## Release requests
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Send only concise Changes bullets to Firefox Add-ons and enforce Mozilla's 3000-character release-notes limit before uploading a package.
+- Identify the failed AMO request stage and distinguish a notes-update failure from package submission failure.
+
+- Validation: `npm run check` passed lint, 44 mocked tests, artifact checks and deterministic packages; Mozilla reported zero errors, warnings and notices. Publication tests cover oversized full documents, exact submitted summaries and rejection of empty or oversized summaries before API access.
+- Limits: the maintainer confirmed 1.6.3 appeared on AMO; its historical job failed during the final notes update. No package was resubmitted or historical release notes rewritten for this correction.
+
 ## 1.6.3 — 2026-10-15
 
 - Fix Firefox release submission to accept Mozilla's 32-character hexadecimal upload identifiers, while preserving strict identifier validation.

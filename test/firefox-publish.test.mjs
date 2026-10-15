@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { publishFirefox, prepareSubmission, token, verifyReleasePackage, reviewerSource } from '../scripts/publish-firefox.mjs';
+import { publishFirefox, prepareSubmission, token, verifyReleasePackage, reviewerSource, firefoxReleaseNotes } from '../scripts/publish-firefox.mjs';
 
 // Match FileUploadSerializer's UUIDField(format='hex') in addons-server.
 const uuid = '12345678123412341234123456789012';
@@ -67,6 +67,28 @@ test('missing credentials and invalid inputs make no requests', async () => {
   assert.equal(mock.calls.length, 0);
 });
 
+test('AMO notes contain only Changes and fit Mozilla\'s limit even when the full release document exceeds it', async () => {
+  const notes = readFileSync('docs/releases/v1.6.3.md', 'utf8');
+  assert.ok(notes.length > 3000, 'Regression fixture must exceed the AMO notes limit');
+  const summary = firefoxReleaseNotes(notes);
+  assert.match(summary, /^- Fix automated Firefox submissions/);
+  assert.doesNotMatch(summary, /##|Downloads|Validation|Install or update/);
+  assert.ok(summary.length < 3000);
+  const mock = api([listing, missing, { data: validated }, { data: { version: input.version, channel: 'listed' } }, { data: {} }]);
+  await publishFirefox({ ...input, notes, fetchAPI: mock.fetchAPI });
+  assert.deepEqual(JSON.parse(mock.calls.at(-1).body), { release_notes: { 'en-US': summary } });
+  assert.equal(firefoxReleaseNotes('## Changes\n\n- Final change.\n'), '- Final change.');
+});
+
+test('oversized and empty AMO summaries fail before API access; 3000 characters are accepted', async () => {
+  const mock = api([]);
+  for (const notes of ['x'.repeat(3001), '## Changes\n\n## Downloads\n- Package.']) {
+    await assert.rejects(publishFirefox({ ...input, notes, fetchAPI: mock.fetchAPI }), /at most 3000 characters/);
+  }
+  assert.equal(mock.calls.length, 0);
+  assert.equal(firefoxReleaseNotes('x'.repeat(3000)).length, 3000);
+});
+
 test('AMO upload identifiers accept hex and canonical UUIDs and reject unsafe paths', async () => {
   const canonical = '12345678-1234-1234-1234-123456789012';
   const mock = api([listing, missing, { data: { ...validated, uuid: canonical } },
@@ -107,6 +129,7 @@ test('network, HTTP and partial-submission failures do not expose response bodie
     const mock = api(responses);
     await assert.rejects(publishFirefox({ ...input, fetchAPI: mock.fetchAPI }), error => {
       assert.doesNotMatch(error.message, /sensitive request details|test-secret|test-issuer/);
+      if (mock.calls.at(-1)?.method === 'PATCH') assert.match(error.message, /release notes update \(the package was already submitted\)/);
       return true;
     });
     assert.ok(mock.calls.every(call => !['PUT', 'DELETE'].includes(call.method)));
