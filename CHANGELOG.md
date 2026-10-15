@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.3 — 2026-10-15
+
+- Fix Firefox release submission to accept Mozilla's 32-character hexadecimal upload identifiers, while preserving strict identifier validation.
+- Cover the real AMO identifier format and reject malformed identifiers before version creation.
+- Rebuild both extension packages and the userscript at 1.6.3 without changing deletion behavior or the interface.
+
+- Validation: `npm run check` passed lint, 42 mocked tests, artifact checks and deterministic packages; Mozilla reported zero errors, warnings and notices.
+- Limits: no new browser checks were performed. The 1.6.2 GitHub release succeeded, but its AMO submission stopped after upload because the identifier format was rejected. The corrected submission is checked separately during this release; signing and store delivery remain subject to Mozilla.
+
 ## 1.6.2 — 2026-10-15
 
 - Automatically submit future GitHub releases to the existing Firefox Add-ons listing using repository secrets, the validated release ZIP, reviewer source and English release notes.

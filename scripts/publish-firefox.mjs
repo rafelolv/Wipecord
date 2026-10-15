@@ -46,7 +46,8 @@ export async function publishFirefox({ issuer, secret, version, addon, source, n
   upload.set('channel', 'listed');
   upload.set('upload', new Blob([addon], { type: 'application/zip' }), `wipecord-firefox-${version}.zip`);
   let result = await request('addons/upload/', 'POST', upload);
-  if (typeof result.uuid !== 'string' || !/^[a-f0-9-]{36}$/i.test(result.uuid)) throw new Error('AMO returned an invalid upload identifier.');
+  // AMO serializes UUIDs as 32 hexadecimal characters; also accept canonical UUIDs.
+  if (typeof result.uuid !== 'string' || !/^(?:[a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i.test(result.uuid)) throw new Error('AMO returned an invalid upload identifier.');
   const uuid = result.uuid;
   for (let attempt = 0; !result.processed && attempt < 60; attempt++) {
     await sleep(10000);

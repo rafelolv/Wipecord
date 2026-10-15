@@ -7,7 +7,8 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { publishFirefox, prepareSubmission, token, verifyReleasePackage, reviewerSource } from '../scripts/publish-firefox.mjs';
 
-const uuid = '12345678-1234-1234-1234-123456789012';
+// Match FileUploadSerializer's UUIDField(format='hex') in addons-server.
+const uuid = '12345678123412341234123456789012';
 const validated = { uuid, channel: 'listed', version: '1.2.3', processed: true, valid: true, submitted: false };
 const input = {
   issuer: 'test-issuer', secret: 'test-secret', version: '1.2.3',
@@ -64,6 +65,19 @@ test('missing credentials and invalid inputs make no requests', async () => {
     await assert.rejects(publishFirefox({ ...input, ...patch, fetchAPI: mock.fetchAPI }));
   }
   assert.equal(mock.calls.length, 0);
+});
+
+test('AMO upload identifiers accept hex and canonical UUIDs and reject unsafe paths', async () => {
+  const canonical = '12345678-1234-1234-1234-123456789012';
+  const mock = api([listing, missing, { data: { ...validated, uuid: canonical } },
+    { data: { version: input.version, channel: 'listed' } }, { data: {} }]);
+  await publishFirefox({ ...input, fetchAPI: mock.fetchAPI });
+  assert.equal(mock.calls[3].body.get('upload'), canonical);
+  for (const invalid of [null, 123, '', '../outside', 'a'.repeat(36), '-'.repeat(36), 'z'.repeat(32)]) {
+    const rejected = api([listing, missing, { data: { ...validated, uuid: invalid } }]);
+    await assert.rejects(publishFirefox({ ...input, fetchAPI: rejected.fetchAPI }), /invalid upload identifier/);
+    assert.equal(rejected.calls.length, 3);
+  }
 });
 
 test('wrong listing and existing versions are never modified', async () => {

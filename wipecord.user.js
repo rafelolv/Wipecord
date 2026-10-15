@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Wipecord
 // @description Bulk-delete your own messages in a Discord channel, DM or server
-// @version     1.6.2
+// @version     1.6.3
 // @author      Rafael (rafelolv)
 // @homepageURL https://github.com/rafelolv/Wipecord
 // @supportURL  https://github.com/rafelolv/Wipecord/issues
@@ -43,7 +43,7 @@ SOFTWARE.
 	'use strict';
 
 	/* rollup-plugin-baked-env */
-	const VERSION = "1.6.2";
+	const VERSION = "1.6.3";
 
 	var themeCss = (`
 /* Self-contained colors keep the panel readable when Discord changes its tokens. */
